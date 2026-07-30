@@ -1,0 +1,36 @@
+{
+  "task_id": "ruff__ruff-example",
+  "patch_applied": true,
+  "evaluator_tampered": false,
+  "timed_out": false,
+  "infrastructure_failure": false,
+  "policy_violations": [],
+  "checks": [
+    {
+      "id": "compile",
+      "status": "passed",
+      "runtime_seconds": 1.2
+    },
+    {
+      "id": "core-reported-case",
+      "status": "passed",
+      "runtime_seconds": 0.7
+    },
+    {
+      "id": "edge-nested-scope",
+      "status": "failed",
+      "runtime_seconds": 0.6,
+      "failure_reason": "assertion failed"
+    },
+    {
+      "id": "regression-existing-fixture",
+      "status": "passed",
+      "runtime_seconds": 0.8
+    },
+    {
+      "id": "quality-format",
+      "status": "passed",
+      "runtime_seconds": 0.2
+    }
+  ]
+}

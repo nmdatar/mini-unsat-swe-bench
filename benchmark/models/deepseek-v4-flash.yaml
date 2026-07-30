@@ -1,0 +1,8 @@
+model:
+  model_class: openrouter
+  model_name: deepseek/deepseek-v4-flash
+  cost_tracking: ignore_errors
+  model_kwargs:
+    drop_params: true
+    parallel_tool_calls: true
+    max_tokens: 4096

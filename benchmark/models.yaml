@@ -1,0 +1,17 @@
+# Batch-run registry. All providers are routed through OpenRouter so a single
+# host-side credential can run the full comparison.
+models:
+  - id: qwen3-coder-next
+    config: benchmark/models/qwen3-coder-next.yaml
+    api_key_env: OPENROUTER_API_KEY
+    enabled: true
+
+  - id: deepseek-v4-flash
+    config: benchmark/models/deepseek-v4-flash.yaml
+    api_key_env: OPENROUTER_API_KEY
+    enabled: true
+
+  - id: gpt-5.4-mini
+    config: benchmark/models/gpt-5.4-mini.yaml
+    api_key_env: OPENROUTER_API_KEY
+    enabled: true

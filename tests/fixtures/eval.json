@@ -1,0 +1,43 @@
+{
+  "task_id": "ruff__ruff-example",
+  "weights": {
+    "core": 0.6,
+    "edge": 0.2,
+    "regression": 0.15,
+    "quality": 0.05
+  },
+  "core_failure_cap": 0.2,
+  "gate_checks": [
+    {
+      "id": "compile",
+      "description": "The affected crate compiles.",
+      "command": "cargo check -p ruff_linter"
+    }
+  ],
+  "checks": [
+    {
+      "id": "core-reported-case",
+      "group": "core",
+      "description": "The behavior reported in the prompt is corrected.",
+      "command": "cargo test -p ruff_linter reported_case"
+    },
+    {
+      "id": "edge-nested-scope",
+      "group": "edge",
+      "description": "The corrected behavior also works in a nested scope.",
+      "command": "cargo test -p ruff_linter nested_scope"
+    },
+    {
+      "id": "regression-existing-fixture",
+      "group": "regression",
+      "description": "Related existing behavior remains unchanged.",
+      "command": "cargo test -p ruff_linter existing_fixture"
+    },
+    {
+      "id": "quality-format",
+      "group": "quality",
+      "description": "The patch remains correctly formatted.",
+      "command": "cargo fmt --all --check"
+    }
+  ]
+}

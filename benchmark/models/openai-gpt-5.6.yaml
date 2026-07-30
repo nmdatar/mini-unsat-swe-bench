@@ -1,0 +1,10 @@
+model:
+  # The provider prefix is required by mini-swe-agent's LiteLLM integration.
+  model_name: openai/gpt-5.6
+  # Use OpenAI's Responses API so reasoning state is preserved between agent turns.
+  model_class: litellm_response
+  model_kwargs:
+    drop_params: true
+    parallel_tool_calls: true
+    reasoning:
+      effort: high

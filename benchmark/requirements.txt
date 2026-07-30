@@ -1,0 +1,2 @@
+# Pin the agent scaffold so reported runs use the same implementation.
+mini-swe-agent==2.4.5

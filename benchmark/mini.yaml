@@ -1,0 +1,111 @@
+agent:
+  system_template: |
+    You are a software engineer using a Linux shell to solve a coding task in the Ruff repository.
+    Work autonomously within the repository, make the smallest general fix that satisfies the task,
+    and validate the change with focused tests.
+
+  instance_template: |
+    <task>
+    {{ task }}
+    </task>
+
+    <instructions>
+    Work in `/testbed`, which contains Ruff at the task's starting commit.
+
+    - Inspect the repository and relevant history-free source files before editing.
+    - Modify only files needed to implement the requested production behavior.
+    - Do not modify existing tests, fixtures, snapshots, or benchmark/evaluator files.
+    - You may create temporary reproduction files under `/tmp`, but do not include them in the patch.
+    - Do not use the network. Required dependencies are already cached.
+    - Run focused checks or tests for the affected Ruff crate whenever possible.
+    - Do not commit your changes.
+
+    Every response must include reasoning and at least one bash tool call.
+    Shell commands run in separate subshells, so directory and environment changes do not persist
+    between calls.
+
+    When the implementation is complete:
+
+    1. Run `git status --short` and inspect every changed path.
+    2. For any intentional new source file, run `git add -N <path>` so it appears in `git diff`.
+    3. Run `git diff -- . > /tmp/model.patch`.
+    4. Inspect `/tmp/model.patch` and confirm it contains only the intended solution.
+    5. Submit with this exact command, by itself:
+
+       `echo COMPLETE_TASK_AND_SUBMIT_FINAL_OUTPUT && cat /tmp/model.patch`
+
+    Do not run any command after submitting.
+    </instructions>
+
+  step_limit: 40
+  cost_limit: 0.75
+  wall_time_limit_seconds: 1200
+  max_consecutive_format_errors: 3
+
+environment:
+  environment_class: docker
+  # The benchmark runner must override this with the task-specific image tag or digest.
+  image: mini-unsat-ruff:latest
+  cwd: /testbed
+  timeout: 180
+  pull_timeout: 300
+  container_timeout: 45m
+  interpreter: [bash, -c]
+  run_args:
+    - --rm
+    - --network
+    - none
+    - --cpus
+    - "4"
+    - --memory
+    - 8g
+    - --pids-limit
+    - "1024"
+  env:
+    PAGER: cat
+    MANPAGER: cat
+    LESS: -R
+    CARGO_TERM_COLOR: never
+    CARGO_NET_OFFLINE: "true"
+    UV_OFFLINE: "true"
+    PIP_PROGRESS_BAR: "off"
+    TQDM_DISABLE: "1"
+
+model:
+  observation_template: |
+    {% if output.exception_info -%}
+    <exception>{{ output.exception_info }}</exception>
+    {% endif -%}
+    <returncode>{{ output.returncode }}</returncode>
+    {% if output.output | length <= 12000 -%}
+    <output>
+    {{ output.output -}}
+    </output>
+    {%- else -%}
+    <warning>
+    The command output was truncated. Use a more selective command, or redirect output to a file
+    and inspect the relevant portions.
+    </warning>
+    <output_head>
+    {{ output.output[:6000] }}
+    </output_head>
+    <elided_chars>{{ output.output | length - 12000 }}</elided_chars>
+    <output_tail>
+    {{ output.output[-6000:] }}
+    </output_tail>
+    {%- endif %}
+
+  format_error_template: |
+    {% if finish_reason is defined and (finish_reason == "length" or (finish_reason == "tool_calls" and not has_tool_calls)) -%}
+    Your previous response ended before issuing a bash tool call. Respond more concisely and include
+    exactly one bash tool call.
+    {%- else -%}
+    The previous tool call was invalid:
+    <error>{{ error }}</error>
+    Respond with reasoning followed by at least one bash tool call using arguments of the form
+    `{"command": "your command"}`.
+    {%- endif %}
+
+  model_kwargs:
+    drop_params: true
+    parallel_tool_calls: true
