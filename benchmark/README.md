@@ -56,9 +56,9 @@ IMAGE=mini-unsat-ruff-validation:ruff--ruff-20777
 The model API call runs on the host. Bash commands run through mini-swe-agent's
 Docker environment in the network-isolated task container.
 
-The submitted patch is stored in the trajectory's `info.submission` field. A
-future batch runner should also write that value to a standalone `patch.diff`
-before handing it to the scorer.
+The submitted patch is stored in the trajectory's `info.submission` field. The
+batch runner extracts it to `patch.diff`, evaluates it immediately, and writes
+the run, check, score, resource-cleanup, and usage telemetry as JSON.
 
 ## Fair-comparison policy
 

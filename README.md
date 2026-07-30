@@ -6,8 +6,8 @@ in [PLAN.md](PLAN.md).
 
 ## Current implementation
 
-The repository currently implements the first two sourcing stages, the dynamic
-validation harness, and the deterministic scoring core:
+The repository implements the complete sourcing, validation, execution,
+scoring, and reporting path:
 
 1. Fetch merged PR metadata and normalize known public-benchmark exclusions.
 2. Apply static filters, construct prompts, and split each surviving PR into a
@@ -15,10 +15,8 @@ validation harness, and the deterministic scoring core:
 3. Validate candidates through clean base, tests-only, and gold-patch phases.
 4. Validate evaluator specifications and map completed semantic checks to a
    gated score in `[0, 1]`.
-
-The resulting records are **candidates**, not validated benchmark tasks.
-Docker validation must still prove that tests fail on the base commit and pass
-with the human patch before a candidate can enter the final set.
+5. Run mini-swe-agent against task-specific Docker images, evaluate each patch
+   immediately, clean disposable resources, and aggregate telemetry.
 
 ## Dynamic validation
 
@@ -187,11 +185,28 @@ The equivalent individual stages are:
 # 2. Freeze exactly 100 validated tasks.
 .venv/bin/python scripts/03b_freeze_tasks.py
 
-# 3. Run all enabled OpenRouter models, evaluate, and summarize.
-.venv/bin/python scripts/04_run_benchmark.py --run-id final --workers 4
-.venv/bin/python scripts/04b_evaluate_results.py results/runs/final --workers 2
+# 3. Calibrate the evaluator on a small frozen-task sample.
+.venv/bin/python scripts/05b_calibrate_scoring.py \
+  --run-id scorer-calibration --limit 3
+
+# 4. Run all enabled OpenRouter models and summarize.
+.venv/bin/python scripts/04_run_benchmark.py --run-id final --workers 2
 .venv/bin/python scripts/06_summarize_results.py results/runs/final
 ```
+
+The benchmark runner performs evaluation task-by-task as part of the run. It
+builds or reuses one image per task, runs all selected models, scores their
+patches, and removes the task image and per-run Cargo volumes. Use
+`--keep-resources` only for debugging. `04b_evaluate_results.py` remains
+available for evaluating trajectories collected with `--skip-evaluation`.
+
+Each run directory contains a reproducibility manifest, per-job trajectories,
+patches, run records, check outcomes, scores, and aggregate `runs.json` and
+`scores.json` files. Records include elapsed time, steps, provider token usage,
+cost, limit-hit flags, provider/model identity, image metadata, config hashes,
+infrastructure failures, and cleanup status. The summarizer reports score
+distributions, resolution rates, runtime, cost, token use, steps, compile rate,
+failure categories, subsystem results, and pairwise model comparisons.
 
 For pipeline testing before validation completes, `03b_freeze_tasks.py
 --provisional` creates a clearly marked non-reportable index. The benchmark
