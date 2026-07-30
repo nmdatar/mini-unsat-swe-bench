@@ -1,0 +1,14 @@
+{
+  "base_commit": "66b978e0376c1a13ce657a7132e408f931e63a8c",
+  "environment_key": "ruff-rust-toolchain",
+  "prompt": "Fix for redundant-none-literal (PYI061) is marked as safe but should not be\n\n### Summary\n\n[PYI061](https://docs.astral.sh/ruff/rules/redundant-none-literal/) is marked as a safe fix but it's not, and breaks code that uses `typing.get_args` to do input validation based on type hints. E.g. the two outputs from `get_args` are _not_ the same before and after the fix\n``` py\n>>> from typing import Literal, get_args\n>>> options = Literal['foo', 'bar', None]  # violates PYI061\n>>> print(get_args(options))\n('foo', 'bar', None)\n\n>>> options = Literal['foo', 'bar'] | None  # auto-fix for PYI061\n>>> print(get_args(options))\n(typing.Literal['foo', 'bar'], <class 'NoneType'>)\n```\n\nThis auto-fix breaks this code:\n``` py\ndef thing(arg: options):\n    # Validate input\n    assert arg in get_args(options)\n    # Do useful stuff\n    ...\n```",
+  "subsystem": "linter",
+  "task_id": "ruff__ruff-26533",
+  "test_commands": [
+    "cargo test -p ruff_linter"
+  ],
+  "timeouts": {
+    "agent_seconds": 1800,
+    "test_seconds": 900
+  }
+}

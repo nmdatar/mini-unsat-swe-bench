@@ -1,0 +1,14 @@
+{
+  "base_commit": "e61657ff3cfd1e476c5a016dfbd25ecb5e65a8e3",
+  "environment_key": "ruff-rust-toolchain",
+  "prompt": "Show-settings does not show correct settings file\n\n### Summary\n\nI have a main directory `maindir` with a `pyproject.toml` containing one ruff configuration, and a subdirectory `subdir` with another `pyproject.toml` containing ruff configuration as well as an `example.py` file.\nWhen I run, from the main directory, the command: \n`ruff check subdir/example.py --show-settings`, \nin line 2 of the output, it says \n`Settings path: maindir/pyproject.toml`\nBut (e.g also when removing the --show-settings option) it uses the ruff config from `maindir/subdir/pyproject.toml`, so I would have expected it to show me this as\n`Settings path: maindir/subdir/pyproject.toml`",
+  "subsystem": "configuration",
+  "task_id": "ruff__ruff-22478",
+  "test_commands": [
+    "cargo test -p ruff_workspace"
+  ],
+  "timeouts": {
+    "agent_seconds": 1800,
+    "test_seconds": 900
+  }
+}

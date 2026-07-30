@@ -1,0 +1,14 @@
+{
+  "base_commit": "c69fa75cd5b2031f99e6d358343b18e22ceee5d9",
+  "environment_key": "ruff-rust-toolchain",
+  "prompt": "[`airflow`] Add warning to `airflow.datasets.DatasetEvent` usage (`AIR301`)\n\n## Summary\n\n`airflow.datasets.DatasetEvent` has been removed in 3 but `AssetEvent` might be added in the future",
+  "subsystem": "linter",
+  "task_id": "ruff__ruff-20551",
+  "test_commands": [
+    "cargo test -p ruff_linter"
+  ],
+  "timeouts": {
+    "agent_seconds": 1800,
+    "test_seconds": 900
+  }
+}

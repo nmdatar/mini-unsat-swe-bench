@@ -1,0 +1,14 @@
+{
+  "base_commit": "17c7b3cde1bef999be944c0b924c2021fa696cb8",
+  "environment_key": "ruff-rust-toolchain",
+  "prompt": "FURB157 misses `decimal.Decimal(\"_-1\")`\n\n### Summary\n\n[`verbose-decimal-constructor` (FURB157)](https://docs.astral.sh/ruff/rules/verbose-decimal-constructor/) has a false negative when the sign character follows an underscore. [Example](https://play.ruff.rs/[redacted revision]-bcd1-4e22-9a21-[redacted revision]):\n```console\n$ cat >furb157.py <<'# EOF'\nfrom decimal import Decimal\nDecimal(\"_-1\")\n# EOF\n\n$ ruff --isolated check furb157.py --select FURB157\nAll checks passed!\n```\nThis was a true positive in version 0.14.2.",
+  "subsystem": "linter",
+  "task_id": "ruff__ruff-21190",
+  "test_commands": [
+    "cargo test -p ruff_linter"
+  ],
+  "timeouts": {
+    "agent_seconds": 1800,
+    "test_seconds": 900
+  }
+}

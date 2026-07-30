@@ -1,0 +1,14 @@
+{
+  "base_commit": "e42cdf84957b178dc7e37aed0f2b1f4d5f0c272a",
+  "environment_key": "ruff-rust-toolchain",
+  "prompt": "[D417] Documenting Functions that `Unpack`\n\n## Summary\n\n[PEP 692](https://peps.python.org/pep-0692/) introduced a way define the keyword arguments are runtime using `Unpack` on a `TypedDict`. This allows for the `TypedDict`'s attributes to be used directly as keyword arguments, and the actual keyword argument shouldn't be used.\n\nThis causes issues when Ruff tries to check that the arguments are documented in a docstring.\n\n## Example\n\nThe PEP document gives the following example which suffices for this example:\n\n```python\nfrom typing import TypedDict, Unpack\n\nclass Movie(TypedDict):\n    name: str\n    year: int\n\ndef foo(**kwargs: Unpack[Movie]) -> None:\n    \"\"\"\n    Foo a movie.\n\n    Args:\n        name: The name of the movie.\n        year: The year the movie was released.\n    \"\"\"\n    assert kwargs[\"year\"] > 0\n\nmovie: Movie = {\"name\": \"Life of Brian\", \"year\": 1979}\n\nfoo(movie)                                  # Invalid\nfoo(kwargs=movie)                           # Invalid\nfoo(**movie)                                # OK!\nfoo(name=\"The Meaning of Life\", year=1983)  # OK!\n```\n\nIn effect, the use of `Unpack[Movie]` is meant to replace the `kwargs` with the relevant keyword arguments as inferred from the `Movie` `TypedDict` and as a result:\n\n```python\ndef foo(**kwargs: Unpack[Movie]) -> None: ...\n```\n\nbecomes essentially equivalent to:\n\n```python\ndef foo(*, name: str, year: int) -> None: ...\n```\n\nThe above example (using Google style) will raise the following error:\n\n```log\nruff-unpack-example.py:7:5: D417 Missing argument description in the docstring for `foo`: `**kwargs`\n```\n\n### Ideal World\n\nThe most ideal solution would be for Ruff to parse the `TypedDict` and adjust the keyword arguments accordingly. I suspect this is beyond the scope of Ruff's current capabilities.\n\n### Compromise\n\nIf Ruff sees specifically the pattern `**{arg}: Unpack[{class}]`, then:\n\n- Ruff should _not_ require that `arg` be documented.\n- Better yet, Ruff should perform a check in case `arg` is documented, and raise a warning as the documentation is misleading.",
+  "subsystem": "linter",
+  "task_id": "ruff__ruff-21816",
+  "test_commands": [
+    "cargo test -p ruff_linter"
+  ],
+  "timeouts": {
+    "agent_seconds": 1800,
+    "test_seconds": 900
+  }
+}

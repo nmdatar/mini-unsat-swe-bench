@@ -1,0 +1,14 @@
+{
+  "base_commit": "38c074e67d8306e4635b8e9d365bf4c007c8d5b3",
+  "environment_key": "ruff-rust-toolchain",
+  "prompt": "B905 recommends unnecessary `strict` for less than two iterables\n\n### Summary\n\n[`zip-without-explicit-strict` (B905)](https://docs.astral.sh/ruff/rules/zip-without-explicit-strict/) reports diagnostics for `zip` calls with less than two positional arguments, which is unnecessary. `strict` can only make a difference when there are two or more positional arguments, or any starred positional arguments. Compare [`map-without-explicit-strict` (B912)](https://docs.astral.sh/ruff/rules/map-without-explicit-strict/), which is only triggered when there are two or more positional arguments. [Example](https://play.ruff.rs/[redacted revision]-0b25-4c2f-9834-[redacted revision]):\n```console\n$ cat >b905.py <<'# EOF'\nprint(tuple(zip()))\nprint(tuple(zip(\"abc\")))\n\nprint(tuple(map(lambda x: x, \"abc\")))\n# EOF\n\n$ python b905.py\n()\n(('a',), ('b',), ('c',))\n('a', 'b', 'c')\n\n$ ruff --isolated check b905.py --select B905,B912 --target-version py314 --preview --unsafe-fixes --diff\n--- b905.py\n+++ b905.py\n@@ -1,4 +1,4 @@\n-print(tuple(zip()))\n-print(tuple(zip(\"abc\")))\n+print(tuple(zip(strict=False)))\n+print(tuple(zip(\"abc\", strict=False)))\n \n print(tuple(map(lambda x: x, \"abc\")))\n\nWould fix 2 errors.\n```",
+  "subsystem": "linter",
+  "task_id": "ruff__ruff-20998",
+  "test_commands": [
+    "cargo test -p ruff_linter"
+  ],
+  "timeouts": {
+    "agent_seconds": 1800,
+    "test_seconds": 900
+  }
+}

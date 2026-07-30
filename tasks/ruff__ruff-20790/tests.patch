@@ -1,0 +1,86 @@
+diff --git a/crates/ruff_linter/resources/test/fixtures/refurb/FURB103.py b/crates/ruff_linter/resources/test/fixtures/refurb/FURB103.py
+index b6d8e1d0343221cd7de106c570aa479fd57d8f61..35d9600d4194c27af22f8661ae3e35ec5fcdc985 100644
+--- a/crates/ruff_linter/resources/test/fixtures/refurb/FURB103.py
++++ b/crates/ruff_linter/resources/test/fixtures/refurb/FURB103.py
+@@ -145,3 +145,11 @@ with open("file.txt", "w") as f:
+ with open("file.txt", "w") as f:
+     for line in text:
+         f.write(line)
++
++# See: https://github.com/astral-sh/ruff/issues/20785
++import json
++
++data = {"price": 100}
++
++with open("test.json", "wb") as f:
++    f.write(json.dumps(data, indent=4).encode("utf-8"))
+\ No newline at end of file
+diff --git a/crates/ruff_linter/src/rules/refurb/snapshots/ruff_linter__rules__refurb__tests__FURB103_FURB103.py.snap b/crates/ruff_linter/src/rules/refurb/snapshots/ruff_linter__rules__refurb__tests__FURB103_FURB103.py.snap
+index dfb111341ecbdda5c052f9a5cdbdee901ae6bcd0..74f3749953bd5e71e9c09b99037eaa9d97dc12a0 100644
+--- a/crates/ruff_linter/src/rules/refurb/snapshots/ruff_linter__rules__refurb__tests__FURB103_FURB103.py.snap
++++ b/crates/ruff_linter/src/rules/refurb/snapshots/ruff_linter__rules__refurb__tests__FURB103_FURB103.py.snap
+@@ -134,3 +134,14 @@ FURB103 `open` and `write` should be replaced by `Path("file.txt").write_text(fo
+ 75 |     f.write(foobar)
+    |
+ help: Replace with `Path("file.txt").write_text(foobar, newline="\r\n")`
++
++FURB103 `open` and `write` should be replaced by `Path("test.json")....`
++   --> FURB103.py:154:6
++    |
++152 | data = {"price": 100}
++153 |
++154 | with open("test.json", "wb") as f:
++    |      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
++155 |     f.write(json.dumps(data, indent=4).encode("utf-8"))
++    |
++help: Replace with `Path("test.json")....`
+diff --git a/crates/ruff_linter/src/rules/refurb/snapshots/ruff_linter__rules__refurb__tests__preview_FURB103_FURB103.py.snap b/crates/ruff_linter/src/rules/refurb/snapshots/ruff_linter__rules__refurb__tests__preview_FURB103_FURB103.py.snap
+index eef0992839565e5ca1a52a3959281addb5084db4..8148035435e79a833d314ed9be613c90ee173b4b 100644
+--- a/crates/ruff_linter/src/rules/refurb/snapshots/ruff_linter__rules__refurb__tests__preview_FURB103_FURB103.py.snap
++++ b/crates/ruff_linter/src/rules/refurb/snapshots/ruff_linter__rules__refurb__tests__preview_FURB103_FURB103.py.snap
+@@ -257,4 +257,25 @@ help: Replace with `Path("file.txt").write_text(foobar, newline="\r\n")`
+ 75 + pathlib.Path("file.txt").write_text(foobar, newline="\r\n")
+ 76 | 
+ 77 | # Non-errors.
+-78 |
++78 | 
++
++FURB103 [*] `open` and `write` should be replaced by `Path("test.json")....`
++   --> FURB103.py:154:6
++    |
++152 | data = {"price": 100}
++153 |
++154 | with open("test.json", "wb") as f:
++    |      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
++155 |     f.write(json.dumps(data, indent=4).encode("utf-8"))
++    |
++help: Replace with `Path("test.json")....`
++148 | 
++149 | # See: https://github.com/astral-sh/ruff/issues/20785
++150 | import json
++151 + import pathlib
++152 | 
++153 | data = {"price": 100}
++154 | 
++    - with open("test.json", "wb") as f:
++    -     f.write(json.dumps(data, indent=4).encode("utf-8"))
++155 + pathlib.Path("test.json").write_bytes(json.dumps(data, indent=4).encode("utf-8"))
+diff --git a/crates/ruff_linter/src/rules/refurb/snapshots/ruff_linter__rules__refurb__tests__write_whole_file_python_39.snap b/crates/ruff_linter/src/rules/refurb/snapshots/ruff_linter__rules__refurb__tests__write_whole_file_python_39.snap
+index 81eea0c15909f9acccbdc2c9b6fecf42b346a783..140a2744686060b64e02174442ba0516bb94ada7 100644
+--- a/crates/ruff_linter/src/rules/refurb/snapshots/ruff_linter__rules__refurb__tests__write_whole_file_python_39.snap
++++ b/crates/ruff_linter/src/rules/refurb/snapshots/ruff_linter__rules__refurb__tests__write_whole_file_python_39.snap
+@@ -104,3 +104,14 @@ FURB103 `open` and `write` should be replaced by `Path("file.txt").write_text(ba
+ 51 |     # writes a single time to file and that bit they can replace.
+    |
+ help: Replace with `Path("file.txt").write_text(bar(bar(a + x)))`
++
++FURB103 `open` and `write` should be replaced by `Path("test.json")....`
++   --> FURB103.py:154:6
++    |
++152 | data = {"price": 100}
++153 |
++154 | with open("test.json", "wb") as f:
++    |      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
++155 |     f.write(json.dumps(data, indent=4).encode("utf-8"))
++    |
++help: Replace with `Path("test.json")....`

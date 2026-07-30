@@ -1,0 +1,14 @@
+{
+  "base_commit": "abf685b030d57575e7677a13ef86eb670b2cd79d",
+  "environment_key": "ruff-rust-toolchain",
+  "prompt": "`PYI034` should not trigger on a metaclass\n\n### Summary\n\nThis is what happens if I follow this rule in a metaclass in Python 3.14\n\n<img width=\"802\" height=\"112\" alt=\"Image\" src=\"https://github.com/user-attachments/assets/[redacted revision]-caec-4621-8c94-[redacted revision]\" />",
+  "subsystem": "linter",
+  "task_id": "ruff__ruff-20881",
+  "test_commands": [
+    "cargo test -p ruff_linter"
+  ],
+  "timeouts": {
+    "agent_seconds": 1800,
+    "test_seconds": 900
+  }
+}

@@ -1,0 +1,40 @@
+diff --git a/crates/ruff_linter/resources/test/fixtures/pyupgrade/UP039.py b/crates/ruff_linter/resources/test/fixtures/pyupgrade/UP039.py
+index ba44e1deb96de1b8f1ce4c0ec255b1f9496af050..eeab39086eabdd4d9c88452526887bafc2dcd25f 100644
+--- a/crates/ruff_linter/resources/test/fixtures/pyupgrade/UP039.py
++++ b/crates/ruff_linter/resources/test/fixtures/pyupgrade/UP039.py
+@@ -41,3 +41,8 @@ class A:
+ @decorator
+ class A:
+     pass
++
++
++class Foo(
++    # text
++): ...
+diff --git a/crates/ruff_linter/src/rules/pyupgrade/snapshots/ruff_linter__rules__pyupgrade__tests__UP039.py.snap b/crates/ruff_linter/src/rules/pyupgrade/snapshots/ruff_linter__rules__pyupgrade__tests__UP039.py.snap
+index 8af4ba1348d6a3b71e674a8f28dccaca4adcc66c..726531a9f5f003c7794a496cf5f20d26a5d814e9 100644
+--- a/crates/ruff_linter/src/rules/pyupgrade/snapshots/ruff_linter__rules__pyupgrade__tests__UP039.py.snap
++++ b/crates/ruff_linter/src/rules/pyupgrade/snapshots/ruff_linter__rules__pyupgrade__tests__UP039.py.snap
+@@ -88,3 +88,22 @@ help: Remove parentheses
+ 22 |     pass
+ 23 | 
+ 24 | # OK
++
++UP039 [*] Unnecessary parentheses after class definition
++  --> UP039.py:46:10
++   |
++46 |   class Foo(
++   |  __________^
++47 | |     # text
++48 | | ): ...
++   | |_^
++   |
++help: Remove parentheses
++43 |     pass
++44 | 
++45 | 
++   - class Foo(
++   -     # text
++   - ): ...
++46 + class Foo: ...
++note: This is an unsafe fix and may change runtime behavior

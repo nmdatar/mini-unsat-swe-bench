@@ -1,0 +1,14 @@
+{
+  "base_commit": "717d024ea9a0377ebeecb3fd78cfb38fc7fbc74f",
+  "environment_key": "ruff-rust-toolchain",
+  "prompt": "Safe fix for `B033` can remove comments\n\n> I'll open a follow-up issue for this since it's not related to your PR, but this shouldn't always be a safe fix either:\n> \n> ```diff\n> \u276f cat <<EOF | ruff check --diff --select B033 -\n> \u2219 {1, 2, 3,\n> # comment\n> 1}\n> \u2219 EOF\n> @@ -1,3 +1 @@\n> -{1, 2, 3,\n> -# comment\n> -1}\n> +{1, 2, 3}\n> \n> Would fix 1 error.\n> ``` \n\n _Originally posted by @ntBre in [a related issue]([redacted source link])_",
+  "subsystem": "linter",
+  "task_id": "ruff__ruff-22632",
+  "test_commands": [
+    "cargo test -p ruff_linter"
+  ],
+  "timeouts": {
+    "agent_seconds": 1800,
+    "test_seconds": 900
+  }
+}

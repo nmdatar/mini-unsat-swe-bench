@@ -1,0 +1,14 @@
+{
+  "base_commit": "d63b4b038364f3befe46f133251fc11973feff21",
+  "environment_key": "ruff-rust-toolchain",
+  "prompt": "Formatter: Parenthesized expression with comment on right hand side in assignment produces invalid syntax\n\n> ```python\n> variable = (\n>     (something)  # a comment\n>     .fist_method(\"some string\")\n> )\n> ```\n> gets reformatted to\n> ```python\n> variable = (something)  # a comment\n> .fist_method(\"some string\")\n> ```\n> which is a syntax error, so there's a bug in ruff here.\n>  \n\n _Originally posted by @olofahlen in [a related issue](https://github.com/astral-sh/ruff/issues/8598#issuecomment-[redacted revision])_",
+  "subsystem": "formatter",
+  "task_id": "ruff__ruff-20418",
+  "test_commands": [
+    "cargo test -p ruff_formatter"
+  ],
+  "timeouts": {
+    "agent_seconds": 1800,
+    "test_seconds": 900
+  }
+}

@@ -1,0 +1,48 @@
+diff --git a/crates/ruff_linter/resources/test/fixtures/fastapi/FAST003.py b/crates/ruff_linter/resources/test/fixtures/fastapi/FAST003.py
+index a76d92dffdefdaa36166bf5bcc0c80c1504b4f51..c91131e7aae9f13d20736985897777dbf0960ee4 100644
+--- a/crates/ruff_linter/resources/test/fixtures/fastapi/FAST003.py
++++ b/crates/ruff_linter/resources/test/fixtures/fastapi/FAST003.py
+@@ -256,3 +256,12 @@ async def f4():
+ @app.get("/f5/{param: int}")
+ async def f5():
+     return locals()
++
++# https://github.com/astral-sh/ruff/issues/20941
++@app.get("/imports/{import}")
++async def get_import():
++    ...
++
++@app.get("/debug/{__debug__}")
++async def get_debug():
++    ...
+diff --git a/crates/ruff_linter/src/rules/fastapi/snapshots/ruff_linter__rules__fastapi__tests__fast-api-unused-path-parameter_FAST003.py.snap b/crates/ruff_linter/src/rules/fastapi/snapshots/ruff_linter__rules__fastapi__tests__fast-api-unused-path-parameter_FAST003.py.snap
+index fb6bde76f89e3b5c2dd44e58cbdbf5e3c3115bbe..9faee4de2b557145f972e2d7ecfd807edab70940 100644
+--- a/crates/ruff_linter/src/rules/fastapi/snapshots/ruff_linter__rules__fastapi__tests__fast-api-unused-path-parameter_FAST003.py.snap
++++ b/crates/ruff_linter/src/rules/fastapi/snapshots/ruff_linter__rules__fastapi__tests__fast-api-unused-path-parameter_FAST003.py.snap
+@@ -363,3 +363,26 @@ help: Add `id` to function signature
+ 206 | 
+ 207 | # No errors
+ note: This is an unsafe fix and may change runtime behavior
++
++FAST003 Parameter `import` appears in route path, but not in `get_import` signature
++   --> FAST003.py:261:20
++    |
++260 | # https://github.com/astral-sh/ruff/issues/20941
++261 | @app.get("/imports/{import}")
++    |                    ^^^^^^^^
++262 | async def get_import():
++263 |     ...
++    |
++help: Add `import` to function signature
++
++FAST003 Parameter `__debug__` appears in route path, but not in `get_debug` signature
++   --> FAST003.py:265:18
++    |
++263 |     ...
++264 |
++265 | @app.get("/debug/{__debug__}")
++    |                  ^^^^^^^^^^^
++266 | async def get_debug():
++267 |     ...
++    |
++help: Add `__debug__` to function signature

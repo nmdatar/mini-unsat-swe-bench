@@ -1,0 +1,51 @@
+diff --git a/crates/ruff_linter/resources/test/fixtures/flake8_django/DJ001.py b/crates/ruff_linter/resources/test/fixtures/flake8_django/DJ001.py
+index 267c2b69d9be778315835383e7ff4c73a29906a1..4be84baf30a4bf379decb3be64d4eeec8192d6c0 100644
+--- a/crates/ruff_linter/resources/test/fixtures/flake8_django/DJ001.py
++++ b/crates/ruff_linter/resources/test/fixtures/flake8_django/DJ001.py
+@@ -46,3 +46,9 @@ class CorrectModel(models.Model):
+         max_length=255, null=True, blank=True, unique=True
+     )
+     urlfieldu = models.URLField(max_length=255, null=True, blank=True, unique=True)
++
++
++class IncorrectModelWithSimpleAnnotations(models.Model):
++    charfield: models.CharField = models.CharField(max_length=255, null=True)
++    textfield: models.TextField = models.TextField(max_length=255, null=True)
++    slugfield: models.SlugField = models.SlugField(max_length=255, null=True)
+diff --git a/crates/ruff_linter/src/rules/flake8_django/snapshots/ruff_linter__rules__flake8_django__tests__DJ001_DJ001.py.snap b/crates/ruff_linter/src/rules/flake8_django/snapshots/ruff_linter__rules__flake8_django__tests__DJ001_DJ001.py.snap
+index dccc159fa575c58933fd76f048a2f0df5016de41..56a8c683fba0ef6b67687277a2ee47535ef0305f 100644
+--- a/crates/ruff_linter/src/rules/flake8_django/snapshots/ruff_linter__rules__flake8_django__tests__DJ001_DJ001.py.snap
++++ b/crates/ruff_linter/src/rules/flake8_django/snapshots/ruff_linter__rules__flake8_django__tests__DJ001_DJ001.py.snap
+@@ -186,3 +186,32 @@ DJ001 Avoid using `null=True` on string-based fields such as `URLField`
+ 30 |     urlfield = models.URLField(max_length=255, null=True)
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
++
++DJ001 Avoid using `null=True` on string-based fields such as `CharField`
++  --> DJ001.py:52:35
++   |
++51 | class IncorrectModelWithSimpleAnnotations(models.Model):
++52 |     charfield: models.CharField = models.CharField(max_length=255, null=True)
++   |                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
++53 |     textfield: models.TextField = models.TextField(max_length=255, null=True)
++54 |     slugfield: models.SlugField = models.SlugField(max_length=255, null=True)
++   |
++
++DJ001 Avoid using `null=True` on string-based fields such as `TextField`
++  --> DJ001.py:53:35
++   |
++51 | class IncorrectModelWithSimpleAnnotations(models.Model):
++52 |     charfield: models.CharField = models.CharField(max_length=255, null=True)
++53 |     textfield: models.TextField = models.TextField(max_length=255, null=True)
++   |                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
++54 |     slugfield: models.SlugField = models.SlugField(max_length=255, null=True)
++   |
++
++DJ001 Avoid using `null=True` on string-based fields such as `SlugField`
++  --> DJ001.py:54:35
++   |
++52 |     charfield: models.CharField = models.CharField(max_length=255, null=True)
++53 |     textfield: models.TextField = models.TextField(max_length=255, null=True)
++54 |     slugfield: models.SlugField = models.SlugField(max_length=255, null=True)
++   |                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
++   |

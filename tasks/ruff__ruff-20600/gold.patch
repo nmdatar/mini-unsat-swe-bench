@@ -1,0 +1,17 @@
+diff --git a/crates/ruff_linter/src/rules/ruff/rules/logging_eager_conversion.rs b/crates/ruff_linter/src/rules/ruff/rules/logging_eager_conversion.rs
+index ee20a6aab75b91bd40956da0ba471b38f74f9354..1567cea1d674a342cd410fe43becc2c6c88c92ab 100644
+--- a/crates/ruff_linter/src/rules/ruff/rules/logging_eager_conversion.rs
++++ b/crates/ruff_linter/src/rules/ruff/rules/logging_eager_conversion.rs
+@@ -117,11 +117,9 @@ pub(crate) fn logging_eager_conversion(checker: &Checker, call: &ast::ExprCall)
+                 continue;
+             };
+ 
+-            // Check for use of %s with str() or %r with repr()
++            // Check for use of %s with str()
+             if checker.semantic().match_builtin_expr(func.as_ref(), "str")
+                 && matches!(format_conversion, FormatConversion::Str)
+-                || checker.semantic().match_builtin_expr(func.as_ref(), "repr")
+-                    && matches!(format_conversion, FormatConversion::Repr)
+             {
+                 checker
+                     .report_diagnostic(LoggingEagerConversion { format_conversion }, arg.range());

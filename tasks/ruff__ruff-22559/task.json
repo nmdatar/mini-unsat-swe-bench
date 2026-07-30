@@ -1,0 +1,14 @@
+{
+  "base_commit": "20c01d25532ab0586f60b6c160bbe93651d8b771",
+  "environment_key": "ruff-rust-toolchain",
+  "prompt": "RUF012 warns for ctypes Structure._fields_\n\n### Summary\n\nThe class variable `_fields_` on ctypes `Structure` objects, e.g.\n```python\nclass mount_attr(ctypes.Structure):\n    _fields_ = [\n        (\"attr_set\", ctypes.c_uint64),\n        (\"attr_clr\", ctypes.c_uint64),\n        (\"propagation\", ctypes.c_uint64),\n        (\"userns_fd\", ctypes.c_uint64),\n    ]\n```\nwill trigger RUF012, but [documentation says](https://docs.python.org/3/library/ctypes.html#ctypes.Structure._fields_)\n> The _fields_ class variable can only be set once. Later assignments will raise an [AttributeError](https://docs.python.org/3/library/exceptions.html#AttributeError).\n\nso an exception to this rule would be helpful.",
+  "subsystem": "linter",
+  "task_id": "ruff__ruff-22559",
+  "test_commands": [
+    "cargo test -p ruff_linter"
+  ],
+  "timeouts": {
+    "agent_seconds": 1800,
+    "test_seconds": 900
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "base_commit": "bbfcf6e111648052783bdb68ec71706fc69b714f",
+  "environment_key": "ruff-rust-toolchain",
+  "prompt": "FLY002 autofix with raw strings causes a syntax error\n\n### Summary\n\nI get an error with the autofix for FLY002 when one (or more) of the strings in the join are a raw string:\n\n```bash\n$ cat ruff_bug.py\n'\\n'.join([r'line1','line2'])\n\n$ uvx ruff --version\nruff 0.12.8\n$ uvx ruff check ruff_bug.py --no-cache --isolated --fix --unsafe-fixes --select FLY002\nInstalled 1 package in 1ms\n\nerror: Fix introduced a syntax error. Reverting all changes.\n\nThis indicates a bug in Ruff. If you could open an issue at:\n\n    https://github.com/astral-sh/ruff/issues/new?title=%5BFix%20error%5D\n\n...quoting the contents of `ruff_bug.py`, the rule codes FLY002, along with the `pyproject.toml` settings and executed command, we'd be very appreciative!\n\nruff_bug.py:1:1: FLY002 Consider f-string instead of string join\n  |\n1 | '\\n'.join([r'line1','line2'])\n  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ FLY002\n  |\n  = help: Replace with f-string\n\nFound 1 error.\n[*] 1 fixable with the --fix option.\n```",
+  "subsystem": "linter",
+  "task_id": "ruff__ruff-20197",
+  "test_commands": [
+    "cargo test -p ruff_linter"
+  ],
+  "timeouts": {
+    "agent_seconds": 1800,
+    "test_seconds": 900
+  }
+}

@@ -1,0 +1,69 @@
+diff --git a/crates/ruff_linter/resources/test/fixtures/airflow/AIR311_names.py b/crates/ruff_linter/resources/test/fixtures/airflow/AIR311_names.py
+index 9b4ce1e38ea8cc841bff28d75806ea345047de0b..2b415aa40778d6866cdde40a7007c3965999d08c 100644
+--- a/crates/ruff_linter/resources/test/fixtures/airflow/AIR311_names.py
++++ b/crates/ruff_linter/resources/test/fixtures/airflow/AIR311_names.py
+@@ -70,7 +70,7 @@ from airflow.timetables.datasets import DatasetOrTimeSchedule
+ from airflow.utils.dag_parsing_context import get_parsing_context
+ 
+ # airflow.timetables.datasets
+-DatasetOrTimeSchedule()
++DatasetOrTimeSchedule(datasets=[])
+ 
+ # airflow.utils.dag_parsing_context
+ get_parsing_context()
+diff --git a/crates/ruff_linter/src/rules/airflow/snapshots/ruff_linter__rules__airflow__tests__AIR311_AIR311_names.py.snap b/crates/ruff_linter/src/rules/airflow/snapshots/ruff_linter__rules__airflow__tests__AIR311_AIR311_names.py.snap
+index 3fcbf77530007bf771a31e187ec5e05128a2d31c..a3bced51746324dc9057ce0d4e566d792e4b0794 100644
+--- a/crates/ruff_linter/src/rules/airflow/snapshots/ruff_linter__rules__airflow__tests__AIR311_AIR311_names.py.snap
++++ b/crates/ruff_linter/src/rules/airflow/snapshots/ruff_linter__rules__airflow__tests__AIR311_AIR311_names.py.snap
+@@ -558,7 +558,7 @@ AIR311 [*] `airflow.timetables.datasets.DatasetOrTimeSchedule` is removed in Air
+   --> AIR311_names.py:73:1
+    |
+ 72 | # airflow.timetables.datasets
+-73 | DatasetOrTimeSchedule()
++73 | DatasetOrTimeSchedule(datasets=[])
+    | ^^^^^^^^^^^^^^^^^^^^^
+ 74 |
+ 75 | # airflow.utils.dag_parsing_context
+@@ -570,12 +570,31 @@ help: Use `AssetOrTimeSchedule` from `airflow.timetables.assets` instead.
+ 71 + from airflow.timetables.assets import AssetOrTimeSchedule
+ 72 | 
+ 73 | # airflow.timetables.datasets
+-   - DatasetOrTimeSchedule()
+-74 + AssetOrTimeSchedule()
++   - DatasetOrTimeSchedule(datasets=[])
++74 + AssetOrTimeSchedule(datasets=[])
+ 75 | 
+ 76 | # airflow.utils.dag_parsing_context
+ 77 | get_parsing_context()
+ 
++AIR311 [*] `datasets` is removed in Airflow 3.0; It still works in Airflow 3.0 but is expected to be removed in a future version.
++  --> AIR311_names.py:73:23
++   |
++72 | # airflow.timetables.datasets
++73 | DatasetOrTimeSchedule(datasets=[])
++   |                       ^^^^^^^^
++74 |
++75 | # airflow.utils.dag_parsing_context
++   |
++help: Use `assets` instead
++70 | from airflow.utils.dag_parsing_context import get_parsing_context
++71 | 
++72 | # airflow.timetables.datasets
++   - DatasetOrTimeSchedule(datasets=[])
++73 + DatasetOrTimeSchedule(assets=[])
++74 | 
++75 | # airflow.utils.dag_parsing_context
++76 | get_parsing_context()
++
+ AIR311 [*] `airflow.utils.dag_parsing_context.get_parsing_context` is removed in Airflow 3.0; It still works in Airflow 3.0 but is expected to be removed in a future version.
+   --> AIR311_names.py:76:1
+    |
+@@ -593,7 +612,7 @@ help: Use `get_parsing_context` from `airflow.sdk` instead.
+ 70 + from airflow.sdk import get_parsing_context
+ 71 | 
+ 72 | # airflow.timetables.datasets
+-73 | DatasetOrTimeSchedule()
++73 | DatasetOrTimeSchedule(datasets=[])
+ note: This is an unsafe fix and may change runtime behavior
+ 
+ AIR311 [*] `airflow.decorators.base.DecoratedMappedOperator` is removed in Airflow 3.0; It still works in Airflow 3.0 but is expected to be removed in a future version.

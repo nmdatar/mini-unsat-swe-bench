@@ -1,0 +1,86 @@
+diff --git a/crates/ruff_linter/resources/test/fixtures/refurb/FURB116.py b/crates/ruff_linter/resources/test/fixtures/refurb/FURB116.py
+index 6ec754dadc09ce2e031cbe507c587eee0f6f39b5..22248f449d1ce2fd3f54db4d36821fe3adcbc2d5 100644
+--- a/crates/ruff_linter/resources/test/fixtures/refurb/FURB116.py
++++ b/crates/ruff_linter/resources/test/fixtures/refurb/FURB116.py
+@@ -42,3 +42,11 @@ print(hex(sys
+ 
+ # for negatives numbers autofix is display-only
+ print(bin(-1)[2:])
++
++
++print(
++    bin(
++        1337
++        # text
++    )[2:]
++)
+diff --git a/crates/ruff_linter/src/rules/refurb/snapshots/ruff_linter__rules__refurb__tests__FURB116_FURB116.py.snap b/crates/ruff_linter/src/rules/refurb/snapshots/ruff_linter__rules__refurb__tests__FURB116_FURB116.py.snap
+index 6b3566c216a73d450940e45547af42f276a3e315..1964a9142188ad9e50199dfb4442c287c19ad62e 100644
+--- a/crates/ruff_linter/src/rules/refurb/snapshots/ruff_linter__rules__refurb__tests__FURB116_FURB116.py.snap
++++ b/crates/ruff_linter/src/rules/refurb/snapshots/ruff_linter__rules__refurb__tests__FURB116_FURB116.py.snap
+@@ -283,4 +283,30 @@ help: Replace with `f"{-1:b}"`
+ 43 | # for negatives numbers autofix is display-only
+    - print(bin(-1)[2:])
+ 44 + print(f"{-1:b}")
++45 | 
++46 | 
++47 | print(
+ note: This is a display-only fix and is likely to be incorrect
++
++FURB116 [*] Replace `bin` call with `f"{1337:b}"`
++  --> FURB116.py:48:5
++   |
++47 |   print(
++48 | /     bin(
++49 | |         1337
++50 | |         # text
++51 | |     )[2:]
++   | |_________^
++52 |   )
++   |
++help: Replace with `f"{1337:b}"`
++45 | 
++46 | 
++47 | print(
++   -     bin(
++   -         1337
++   -         # text
++   -     )[2:]
++48 +     f"{1337:b}"
++49 | )
++note: This is an unsafe fix and may change runtime behavior
+diff --git a/crates/ruff_linter/src/rules/refurb/snapshots/ruff_linter__rules__refurb__tests__fstring_number_format_python_311.snap b/crates/ruff_linter/src/rules/refurb/snapshots/ruff_linter__rules__refurb__tests__fstring_number_format_python_311.snap
+index 5a2810bb6e2ca7c499819cd8bef27c716dd3c350..00ecebd1ae254a5a36817a20796f2dc579a39324 100644
+--- a/crates/ruff_linter/src/rules/refurb/snapshots/ruff_linter__rules__refurb__tests__fstring_number_format_python_311.snap
++++ b/crates/ruff_linter/src/rules/refurb/snapshots/ruff_linter__rules__refurb__tests__fstring_number_format_python_311.snap
+@@ -254,4 +254,30 @@ help: Replace with `f"{-1:b}"`
+ 43 | # for negatives numbers autofix is display-only
+    - print(bin(-1)[2:])
+ 44 + print(f"{-1:b}")
++45 | 
++46 | 
++47 | print(
+ note: This is a display-only fix and is likely to be incorrect
++
++FURB116 [*] Replace `bin` call with `f"{1337:b}"`
++  --> FURB116.py:48:5
++   |
++47 |   print(
++48 | /     bin(
++49 | |         1337
++50 | |         # text
++51 | |     )[2:]
++   | |_________^
++52 |   )
++   |
++help: Replace with `f"{1337:b}"`
++45 | 
++46 | 
++47 | print(
++   -     bin(
++   -         1337
++   -         # text
++   -     )[2:]
++48 +     f"{1337:b}"
++49 | )
++note: This is an unsafe fix and may change runtime behavior

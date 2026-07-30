@@ -1,0 +1,14 @@
+{
+  "base_commit": "83a3bc4ee94de552d5cec9a3146aff00dade6903",
+  "environment_key": "ruff-rust-toolchain",
+  "prompt": "`FURB103` fixes breaks code\n\n### Summary\n\n[Playground](https://play.ruff.rs/[redacted revision]-acd4-419e-83f3-[redacted revision]) \n\nThis PR breaks: [redacted source link]\n```python\nimport json\n\ndata = {\n    \"title\": \"Fahrenheit 451\",\n    \"price\": 100,\n}\n\nwith open(\"test.json\", \"wb\") as f:\n    f.write(json.dumps(data, indent=4).encode(\"utf-8\"))\n```\n=>\n```python\nimport json\nimport pathlib\n\ndata = {\n    \"title\": \"Fahrenheit 451\",\n    \"price\": 100,\n}\n\npathlib.Path(\"test.json\").write_bytes(json.dumps(indent=4, data).encode(\"utf-8\"))\n\n# File \"test.py\", line 9\n# pathlib.Path(\"test.json\").write_bytes(json.dumps(indent=4, data).encode(\"utf-8\"))\n#                                                                  ^\n# SyntaxError: positional argument follows keyword argument\n```",
+  "subsystem": "linter",
+  "task_id": "ruff__ruff-20790",
+  "test_commands": [
+    "cargo test -p ruff_linter"
+  ],
+  "timeouts": {
+    "agent_seconds": 1800,
+    "test_seconds": 900
+  }
+}

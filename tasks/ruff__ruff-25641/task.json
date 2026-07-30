@@ -1,0 +1,14 @@
+{
+  "base_commit": "6c498ab5394edc5622d7f348e12956bf86203716",
+  "environment_key": "ruff-rust-toolchain",
+  "prompt": "Preserve whitespace for Quarto cell option comments\n\n## Summary\n\nPart of https://github.com/astral-sh/ruff/issues/6140, which is nicely summarized into 2 parts here https://github.com/astral-sh/ruff/issues/6140#issuecomment-[redacted revision]\n\nI saw that you all now support formatting markdown files ([redacted source link]) and can support `.qmd` via some user configuration ([redacted source link] [redacted source link] [redacted source link]).\n\nSince ruff can now directly format a `.qmd`, I thought it would be nice if this bug was fixed:\n\nWith `ruff.toml` of:\n\n```toml\nextension = { qmd = \"markdown\" }\n```\n\n`test.qmd`:\n\n``````\nThis is my qmd\n\n```{python}\n#| echo: true\n\n1 + 1\n```\n``````\n\nA call to `ruff format test.qmd --preview` results in\n\n``````\nThis is my qmd\n\n```{python}\n# | echo: true\n\n1 + 1\n```\n``````\n\nNote how the special quarto code cell directive `#|` became `# |`.\n\nNote this would diverge from black's behavior. There was a request to change this in black, but it was closed https://github.com/psf/black/issues/3557. But I'm hoping that the fact that ruff can support qmds directly may make this compelling enough for ruff to diverge?",
+  "subsystem": "formatter",
+  "task_id": "ruff__ruff-25641",
+  "test_commands": [
+    "cargo test -p ruff_formatter"
+  ],
+  "timeouts": {
+    "agent_seconds": 1800,
+    "test_seconds": 900
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "base_commit": "1b2ed6a503ffad946796e4be1c7c55c7dc79f808",
+  "environment_key": "ruff-rust-toolchain",
+  "prompt": "RUF057 has false positives with starred arguments\n\n### Summary\n\n[`unnecessary-round` (RUF057)](https://docs.astral.sh/ruff/rules/unnecessary-round/) has false positives with starred arguments. [Example](https://play.ruff.rs/[redacted revision]-1a7c-4086-8e28-[redacted revision]):\n```console\n$ cat >ruf057.py <<'# EOF'\nprint(round(125, **{\"ndigits\": -2}))\nprint(round(125, *[-2]))\n# EOF\n\n$ python ruf057.py\n100\n100\n\n$ ruff --isolated check ruf057.py --select RUF057 --fix\nFound 2 errors (2 fixed, 0 remaining).\n\n$ cat ruf057.py\nprint((125))\nprint((125))\n\n$ python ruf057.py\n125\n125\n```",
+  "subsystem": "linter",
+  "task_id": "ruff__ruff-21256",
+  "test_commands": [
+    "cargo test -p ruff_linter"
+  ],
+  "timeouts": {
+    "agent_seconds": 1800,
+    "test_seconds": 900
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "base_commit": "bf6617895902c69d54fa2fa1373bc2f25664fb34",
+  "environment_key": "ruff-rust-toolchain",
+  "prompt": "UP008 should only apply when the `__class__` cell exists\n\n### Summary\n\n[`super-call-with-parameters` (UP008)](https://docs.astral.sh/ruff/rules/super-call-with-parameters/) should only apply when `super` is a global variable or `__class__` is a nonlocal variable. Expressions that are merely equal to `super` aren\u2019t good enough. Otherwise, the zero-argument `super` call doesn\u2019t work. One solution is for the autofix to rewrite the `super`-equivalent expression to `super`, although that won\u2019t work in all contexts. [Example](https://play.ruff.rs/[redacted revision]-1d97-4fa4-bbbd-[redacted revision]):\n```console\n$ cat >up008.py <<'# EOF'\nimport builtins\nclass A:\n    def f(self):\n        print(\"!\")\nclass B(A):\n    def f(self):\n        builtins.super(B, self).f()\nB().f()\n# EOF\n\n$ python up008.py\n!\n\n$ ruff --isolated check up008.py --select UP008 --unsafe-fixes --fix\nFound 1 error (1 fixed, 0 remaining).\n\n$ cat up008.py\nimport builtins\nclass A:\n    def f(self):\n        print(\"!\")\nclass B(A):\n    def f(self):\n        builtins.super().f()\nB().f()\n\n$ python up008.py 2>&1 | tail -n 1\nRuntimeError: super(): __class__ cell not found\n```\n\nNote that the expression that UP008 rewrites can still use `builtins.super` (or other expressions that equal `super` but are not literally `super`) but `super` or `__class__` just needs to be mentioned somewhere in the method in order for the `__class__` cell, which the zero-argument `super` uses, to be created. [True positive example](https://play.ruff.rs/[redacted revision]-24a0-448a-9331-[redacted revision]) with `super`:\n```console\n$ cat >up008_super.py <<'# EOF'\nimport builtins\nsuper = None  # It still works even if `super` is shadowed!\nclass A:\n    def f(self):\n        print(\"!\")\nclass B(A):\n    def f(self):\n        if False: super\n        builtins.super(B, self).f()\nB().f()\n# EOF\n\n$ ruff --isolated check up008_super.py --select UP008 --unsafe-fixes --fix\nFound 1 error (1 fixed, 0 remaining).\n\n$ python up008_super.py\n!\n```\n\n[True positive example](https://play.ruff.rs/[redacted revision]-b678-46aa-9e2f-[redacted revision]) with `__class__`:\n```console\n$ cat >up008_class.py <<'# EOF'\nimport builtins\nclass A:\n    def f(self):\n        print(\"!\")\nclass B(A):\n    def f(self):\n        if False: __class__\n        builtins.super(B, self).f()\nB().f()\n# EOF\n\n$ ruff --isolated check up008_class.py --select UP008 --unsafe-fixes --fix\nFound 1 error (1 fixed, 0 remaining).\n\n$ python up008_class.py\n!\n```",
+  "subsystem": "linter",
+  "task_id": "ruff__ruff-19424",
+  "test_commands": [
+    "cargo test -p ruff_linter"
+  ],
+  "timeouts": {
+    "agent_seconds": 1800,
+    "test_seconds": 900
+  }
+}

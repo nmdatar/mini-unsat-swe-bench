@@ -1,0 +1,14 @@
+{
+  "base_commit": "55a174ed95c757a88199fdc1b15e51fd9041b4fa",
+  "environment_key": "ruff-rust-toolchain",
+  "prompt": "PIE794 Duplicate class field not marked as duplicate\n\n### Summary\n\nPlayground link: https://play.ruff.rs/[redacted revision]-a4d2-49a1-b883-[redacted revision]\n\n```\nfrom dataclasses import dataclass\n\n@dataclass\nclass TextEdit:\n    start_line: int\n    start_line: int\n```\n\nI have Python dataclass with duplicated class field. It didn't trigger any ruff rule. The closes rule I have found is PIE794 which reports duplicate class fields (with values assigned).",
+  "subsystem": "linter",
+  "task_id": "ruff__ruff-22717",
+  "test_commands": [
+    "cargo test -p ruff_linter"
+  ],
+  "timeouts": {
+    "agent_seconds": 1800,
+    "test_seconds": 900
+  }
+}

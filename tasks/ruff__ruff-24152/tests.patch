@@ -1,0 +1,243 @@
+diff --git a/crates/ruff_python_parser/src/parser/snapshots/ruff_python_parser__parser__tests__ipython_escape_commands.snap b/crates/ruff_python_parser/src/parser/snapshots/ruff_python_parser__parser__tests__ipython_escape_commands.snap
+index f181d200c06c8ca024c966c449eca86eae960b06..9851c7123b2f7115141d995bd0dd03fa134a6d5e 100644
+--- a/crates/ruff_python_parser/src/parser/snapshots/ruff_python_parser__parser__tests__ipython_escape_commands.snap
++++ b/crates/ruff_python_parser/src/parser/snapshots/ruff_python_parser__parser__tests__ipython_escape_commands.snap
+@@ -5,7 +5,7 @@ expression: parsed.syntax()
+ Module(
+     ModModule {
+         node_index: NodeIndex(None),
+-        range: 0..929,
++        range: 0..953,
+         body: [
+             Expr(
+                 StmtExpr {
+@@ -362,10 +362,58 @@ Module(
+                     ),
+                 },
+             ),
++            Assign(
++                StmtAssign {
++                    node_index: NodeIndex(None),
++                    range: 785..796,
++                    targets: [
++                        Name(
++                            ExprName {
++                                node_index: NodeIndex(None),
++                                range: 785..788,
++                                id: Name("bar"),
++                                ctx: Store,
++                            },
++                        ),
++                    ],
++                    value: IpyEscapeCommand(
++                        ExprIpyEscapeCommand {
++                            node_index: NodeIndex(None),
++                            range: 791..796,
++                            kind: Magic,
++                            value: "foo?",
++                        },
++                    ),
++                },
++            ),
++            Assign(
++                StmtAssign {
++                    node_index: NodeIndex(None),
++                    range: 797..808,
++                    targets: [
++                        Name(
++                            ExprName {
++                                node_index: NodeIndex(None),
++                                range: 797..800,
++                                id: Name("baz"),
++                                ctx: Store,
++                            },
++                        ),
++                    ],
++                    value: IpyEscapeCommand(
++                        ExprIpyEscapeCommand {
++                            node_index: NodeIndex(None),
++                            range: 803..808,
++                            kind: Shell,
++                            value: "pwd?",
++                        },
++                    ),
++                },
++            ),
+             IpyEscapeCommand(
+                 StmtIpyEscapeCommand {
+                     node_index: NodeIndex(None),
+-                    range: 786..791,
++                    range: 810..815,
+                     kind: Magic,
+                     value: " foo",
+                 },
+@@ -373,12 +421,12 @@ Module(
+             Assign(
+                 StmtAssign {
+                     node_index: NodeIndex(None),
+-                    range: 792..813,
++                    range: 816..837,
+                     targets: [
+                         Name(
+                             ExprName {
+                                 node_index: NodeIndex(None),
+-                                range: 792..795,
++                                range: 816..819,
+                                 id: Name("foo"),
+                                 ctx: Store,
+                             },
+@@ -387,7 +435,7 @@ Module(
+                     value: IpyEscapeCommand(
+                         ExprIpyEscapeCommand {
+                             node_index: NodeIndex(None),
+-                            range: 798..813,
++                            range: 822..837,
+                             kind: Magic,
+                             value: "foo  # comment",
+                         },
+@@ -397,7 +445,7 @@ Module(
+             IpyEscapeCommand(
+                 StmtIpyEscapeCommand {
+                     node_index: NodeIndex(None),
+-                    range: 838..842,
++                    range: 862..866,
+                     kind: Help,
+                     value: "foo",
+                 },
+@@ -405,7 +453,7 @@ Module(
+             IpyEscapeCommand(
+                 StmtIpyEscapeCommand {
+                     node_index: NodeIndex(None),
+-                    range: 843..852,
++                    range: 867..876,
+                     kind: Help2,
+                     value: "foo.bar",
+                 },
+@@ -413,7 +461,7 @@ Module(
+             IpyEscapeCommand(
+                 StmtIpyEscapeCommand {
+                     node_index: NodeIndex(None),
+-                    range: 853..865,
++                    range: 877..889,
+                     kind: Help,
+                     value: "foo.bar.baz",
+                 },
+@@ -421,7 +469,7 @@ Module(
+             IpyEscapeCommand(
+                 StmtIpyEscapeCommand {
+                     node_index: NodeIndex(None),
+-                    range: 866..874,
++                    range: 890..898,
+                     kind: Help2,
+                     value: "foo[0]",
+                 },
+@@ -429,7 +477,7 @@ Module(
+             IpyEscapeCommand(
+                 StmtIpyEscapeCommand {
+                     node_index: NodeIndex(None),
+-                    range: 875..885,
++                    range: 899..909,
+                     kind: Help,
+                     value: "foo[0][1]",
+                 },
+@@ -437,7 +485,7 @@ Module(
+             IpyEscapeCommand(
+                 StmtIpyEscapeCommand {
+                     node_index: NodeIndex(None),
+-                    range: 886..905,
++                    range: 910..929,
+                     kind: Help2,
+                     value: "foo.bar[0].baz[1]",
+                 },
+@@ -445,7 +493,7 @@ Module(
+             IpyEscapeCommand(
+                 StmtIpyEscapeCommand {
+                     node_index: NodeIndex(None),
+-                    range: 906..929,
++                    range: 930..953,
+                     kind: Help2,
+                     value: "foo.bar[0].baz[2].egg",
+                 },
+diff --git a/crates/ruff_python_parser/src/parser/tests.rs b/crates/ruff_python_parser/src/parser/tests.rs
+index fb1927775479e63f3712599b810908b74cf88b66..20cc04c7011cfde4919683b5cc43995ce0ff020e 100644
+--- a/crates/ruff_python_parser/src/parser/tests.rs
++++ b/crates/ruff_python_parser/src/parser/tests.rs
+@@ -115,6 +115,8 @@ p1 = !pwd
+ p2: str = !pwd
+ foo = %foo \
+     bar
++bar = %foo?
++baz = !pwd?
+ 
+ % foo
+ foo = %foo  # comment
+diff --git a/crates/ruff_python_parser/src/snapshots/ruff_python_parser__lexer__tests__ipython_escape_command_assignment.snap b/crates/ruff_python_parser/src/snapshots/ruff_python_parser__lexer__tests__ipython_escape_command_assignment.snap
+index 232b1d850f8b98fdfe0f14cf170085903d467d94..59153dd012cdb23612b1b4b9e854ea3593ca082e 100644
+--- a/crates/ruff_python_parser/src/snapshots/ruff_python_parser__lexer__tests__ipython_escape_command_assignment.snap
++++ b/crates/ruff_python_parser/src/snapshots/ruff_python_parser__lexer__tests__ipython_escape_command_assignment.snap
+@@ -87,7 +87,49 @@ expression: lex_jupyter_source(source)
+     ),
+     (
+         Newline,
+-        85..85,
++        85..86,
++    ),
++    (
++        Name(
++            Name("qux"),
++        ),
++        86..89,
++    ),
++    (
++        Equal,
++        90..91,
++    ),
++    (
++        IpyEscapeCommand {
++            value: "foo?",
++            kind: Magic,
++        },
++        92..97,
++    ),
++    (
++        Newline,
++        97..98,
++    ),
++    (
++        Name(
++            Name("quux"),
++        ),
++        98..102,
++    ),
++    (
++        Equal,
++        103..104,
++    ),
++    (
++        IpyEscapeCommand {
++            value: "pwd?",
++            kind: Shell,
++        },
++        105..110,
++    ),
++    (
++        Newline,
++        110..110,
+     ),
+ ]
+ ```
+diff --git a/crates/ruff_python_parser/src/snapshots/ruff_python_parser__lexer__tests__ipython_help_end_escape_command.snap b/crates/ruff_python_parser/src/snapshots/ruff_python_parser__lexer__tests__ipython_help_end_escape_command.snap
+index 69e13c03bd415b078017cef552d381a19122bb25..64b130005b6adfd2da59850c7ef8cad69d604d17 100644
+--- a/crates/ruff_python_parser/src/snapshots/ruff_python_parser__lexer__tests__ipython_help_end_escape_command.snap
++++ b/crates/ruff_python_parser/src/snapshots/ruff_python_parser__lexer__tests__ipython_help_end_escape_command.snap
+@@ -172,8 +172,8 @@ expression: lex_jupyter_source(source)
+     ),
+     (
+         IpyEscapeCommand {
+-            value: "pwd",
+-            kind: Help,
++            value: "pwd?",
++            kind: Shell,
+         },
+         127..132,
+     ),

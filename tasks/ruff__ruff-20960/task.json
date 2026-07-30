@@ -1,0 +1,14 @@
+{
+  "base_commit": "09306a1d69994abab076d27e73ac0cb5f305906d",
+  "environment_key": "ruff-rust-toolchain",
+  "prompt": "FAST003 syntax error when a path parameter is a Python keyword\n\n### Summary\n\nThe fix for [`fast-api-unused-path-parameter` (FAST003)](https://docs.astral.sh/ruff/rules/fast-api-unused-path-parameter/) introduces a syntax error when the path parameter is a Python keyword or `__debug__`. The diagnostic is still correct but it can\u2019t be fixed automatically. [Example](https://play.ruff.rs/[redacted revision]-60ed-44a7-8154-[redacted revision]):\n```console\n$ cat >fast003.py <<'# EOF'\nfrom fastapi import FastAPI\napp = FastAPI()\n@app.get(\"/imports/{import}\")\nasync def get_import(): ...\n# EOF\n\n$ ruff --isolated check fast003.py --select FAST003 --unsafe-fixes --output-format concise -q\nfast003.py:3:20: FAST003 [*] Parameter `import` appears in route path, but not in `get_import` signature\n\n$ ruff --isolated check fast003.py --select FAST003 --unsafe-fixes --diff 2>&1 | grep error:\nerror: Fix introduced a syntax error. Reverting all changes.\n```",
+  "subsystem": "linter",
+  "task_id": "ruff__ruff-20960",
+  "test_commands": [
+    "cargo test -p ruff_linter"
+  ],
+  "timeouts": {
+    "agent_seconds": 1800,
+    "test_seconds": 900
+  }
+}

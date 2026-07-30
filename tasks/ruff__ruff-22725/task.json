@@ -1,0 +1,14 @@
+{
+  "base_commit": "2bc47567166721905552956945be21d4dea7139d",
+  "environment_key": "ruff-rust-toolchain",
+  "prompt": "[PT011] Support pytest 8.4.0 `check` parameter\n\n### Summary\n\n[PT011] Support pytest 8.4.0 check parameter\n\nDescription\n\nPT011 (`pytest-raises-too-broad`) should not trigger when check is provided, as it narrows exception matching like match does.\n\n```python\n# Currently triggers PT011 (false positive)\nwith pytest.raises(OSError, check=lambda e: e.errno == errno.EACCES):\n    ...\n```\n\nPT010 already handles this correctly.\n\nReferences: https://github.com/pytest-dev/pytest/releases/tag/8.4.0",
+  "subsystem": "linter",
+  "task_id": "ruff__ruff-22725",
+  "test_commands": [
+    "cargo test -p ruff_linter"
+  ],
+  "timeouts": {
+    "agent_seconds": 1800,
+    "test_seconds": 900
+  }
+}

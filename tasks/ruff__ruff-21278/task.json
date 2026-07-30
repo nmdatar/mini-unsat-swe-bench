@@ -1,0 +1,14 @@
+{
+  "base_commit": "b6add3ee6d15aa17dc6b3b77e0133d3a4d8e65cb",
+  "environment_key": "ruff-rust-toolchain",
+  "prompt": "Annotations block the FURB101 fix\n\n### Summary\n\nAnnotations block the fix for [`read-whole-file` (FURB101)](https://docs.astral.sh/ruff/rules/read-whole-file/) but shouldn\u2019t. [Example](https://play.ruff.rs/[redacted revision]-48fc-474c-ae0e-[redacted revision]):\n```console\n$ cat >furb101.py <<'# EOF'\nwith open(\"file.txt\", encoding=\"utf-8\") as f:\n    contents: str = f.read()\n# EOF\n\n$ ruff --isolated check furb101.py --select FURB101 --preview --fix --output-format concise\nfurb101.py:1:6: FURB101 `open` and `read` should be replaced by `Path(\"file.txt\").read_text(encoding=\"utf-8\")`\nFound 1 error.\n```\n\nThe fix should produce:\n```python\nimport pathlib\ncontents: str = pathlib.Path(\"file.txt\").read_text(encoding=\"utf-8\")\n```",
+  "subsystem": "linter",
+  "task_id": "ruff__ruff-21278",
+  "test_commands": [
+    "cargo test -p ruff_linter"
+  ],
+  "timeouts": {
+    "agent_seconds": 1800,
+    "test_seconds": 900
+  }
+}

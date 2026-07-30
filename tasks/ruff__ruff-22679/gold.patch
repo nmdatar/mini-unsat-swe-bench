@@ -1,0 +1,40 @@
+diff --git a/crates/ruff_linter/src/rules/refurb/rules/reimplemented_starmap.rs b/crates/ruff_linter/src/rules/refurb/rules/reimplemented_starmap.rs
+index d9501a645beff11728e15680d280daa981b0635c..b769d197b430e0eaa1c79b552d61431a2fac6381 100644
+--- a/crates/ruff_linter/src/rules/refurb/rules/reimplemented_starmap.rs
++++ b/crates/ruff_linter/src/rules/refurb/rules/reimplemented_starmap.rs
+@@ -1,4 +1,5 @@
+ use anyhow::{Result, bail};
++use ruff_diagnostics::Applicability;
+ use ruff_macros::{ViolationMetadata, derive_message_formats};
+ use ruff_python_ast::comparable::ComparableExpr;
+ use ruff_python_ast::helpers::any_over_expr;
+@@ -40,6 +41,9 @@ use crate::{Edit, Fix, FixAvailability, Violation};
+ /// all(starmap(predicate, some_iterable))
+ /// ```
+ ///
++/// ## Fix safety
++/// This rule's fix is marked as safe, unless the expression contains comments.
++///
+ /// ## References
+ /// - [Python documentation: `itertools.starmap`](https://docs.python.org/3/library/itertools.html#itertools.starmap)
+ ///
+@@ -155,7 +159,18 @@ pub(crate) fn reimplemented_starmap(checker: &Checker, target: &StarmapCandidate
+             )?,
+             target.range(),
+         );
+-        Ok(Fix::safe_edits(import_edit, [main_edit]))
++
++        let applicability = if checker.comment_ranges().intersects(target.range()) {
++            Applicability::Unsafe
++        } else {
++            Applicability::Safe
++        };
++
++        Ok(Fix::applicable_edits(
++            import_edit,
++            [main_edit],
++            applicability,
++        ))
+     });
+ }
+ 

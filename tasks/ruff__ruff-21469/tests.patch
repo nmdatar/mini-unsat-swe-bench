@@ -1,0 +1,229 @@
+diff --git a/crates/ruff_linter/resources/test/fixtures/flake8_bandit/S310.py b/crates/ruff_linter/resources/test/fixtures/flake8_bandit/S310.py
+index 62ec7108fa1f0c92258907b477a83b9895d08be2..1844678316c92e0a0d527f3f262d2ace1f02f190 100644
+--- a/crates/ruff_linter/resources/test/fixtures/flake8_bandit/S310.py
++++ b/crates/ruff_linter/resources/test/fixtures/flake8_bandit/S310.py
+@@ -45,3 +45,22 @@ urllib.request.urlopen(urllib.request.Request(url))
+ # https://github.com/astral-sh/ruff/issues/15522
+ map(urllib.request.urlopen, [])
+ foo = urllib.request.urlopen
++
++# https://github.com/astral-sh/ruff/issues/21462
++path = "https://example.com/data.csv"
++urllib.request.urlretrieve(path, "data.csv")
++url = "https://example.com/api"
++urllib.request.Request(url)
++
++# Test resolved f-strings and concatenated string literals
++fstring_url = f"https://example.com/data.csv"
++urllib.request.urlopen(fstring_url)
++urllib.request.Request(fstring_url)
++
++concatenated_url = "https://" + "example.com/data.csv"
++urllib.request.urlopen(concatenated_url)
++urllib.request.Request(concatenated_url)
++
++nested_concatenated = "http://" + "example.com" + "/data.csv"
++urllib.request.urlopen(nested_concatenated)
++urllib.request.Request(nested_concatenated)
+diff --git a/crates/ruff_linter/src/rules/flake8_bandit/snapshots/ruff_linter__rules__flake8_bandit__tests__S310_S310.py.snap b/crates/ruff_linter/src/rules/flake8_bandit/snapshots/ruff_linter__rules__flake8_bandit__tests__S310_S310.py.snap
+index 4a4b61876e9167e2e2ea6800df33b1fed8ee08b4..7c73532b23333b49867ea964346576563b8a0320 100644
+--- a/crates/ruff_linter/src/rules/flake8_bandit/snapshots/ruff_linter__rules__flake8_bandit__tests__S310_S310.py.snap
++++ b/crates/ruff_linter/src/rules/flake8_bandit/snapshots/ruff_linter__rules__flake8_bandit__tests__S310_S310.py.snap
+@@ -254,3 +254,84 @@ S310 Audit URL open for permitted schemes. Allowing use of `file:` or custom sch
+ 42 | urllib.request.urlopen(urllib.request.Request(url))
+    |                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
++
++S310 Audit URL open for permitted schemes. Allowing use of `file:` or custom schemes is often unexpected.
++  --> S310.py:51:1
++   |
++49 | # https://github.com/astral-sh/ruff/issues/21462
++50 | path = "https://example.com/data.csv"
++51 | urllib.request.urlretrieve(path, "data.csv")
++   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
++52 | url = "https://example.com/api"
++53 | urllib.request.Request(url)
++   |
++
++S310 Audit URL open for permitted schemes. Allowing use of `file:` or custom schemes is often unexpected.
++  --> S310.py:53:1
++   |
++51 | urllib.request.urlretrieve(path, "data.csv")
++52 | url = "https://example.com/api"
++53 | urllib.request.Request(url)
++   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^
++54 |
++55 | # Test resolved f-strings and concatenated string literals
++   |
++
++S310 Audit URL open for permitted schemes. Allowing use of `file:` or custom schemes is often unexpected.
++  --> S310.py:57:1
++   |
++55 | # Test resolved f-strings and concatenated string literals
++56 | fstring_url = f"https://example.com/data.csv"
++57 | urllib.request.urlopen(fstring_url)
++   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
++58 | urllib.request.Request(fstring_url)
++   |
++
++S310 Audit URL open for permitted schemes. Allowing use of `file:` or custom schemes is often unexpected.
++  --> S310.py:58:1
++   |
++56 | fstring_url = f"https://example.com/data.csv"
++57 | urllib.request.urlopen(fstring_url)
++58 | urllib.request.Request(fstring_url)
++   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
++59 |
++60 | concatenated_url = "https://" + "example.com/data.csv"
++   |
++
++S310 Audit URL open for permitted schemes. Allowing use of `file:` or custom schemes is often unexpected.
++  --> S310.py:61:1
++   |
++60 | concatenated_url = "https://" + "example.com/data.csv"
++61 | urllib.request.urlopen(concatenated_url)
++   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
++62 | urllib.request.Request(concatenated_url)
++   |
++
++S310 Audit URL open for permitted schemes. Allowing use of `file:` or custom schemes is often unexpected.
++  --> S310.py:62:1
++   |
++60 | concatenated_url = "https://" + "example.com/data.csv"
++61 | urllib.request.urlopen(concatenated_url)
++62 | urllib.request.Request(concatenated_url)
++   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
++63 |
++64 | nested_concatenated = "http://" + "example.com" + "/data.csv"
++   |
++
++S310 Audit URL open for permitted schemes. Allowing use of `file:` or custom schemes is often unexpected.
++  --> S310.py:65:1
++   |
++64 | nested_concatenated = "http://" + "example.com" + "/data.csv"
++65 | urllib.request.urlopen(nested_concatenated)
++   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
++66 | urllib.request.Request(nested_concatenated)
++   |
++
++S310 Audit URL open for permitted schemes. Allowing use of `file:` or custom schemes is often unexpected.
++  --> S310.py:66:1
++   |
++64 | nested_concatenated = "http://" + "example.com" + "/data.csv"
++65 | urllib.request.urlopen(nested_concatenated)
++66 | urllib.request.Request(nested_concatenated)
++   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
++   |
+diff --git a/crates/ruff_linter/src/rules/flake8_bandit/snapshots/ruff_linter__rules__flake8_bandit__tests__preview__S310_S310.py.snap b/crates/ruff_linter/src/rules/flake8_bandit/snapshots/ruff_linter__rules__flake8_bandit__tests__preview__S310_S310.py.snap
+index ab8e823ec7525eeaed82f1519559b21bd4108484..081c3afb49e6b4029a86d49beb1ccaa9d23cb818 100644
+--- a/crates/ruff_linter/src/rules/flake8_bandit/snapshots/ruff_linter__rules__flake8_bandit__tests__preview__S310_S310.py.snap
++++ b/crates/ruff_linter/src/rules/flake8_bandit/snapshots/ruff_linter__rules__flake8_bandit__tests__preview__S310_S310.py.snap
+@@ -6,9 +6,100 @@ source: crates/ruff_linter/src/rules/flake8_bandit/mod.rs
+ +linter.preview = enabled
+ 
+ --- Summary ---
+-Removed: 0
++Removed: 8
+ Added: 2
+ 
++--- Removed ---
++S310 Audit URL open for permitted schemes. Allowing use of `file:` or custom schemes is often unexpected.
++  --> S310.py:51:1
++   |
++49 | # https://github.com/astral-sh/ruff/issues/21462
++50 | path = "https://example.com/data.csv"
++51 | urllib.request.urlretrieve(path, "data.csv")
++   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
++52 | url = "https://example.com/api"
++53 | urllib.request.Request(url)
++   |
++
++
++S310 Audit URL open for permitted schemes. Allowing use of `file:` or custom schemes is often unexpected.
++  --> S310.py:53:1
++   |
++51 | urllib.request.urlretrieve(path, "data.csv")
++52 | url = "https://example.com/api"
++53 | urllib.request.Request(url)
++   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^
++54 |
++55 | # Test resolved f-strings and concatenated string literals
++   |
++
++
++S310 Audit URL open for permitted schemes. Allowing use of `file:` or custom schemes is often unexpected.
++  --> S310.py:57:1
++   |
++55 | # Test resolved f-strings and concatenated string literals
++56 | fstring_url = f"https://example.com/data.csv"
++57 | urllib.request.urlopen(fstring_url)
++   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
++58 | urllib.request.Request(fstring_url)
++   |
++
++
++S310 Audit URL open for permitted schemes. Allowing use of `file:` or custom schemes is often unexpected.
++  --> S310.py:58:1
++   |
++56 | fstring_url = f"https://example.com/data.csv"
++57 | urllib.request.urlopen(fstring_url)
++58 | urllib.request.Request(fstring_url)
++   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
++59 |
++60 | concatenated_url = "https://" + "example.com/data.csv"
++   |
++
++
++S310 Audit URL open for permitted schemes. Allowing use of `file:` or custom schemes is often unexpected.
++  --> S310.py:61:1
++   |
++60 | concatenated_url = "https://" + "example.com/data.csv"
++61 | urllib.request.urlopen(concatenated_url)
++   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
++62 | urllib.request.Request(concatenated_url)
++   |
++
++
++S310 Audit URL open for permitted schemes. Allowing use of `file:` or custom schemes is often unexpected.
++  --> S310.py:62:1
++   |
++60 | concatenated_url = "https://" + "example.com/data.csv"
++61 | urllib.request.urlopen(concatenated_url)
++62 | urllib.request.Request(concatenated_url)
++   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
++63 |
++64 | nested_concatenated = "http://" + "example.com" + "/data.csv"
++   |
++
++
++S310 Audit URL open for permitted schemes. Allowing use of `file:` or custom schemes is often unexpected.
++  --> S310.py:65:1
++   |
++64 | nested_concatenated = "http://" + "example.com" + "/data.csv"
++65 | urllib.request.urlopen(nested_concatenated)
++   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
++66 | urllib.request.Request(nested_concatenated)
++   |
++
++
++S310 Audit URL open for permitted schemes. Allowing use of `file:` or custom schemes is often unexpected.
++  --> S310.py:66:1
++   |
++64 | nested_concatenated = "http://" + "example.com" + "/data.csv"
++65 | urllib.request.urlopen(nested_concatenated)
++66 | urllib.request.Request(nested_concatenated)
++   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
++   |
++
++
++
+ --- Added ---
+ S310 Audit URL open for permitted schemes. Allowing use of `file:` or custom schemes is often unexpected.
+   --> S310.py:46:5
+@@ -27,4 +118,6 @@ S310 Audit URL open for permitted schemes. Allowing use of `file:` or custom sch
+ 46 | map(urllib.request.urlopen, [])
+ 47 | foo = urllib.request.urlopen
+    |       ^^^^^^^^^^^^^^^^^^^^^^
++48 |
++49 | # https://github.com/astral-sh/ruff/issues/21462
+    |

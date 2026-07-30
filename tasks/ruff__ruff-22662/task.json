@@ -1,0 +1,14 @@
+{
+  "base_commit": "704d30f47313e212e48720470759aedb245536be",
+  "environment_key": "ruff-rust-toolchain",
+  "prompt": "[`flake8-simplify`] Make fix unsafe if it deletes comments (`SIM910`)\n\n## Summary",
+  "subsystem": "linter",
+  "task_id": "ruff__ruff-22662",
+  "test_commands": [
+    "cargo test -p ruff_linter"
+  ],
+  "timeouts": {
+    "agent_seconds": 1800,
+    "test_seconds": 900
+  }
+}

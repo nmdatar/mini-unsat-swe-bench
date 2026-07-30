@@ -1,0 +1,107 @@
+diff --git a/crates/ruff_linter/resources/test/fixtures/flake8_pyi/PYI034.py b/crates/ruff_linter/resources/test/fixtures/flake8_pyi/PYI034.py
+index 52a612a79e3c0a7926b71a85c5d0d4cc8aadfcb0..b35efc3c21f455b9db122bc75d3dcd3bb818b914 100644
+--- a/crates/ruff_linter/resources/test/fixtures/flake8_pyi/PYI034.py
++++ b/crates/ruff_linter/resources/test/fixtures/flake8_pyi/PYI034.py
+@@ -359,3 +359,29 @@ class Generic5(list[PotentialTypeVar]):
+     def __new__(cls: type[Generic5]) -> Generic5: ...
+     def __enter__(self: Generic5) -> Generic5: ...
+ 
++
++# Test cases based on issue #20781 - metaclasses that triggers IsMetaclass::Maybe
++class MetaclassInWhichSelfCannotBeUsed5(type(Protocol)):
++    def __new__(
++        cls, name: str, bases: tuple[type[Any], ...], attrs: dict[str, Any], **kwargs: Any
++    ) -> MetaclassInWhichSelfCannotBeUsed5:
++        new_class = super().__new__(cls, name, bases, attrs, **kwargs)
++        return new_class
++
++
++import django.db.models.base
++
++
++class MetaclassInWhichSelfCannotBeUsed6(django.db.models.base.ModelBase):
++    def __new__(cls, name: str, bases: tuple[Any, ...], attrs: dict[str, Any], **kwargs: Any) -> MetaclassInWhichSelfCannotBeUsed6:
++        ...
++
++
++class MetaclassInWhichSelfCannotBeUsed7(django.db.models.base.ModelBase):
++    def __new__(cls, /, name: str, bases: tuple[object, ...], attrs: dict[str, object], **kwds: object) -> MetaclassInWhichSelfCannotBeUsed7:
++        ...
++
++
++class MetaclassInWhichSelfCannotBeUsed8(django.db.models.base.ModelBase):
++    def __new__(cls, name: builtins.str, bases: tuple, attributes: dict, /, **kw) -> MetaclassInWhichSelfCannotBeUsed8:
++        ...
+diff --git a/crates/ruff_linter/resources/test/fixtures/flake8_pyi/PYI034.pyi b/crates/ruff_linter/resources/test/fixtures/flake8_pyi/PYI034.pyi
+index 9567b343ac7cf0ef0c31f310421197f9efb2c0b3..b22f76798b308834ec1e660cd5724829ef946b8d 100644
+--- a/crates/ruff_linter/resources/test/fixtures/flake8_pyi/PYI034.pyi
++++ b/crates/ruff_linter/resources/test/fixtures/flake8_pyi/PYI034.pyi
+@@ -252,3 +252,28 @@ from some_module import PotentialTypeVar
+ class Generic5(list[PotentialTypeVar]):
+     def __new__(cls: type[Generic5]) -> Generic5: ...
+     def __enter__(self: Generic5) -> Generic5: ...
++
++
++# Test case based on issue #20781 - metaclass that triggers IsMetaclass::Maybe
++class MetaclassInWhichSelfCannotBeUsed5(type(Protocol)):
++    def __new__(
++        cls, name: str, bases: tuple[type[Any], ...], attrs: dict[str, Any], **kwargs: Any
++    ) -> MetaclassInWhichSelfCannotBeUsed5: ...
++
++
++import django.db.models.base
++
++
++class MetaclassInWhichSelfCannotBeUsed6(django.db.models.base.ModelBase):
++    def __new__(cls, name: str, bases: tuple[Any, ...], attrs: dict[str, Any], **kwargs: Any) -> MetaclassInWhichSelfCannotBeUsed6:
++        ...
++
++
++class MetaclassInWhichSelfCannotBeUsed7(django.db.models.base.ModelBase):
++    def __new__(cls, /, name: str, bases: tuple[object, ...], attrs: dict[str, object], **kwds: object) -> MetaclassInWhichSelfCannotBeUsed7:
++        ...
++
++
++class MetaclassInWhichSelfCannotBeUsed8(django.db.models.base.ModelBase):
++    def __new__(cls, name: builtins.str, bases: tuple, attributes: dict, /, **kw) -> MetaclassInWhichSelfCannotBeUsed8:
++        ...
+diff --git a/crates/ruff_linter/src/rules/flake8_pyi/snapshots/ruff_linter__rules__flake8_pyi__tests__PYI034_PYI034.py.snap b/crates/ruff_linter/src/rules/flake8_pyi/snapshots/ruff_linter__rules__flake8_pyi__tests__PYI034_PYI034.py.snap
+index fd92d1055de347dcb75aa61797cc3df195427ca8..8893a346e19316188c1bf9bd2be9e3aaa6a92e8c 100644
+--- a/crates/ruff_linter/src/rules/flake8_pyi/snapshots/ruff_linter__rules__flake8_pyi__tests__PYI034_PYI034.py.snap
++++ b/crates/ruff_linter/src/rules/flake8_pyi/snapshots/ruff_linter__rules__flake8_pyi__tests__PYI034_PYI034.py.snap
+@@ -451,6 +451,7 @@ help: Use `Self` as return type
+ 359 +     def __new__(cls) -> typing.Self: ...
+ 360 |     def __enter__(self: Generic5) -> Generic5: ...
+ 361 | 
++362 | 
+ note: This is an unsafe fix and may change runtime behavior
+ 
+ PYI034 [*] `__enter__` methods in classes like `Generic5` usually return `self` at runtime
+@@ -468,4 +469,6 @@ help: Use `Self` as return type
+     -     def __enter__(self: Generic5) -> Generic5: ...
+ 360 +     def __enter__(self) -> typing.Self: ...
+ 361 | 
++362 | 
++363 | # Test cases based on issue #20781 - metaclasses that triggers IsMetaclass::Maybe
+ note: This is an unsafe fix and may change runtime behavior
+diff --git a/crates/ruff_linter/src/rules/flake8_pyi/snapshots/ruff_linter__rules__flake8_pyi__tests__PYI034_PYI034.pyi.snap b/crates/ruff_linter/src/rules/flake8_pyi/snapshots/ruff_linter__rules__flake8_pyi__tests__PYI034_PYI034.pyi.snap
+index 2018bb04f27a913ad66cab6a2ed182d5635cffe0..29c91b9a772a174c581f88f2be6257748f8d3d0f 100644
+--- a/crates/ruff_linter/src/rules/flake8_pyi/snapshots/ruff_linter__rules__flake8_pyi__tests__PYI034_PYI034.pyi.snap
++++ b/crates/ruff_linter/src/rules/flake8_pyi/snapshots/ruff_linter__rules__flake8_pyi__tests__PYI034_PYI034.pyi.snap
+@@ -431,6 +431,8 @@ help: Use `Self` as return type
+     -     def __new__(cls: type[Generic5]) -> Generic5: ...
+ 253 +     def __new__(cls) -> typing.Self: ...
+ 254 |     def __enter__(self: Generic5) -> Generic5: ...
++255 | 
++256 | 
+ note: This is a display-only fix and is likely to be incorrect
+ 
+ PYI034 [*] `__enter__` methods in classes like `Generic5` usually return `self` at runtime
+@@ -447,4 +449,7 @@ help: Use `Self` as return type
+ 253 |     def __new__(cls: type[Generic5]) -> Generic5: ...
+     -     def __enter__(self: Generic5) -> Generic5: ...
+ 254 +     def __enter__(self) -> typing.Self: ...
++255 | 
++256 | 
++257 | # Test case based on issue #20781 - metaclass that triggers IsMetaclass::Maybe
+ note: This is a display-only fix and is likely to be incorrect

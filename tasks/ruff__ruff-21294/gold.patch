@@ -1,0 +1,270 @@
+diff --git a/crates/ruff/src/args.rs b/crates/ruff/src/args.rs
+index eb4bcd0a926e79c49a2c56c3e9c9949e04a93441..39dc0324fca51e66814d7372508eb1ef1cbd3f11 100644
+--- a/crates/ruff/src/args.rs
++++ b/crates/ruff/src/args.rs
+@@ -405,8 +405,13 @@ pub struct CheckCommand {
+     )]
+     pub statistics: bool,
+     /// Enable automatic additions of `noqa` directives to failing lines.
++    /// Optionally provide a reason to append after the codes.
+     #[arg(
+         long,
++        value_name = "REASON",
++        default_missing_value = "",
++        num_args = 0..=1,
++        require_equals = true,
+         // conflicts_with = "add_noqa",
+         conflicts_with = "show_files",
+         conflicts_with = "show_settings",
+@@ -418,7 +423,7 @@ pub struct CheckCommand {
+         conflicts_with = "fix",
+         conflicts_with = "diff",
+     )]
+-    pub add_noqa: bool,
++    pub add_noqa: Option<String>,
+     /// See the files Ruff will be run against with the current settings.
+     #[arg(
+         long,
+@@ -1047,7 +1052,7 @@ Possible choices:
+ /// etc.).
+ #[expect(clippy::struct_excessive_bools)]
+ pub struct CheckArguments {
+-    pub add_noqa: bool,
++    pub add_noqa: Option<String>,
+     pub diff: bool,
+     pub exit_non_zero_on_fix: bool,
+     pub exit_zero: bool,
+diff --git a/crates/ruff/src/commands/add_noqa.rs b/crates/ruff/src/commands/add_noqa.rs
+index d5eaeb0170ccb6ea81d76866c84f267e6f61da0b..ff6a07c758a8effa4db3e9bee8af268d0c999f8e 100644
+--- a/crates/ruff/src/commands/add_noqa.rs
++++ b/crates/ruff/src/commands/add_noqa.rs
+@@ -21,6 +21,7 @@ pub(crate) fn add_noqa(
+     files: &[PathBuf],
+     pyproject_config: &PyprojectConfig,
+     config_arguments: &ConfigArguments,
++    reason: Option<&str>,
+ ) -> Result<usize> {
+     // Collect all the files to check.
+     let start = Instant::now();
+@@ -76,7 +77,14 @@ pub(crate) fn add_noqa(
+                     return None;
+                 }
+             };
+-            match add_noqa_to_path(path, package, &source_kind, source_type, &settings.linter) {
++            match add_noqa_to_path(
++                path,
++                package,
++                &source_kind,
++                source_type,
++                &settings.linter,
++                reason,
++            ) {
+                 Ok(count) => Some(count),
+                 Err(e) => {
+                     error!("Failed to add noqa to {}: {e}", path.display());
+diff --git a/crates/ruff/src/lib.rs b/crates/ruff/src/lib.rs
+index 3bd457de8c9425e8c92b4000aae30820bd9fc6bc..3ea0d94fadcadd1dcf6af582ad67b09393188e98 100644
+--- a/crates/ruff/src/lib.rs
++++ b/crates/ruff/src/lib.rs
+@@ -319,12 +319,20 @@ pub fn check(args: CheckCommand, global_options: GlobalConfigArgs) -> Result<Exi
+         warn_user!("Detected debug build without --no-cache.");
+     }
+ 
+-    if cli.add_noqa {
++    if let Some(reason) = &cli.add_noqa {
+         if !fix_mode.is_generate() {
+             warn_user!("--fix is incompatible with --add-noqa.");
+         }
++        if reason.contains(['\n', '\r']) {
++            return Err(anyhow::anyhow!(
++                "--add-noqa <reason> cannot contain newline characters"
++            ));
++        }
++
++        let reason_opt = (!reason.is_empty()).then_some(reason.as_str());
++
+         let modifications =
+-            commands::add_noqa::add_noqa(&files, &pyproject_config, &config_arguments)?;
++            commands::add_noqa::add_noqa(&files, &pyproject_config, &config_arguments, reason_opt)?;
+         if modifications > 0 && config_arguments.log_level >= LogLevel::Default {
+             let s = if modifications == 1 { "" } else { "s" };
+             #[expect(clippy::print_stderr)]
+diff --git a/crates/ruff_linter/src/linter.rs b/crates/ruff_linter/src/linter.rs
+index 2e4f284bee9e7e8ab66366a768da1bc94bc7ef28..3ec070dd26385fab1e22b88ac0103493212ce196 100644
+--- a/crates/ruff_linter/src/linter.rs
++++ b/crates/ruff_linter/src/linter.rs
+@@ -377,6 +377,7 @@ pub fn add_noqa_to_path(
+     source_kind: &SourceKind,
+     source_type: PySourceType,
+     settings: &LinterSettings,
++    reason: Option<&str>,
+ ) -> Result<usize> {
+     // Parse once.
+     let target_version = settings.resolve_target_version(path);
+@@ -425,6 +426,7 @@ pub fn add_noqa_to_path(
+         &settings.external,
+         &directives.noqa_line_for,
+         stylist.line_ending(),
++        reason,
+     )
+ }
+ 
+diff --git a/crates/ruff_linter/src/noqa.rs b/crates/ruff_linter/src/noqa.rs
+index 606ac5ad3b5268048d9cfe3e6da1626d99e5381a..da9535817ed07478fcafef2d5fee78f6d2bac362 100644
+--- a/crates/ruff_linter/src/noqa.rs
++++ b/crates/ruff_linter/src/noqa.rs
+@@ -39,7 +39,7 @@ pub fn generate_noqa_edits(
+     let exemption = FileExemption::from(&file_directives);
+     let directives = NoqaDirectives::from_commented_ranges(comment_ranges, external, path, locator);
+     let comments = find_noqa_comments(diagnostics, locator, &exemption, &directives, noqa_line_for);
+-    build_noqa_edits_by_diagnostic(comments, locator, line_ending)
++    build_noqa_edits_by_diagnostic(comments, locator, line_ending, None)
+ }
+ 
+ /// A directive to ignore a set of rules either for a given line of Python source code or an entire file (e.g.,
+@@ -715,6 +715,7 @@ impl Display for LexicalError {
+ impl Error for LexicalError {}
+ 
+ /// Adds noqa comments to suppress all messages of a file.
++#[expect(clippy::too_many_arguments)]
+ pub(crate) fn add_noqa(
+     path: &Path,
+     diagnostics: &[Diagnostic],
+@@ -723,6 +724,7 @@ pub(crate) fn add_noqa(
+     external: &[String],
+     noqa_line_for: &NoqaMapping,
+     line_ending: LineEnding,
++    reason: Option<&str>,
+ ) -> Result<usize> {
+     let (count, output) = add_noqa_inner(
+         path,
+@@ -732,12 +734,14 @@ pub(crate) fn add_noqa(
+         external,
+         noqa_line_for,
+         line_ending,
++        reason,
+     );
+ 
+     fs::write(path, output)?;
+     Ok(count)
+ }
+ 
++#[expect(clippy::too_many_arguments)]
+ fn add_noqa_inner(
+     path: &Path,
+     diagnostics: &[Diagnostic],
+@@ -746,6 +750,7 @@ fn add_noqa_inner(
+     external: &[String],
+     noqa_line_for: &NoqaMapping,
+     line_ending: LineEnding,
++    reason: Option<&str>,
+ ) -> (usize, String) {
+     let mut count = 0;
+ 
+@@ -757,7 +762,7 @@ fn add_noqa_inner(
+ 
+     let comments = find_noqa_comments(diagnostics, locator, &exemption, &directives, noqa_line_for);
+ 
+-    let edits = build_noqa_edits_by_line(comments, locator, line_ending);
++    let edits = build_noqa_edits_by_line(comments, locator, line_ending, reason);
+ 
+     let contents = locator.contents();
+ 
+@@ -783,6 +788,7 @@ fn build_noqa_edits_by_diagnostic(
+     comments: Vec<Option<NoqaComment>>,
+     locator: &Locator,
+     line_ending: LineEnding,
++    reason: Option<&str>,
+ ) -> Vec<Option<Edit>> {
+     let mut edits = Vec::default();
+     for comment in comments {
+@@ -794,6 +800,7 @@ fn build_noqa_edits_by_diagnostic(
+                     FxHashSet::from_iter([comment.code]),
+                     locator,
+                     line_ending,
++                    reason,
+                 ) {
+                     edits.push(Some(noqa_edit.into_edit()));
+                 }
+@@ -808,6 +815,7 @@ fn build_noqa_edits_by_line<'a>(
+     comments: Vec<Option<NoqaComment<'a>>>,
+     locator: &Locator,
+     line_ending: LineEnding,
++    reason: Option<&'a str>,
+ ) -> BTreeMap<TextSize, NoqaEdit<'a>> {
+     let mut comments_by_line = BTreeMap::default();
+     for comment in comments.into_iter().flatten() {
+@@ -831,6 +839,7 @@ fn build_noqa_edits_by_line<'a>(
+                 .collect(),
+             locator,
+             line_ending,
++            reason,
+         ) {
+             edits.insert(offset, edit);
+         }
+@@ -927,6 +936,7 @@ struct NoqaEdit<'a> {
+     noqa_codes: FxHashSet<&'a SecondaryCode>,
+     codes: Option<&'a Codes<'a>>,
+     line_ending: LineEnding,
++    reason: Option<&'a str>,
+ }
+ 
+ impl NoqaEdit<'_> {
+@@ -954,6 +964,9 @@ impl NoqaEdit<'_> {
+                 push_codes(writer, self.noqa_codes.iter().sorted_unstable());
+             }
+         }
++        if let Some(reason) = self.reason {
++            write!(writer, " {reason}").unwrap();
++        }
+         write!(writer, "{}", self.line_ending.as_str()).unwrap();
+     }
+ }
+@@ -970,6 +983,7 @@ fn generate_noqa_edit<'a>(
+     noqa_codes: FxHashSet<&'a SecondaryCode>,
+     locator: &Locator,
+     line_ending: LineEnding,
++    reason: Option<&'a str>,
+ ) -> Option<NoqaEdit<'a>> {
+     let line_range = locator.full_line_range(offset);
+ 
+@@ -999,6 +1013,7 @@ fn generate_noqa_edit<'a>(
+         noqa_codes,
+         codes,
+         line_ending,
++        reason,
+     })
+ }
+ 
+@@ -2832,6 +2847,7 @@ mod tests {
+             &[],
+             &noqa_line_for,
+             LineEnding::Lf,
++            None,
+         );
+         assert_eq!(count, 0);
+         assert_eq!(output, format!("{contents}"));
+@@ -2855,6 +2871,7 @@ mod tests {
+             &[],
+             &noqa_line_for,
+             LineEnding::Lf,
++            None,
+         );
+         assert_eq!(count, 1);
+         assert_eq!(output, "x = 1  # noqa: F841\n");
+@@ -2885,6 +2902,7 @@ mod tests {
+             &[],
+             &noqa_line_for,
+             LineEnding::Lf,
++            None,
+         );
+         assert_eq!(count, 1);
+         assert_eq!(output, "x = 1  # noqa: E741, F841\n");
+@@ -2915,6 +2933,7 @@ mod tests {
+             &[],
+             &noqa_line_for,
+             LineEnding::Lf,
++            None,
+         );
+         assert_eq!(count, 0);
+         assert_eq!(output, "x = 1  # noqa");

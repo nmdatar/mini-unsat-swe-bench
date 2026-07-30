@@ -1,0 +1,86 @@
+diff --git a/crates/ruff_python_formatter/resources/test/fixtures/ruff/expression/lambda.py b/crates/ruff_python_formatter/resources/test/fixtures/ruff/expression/lambda.py
+index 660d5644e9df0ed2c9285d6be78547cce512c302..1b1c1ee3c24e7e520ff20882c8d89904dfecd25e 100644
+--- a/crates/ruff_python_formatter/resources/test/fixtures/ruff/expression/lambda.py
++++ b/crates/ruff_python_formatter/resources/test/fixtures/ruff/expression/lambda.py
+@@ -249,3 +249,25 @@ def a():
+     x:
+     x
+ )
++
++(
++    lambda
++    # comment
++    *x,
++    **y: x
++)
++
++(
++    lambda
++    * # comment 2
++    x,
++    **y:
++    x
++)
++
++(
++    lambda
++    ** # comment 1
++    x:
++    x
++)
+diff --git a/crates/ruff_python_formatter/tests/snapshots/format@expression__lambda.py.snap b/crates/ruff_python_formatter/tests/snapshots/format@expression__lambda.py.snap
+index 3009dfaefccefb8ad6fec52eb8d8828e46d658c5..5997ff539a98b6ad325140b05d8e268e22edc67e 100644
+--- a/crates/ruff_python_formatter/tests/snapshots/format@expression__lambda.py.snap
++++ b/crates/ruff_python_formatter/tests/snapshots/format@expression__lambda.py.snap
+@@ -255,6 +255,28 @@ def a():
+     x:
+     x
+ )
++
++(
++    lambda
++    # comment
++    *x,
++    **y: x
++)
++
++(
++    lambda
++    * # comment 2
++    x,
++    **y:
++    x
++)
++
++(
++    lambda
++    ** # comment 1
++    x:
++    x
++)
+ ```
+ 
+ ## Output
+@@ -513,4 +535,22 @@ def a():
+     # comment 2
+     *x: x
+ )
++
++(
++    lambda
++    # comment
++    *x, **y: x
++)
++
++(
++    lambda
++    # comment 2
++    *x, **y: x
++)
++
++(
++    lambda
++    # comment 1
++    **x: x
++)
+ ```

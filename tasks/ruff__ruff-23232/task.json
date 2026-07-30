@@ -1,0 +1,14 @@
+{
+  "base_commit": "7856d89221910cb13d75ce4e8ca3474e0a965814",
+  "environment_key": "ruff-rust-toolchain",
+  "prompt": "Panic: `entered unreachable code: t-string: unexpected token FStringMiddle`\n\n### Summary\n\nRunning\n\n```rs\nlet s = \"A1[A\\u{c}\\0:+,>1t'{:f\\0:{f\\\"f\\0:\\0{fm\\0:{f:\\u{10}\\0\\0\\0:bb\\0{@f>f\\u{1}'\\0f\";\nlet _ = ruff_python_parser::parse_module(s);\n```\n\nis panicking with:\n\n```\nthread 'ruff_error' (266784) panicked at /Users/samuel/.cargo/git/checkouts/ruff-[redacted revision]/[redacted revision]/crates/ruff_python_parser/src/parser/expression.rs:1635:25:\ninternal error: entered unreachable code: t-string: unexpected token `FStringMiddle` at 31..41\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\n```\n\nI'm using the latest release `0.15.0`.\n\nFound by fuzzing in https://github.com/pydantic/monty/pull/119\n\nAnother similar failure [here](https://github.com/pydantic/monty/actions/runs/[redacted revision]/job/[redacted revision]?pr=131)",
+  "subsystem": "parser",
+  "task_id": "ruff__ruff-23232",
+  "test_commands": [
+    "cargo test -p ruff_python_parser"
+  ],
+  "timeouts": {
+    "agent_seconds": 1800,
+    "test_seconds": 900
+  }
+}

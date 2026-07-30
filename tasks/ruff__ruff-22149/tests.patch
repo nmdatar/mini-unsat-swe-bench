@@ -1,0 +1,45 @@
+diff --git a/crates/ruff_linter/resources/test/fixtures/pyupgrade/UP032_0.py b/crates/ruff_linter/resources/test/fixtures/pyupgrade/UP032_0.py
+index 3214801237aae5a05b46a9bb22495d8529bca8e0..24870c52c48d385a4a508cbc0dad2e109695943d 100644
+--- a/crates/ruff_linter/resources/test/fixtures/pyupgrade/UP032_0.py
++++ b/crates/ruff_linter/resources/test/fixtures/pyupgrade/UP032_0.py
+@@ -278,3 +278,6 @@ if __name__ == "__main__":
+ 
+ # Unicode escape
+ "\N{angle}AOB = {angle}°".format(angle=180)
++
++# Raw string with \N{...}
++r"\N{angle}AOB = {angle}°".format(angle=180)
+diff --git a/crates/ruff_linter/src/rules/pyupgrade/snapshots/ruff_linter__rules__pyupgrade__tests__UP032_0.py.snap b/crates/ruff_linter/src/rules/pyupgrade/snapshots/ruff_linter__rules__pyupgrade__tests__UP032_0.py.snap
+index f15311cad0975ce615850e21a50d09773ee624a9..119dd00c447e058cb469a2ac98b22fe2486c4a1e 100644
+--- a/crates/ruff_linter/src/rules/pyupgrade/snapshots/ruff_linter__rules__pyupgrade__tests__UP032_0.py.snap
++++ b/crates/ruff_linter/src/rules/pyupgrade/snapshots/ruff_linter__rules__pyupgrade__tests__UP032_0.py.snap
+@@ -1378,6 +1378,8 @@ UP032 [*] Use f-string instead of `format` call
+ 279 | # Unicode escape
+ 280 | "\N{angle}AOB = {angle}°".format(angle=180)
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
++281 |
++282 | # Raw string with \N{...}
+     |
+ help: Convert to f-string
+ 277 |     print(string)
+@@ -1385,3 +1387,20 @@ help: Convert to f-string
+ 279 | # Unicode escape
+     - "\N{angle}AOB = {angle}°".format(angle=180)
+ 280 + f"\N{angle}AOB = {180}°"
++281 | 
++282 | # Raw string with \N{...}
++283 | r"\N{angle}AOB = {angle}°".format(angle=180)
++
++UP032 [*] Use f-string instead of `format` call
++   --> UP032_0.py:283:1
++    |
++282 | # Raw string with \N{...}
++283 | r"\N{angle}AOB = {angle}°".format(angle=180)
++    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
++    |
++help: Convert to f-string
++280 | "\N{angle}AOB = {angle}°".format(angle=180)
++281 | 
++282 | # Raw string with \N{...}
++    - r"\N{angle}AOB = {angle}°".format(angle=180)
++283 + rf"\N{180}AOB = {180}°"

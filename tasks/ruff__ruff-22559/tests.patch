@@ -1,0 +1,39 @@
+diff --git a/crates/ruff_linter/resources/test/fixtures/ruff/RUF012.py b/crates/ruff_linter/resources/test/fixtures/ruff/RUF012.py
+index c6a27523da24cafd35fa25227cdc3afe7fcc6b41..e5ec4d610ba5176b4f59ed41d4dc58a471fa1d12 100644
+--- a/crates/ruff_linter/resources/test/fixtures/ruff/RUF012.py
++++ b/crates/ruff_linter/resources/test/fixtures/ruff/RUF012.py
+@@ -138,3 +138,15 @@ class AWithQuotes:
+ class P:
+     class_variable: ClassVar[list] = [10, 20, 30, 40, 50]
+     class_variable = [*class_variable[0::1], *class_variable[2::3]]
++
++
++import ctypes
++# Lint should trigger RUF012 only  for the `test` field and not the `_fields_`
++class S(ctypes.Structure):
++    test = [""]
++    _fields_ = [
++        ("attr_set", ctypes.c_uint64),
++        ("attr_clr", ctypes.c_uint64),
++        ("propagation", ctypes.c_uint64),
++        ("userns_fd", ctypes.c_uint64),
++    ]
+diff --git a/crates/ruff_linter/src/rules/ruff/snapshots/ruff_linter__rules__ruff__tests__RUF012_RUF012.py.snap b/crates/ruff_linter/src/rules/ruff/snapshots/ruff_linter__rules__ruff__tests__RUF012_RUF012.py.snap
+index 7adb158ab3d7bff7871c8a3321b485f378f6e507..b61f31ab244cb035741bcb3d908f810e032b890c 100644
+--- a/crates/ruff_linter/src/rules/ruff/snapshots/ruff_linter__rules__ruff__tests__RUF012_RUF012.py.snap
++++ b/crates/ruff_linter/src/rules/ruff/snapshots/ruff_linter__rules__ruff__tests__RUF012_RUF012.py.snap
+@@ -117,3 +117,14 @@ RUF012 Mutable class attributes should be annotated with `typing.ClassVar`
+ 134 |     final_variable_without_subscript: 'Final' = []
+     |                                                 ^^
+     |
++
++RUF012 Mutable class attributes should be annotated with `typing.ClassVar`
++   --> RUF012.py:146:12
++    |
++144 | # Lint should trigger RUF012 only  for the `test` field and not the `_fields_`
++145 | class S(ctypes.Structure):
++146 |     test = [""]
++    |            ^^^^
++147 |     _fields_ = [
++148 |         ("attr_set", ctypes.c_uint64),
++    |

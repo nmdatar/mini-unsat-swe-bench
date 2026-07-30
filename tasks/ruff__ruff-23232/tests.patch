@@ -1,0 +1,60 @@
+diff --git a/crates/ruff_python_parser/src/parser/snapshots/ruff_python_parser__parser__tests__tstring_fstring_middle.snap b/crates/ruff_python_parser/src/parser/snapshots/ruff_python_parser__parser__tests__tstring_fstring_middle.snap
+new file mode 100644
+index 0000000000000000000000000000000000000000..12c9787631e776d61c8169c93d726786fbd71263
+--- /dev/null
++++ b/crates/ruff_python_parser/src/parser/snapshots/ruff_python_parser__parser__tests__tstring_fstring_middle.snap
+@@ -0,0 +1,8 @@
++---
++source: crates/ruff_python_parser/src/parser/tests.rs
++expression: error
++---
++ParseError {
++    error: ExpectedExpression,
++    location: 3..4,
++}
+diff --git a/crates/ruff_python_parser/src/parser/snapshots/ruff_python_parser__parser__tests__tstring_fstring_middle_fuzzer.snap b/crates/ruff_python_parser/src/parser/snapshots/ruff_python_parser__parser__tests__tstring_fstring_middle_fuzzer.snap
+new file mode 100644
+index 0000000000000000000000000000000000000000..e26bcbc33e9f04ff327d7a89699c16c6ce1a3739
+--- /dev/null
++++ b/crates/ruff_python_parser/src/parser/snapshots/ruff_python_parser__parser__tests__tstring_fstring_middle_fuzzer.snap
+@@ -0,0 +1,12 @@
++---
++source: crates/ruff_python_parser/src/parser/tests.rs
++expression: error
++---
++ParseError {
++    error: Lexical(
++        UnrecognizedToken {
++            tok: '\0',
++        },
++    ),
++    location: 5..6,
++}
+diff --git a/crates/ruff_python_parser/src/parser/tests.rs b/crates/ruff_python_parser/src/parser/tests.rs
+index dcb9ac16a0af58036c4bc47aa2cfcedf61d24563..fb1927775479e63f3712599b810908b74cf88b66 100644
+--- a/crates/ruff_python_parser/src/parser/tests.rs
++++ b/crates/ruff_python_parser/src/parser/tests.rs
+@@ -157,3 +157,23 @@ t"i}'"#;
+ 
+     insta::assert_debug_snapshot!(error);
+ }
++
++#[test]
++fn test_tstring_fstring_middle() {
++    let source = "t'{:{F'{\0}F";
++    let parsed = parse_expression(source);
++
++    let error = parsed.unwrap_err();
++
++    insta::assert_debug_snapshot!(error);
++}
++
++#[test]
++fn test_tstring_fstring_middle_fuzzer() {
++    let source = "A1[A\u{c}\0:+,>1t'{:f\0:{f\"f\0:\0{fm\0:{f:\u{10}\0\0\0:bb\0{@f>f\u{1}'\0f";
++    let parsed = parse_expression(source);
++
++    let error = parsed.unwrap_err();
++
++    insta::assert_debug_snapshot!(error);
++}

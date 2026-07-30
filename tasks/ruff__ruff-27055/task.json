@@ -1,0 +1,14 @@
+{
+  "base_commit": "8d6e9a9dfea5eba00af8c960a1980c4dd8aaacb3",
+  "environment_key": "ruff-rust-toolchain",
+  "prompt": "Add newly stabilized rules to defaults\n\nSummary\n--\n\nI did a quick pass over the newly stabilized rules to see if any of them should be on by default, with these results:\n\n| Rule                                                 | Category    |\n|--|--|\n| [PLR1708](https://docs.astral.sh/ruff/rules/PLR1708) | correctness |\n| [RUF068](https://docs.astral.sh/ruff/rules/RUF068)   | correctness |\n| [ISC004](https://docs.astral.sh/ruff/rules/ISC004)   | suspicious  |\n| [PLE0304](https://docs.astral.sh/ruff/rules/PLE0304) | suspicious  |\n| [RUF063](https://docs.astral.sh/ruff/rules/RUF063)   | suspicious  |\n| [FURB192](https://docs.astral.sh/ruff/rules/FURB192) | complexity  |\n| [AIR303](https://docs.astral.sh/ruff/rules/AIR303)   | pedantic    |\n| [CPY001](https://docs.astral.sh/ruff/rules/CPY001)   | pedantic    |\n| [FURB164](https://docs.astral.sh/ruff/rules/FURB164) | pedantic    |\n| [LOG004](https://docs.astral.sh/ruff/rules/LOG004)   | pedantic    |\n| [PLR0917](https://docs.astral.sh/ruff/rules/PLR0917) | pedantic    |\n| [RUF036](https://docs.astral.sh/ruff/rules/RUF036)   | pedantic    |\n| [RUF045](https://docs.astral.sh/ruff/rules/RUF045)   | pedantic    |\n\nObviously the categories themselves are still unused for now, but this suggested adding the first six to the default set. I initially included RUF036 in Style and RUF045 as Suspicious but Codex talked me down. LOG004 would also likely be higher if it were a bit more reliable, but we can't easily detect some cases that are relatively common in the ecosystem, such as defining some kind of custom logging function that itself is intended to be called from an exception handler.\n\nTest Plan\n--\n\nUpdated snapshots",
+  "subsystem": "linter",
+  "task_id": "ruff__ruff-27055",
+  "test_commands": [
+    "cargo test -p ruff_linter"
+  ],
+  "timeouts": {
+    "agent_seconds": 1800,
+    "test_seconds": 900
+  }
+}

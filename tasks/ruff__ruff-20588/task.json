@@ -1,0 +1,14 @@
+{
+  "base_commit": "02ebb2ee6189e5f07c57c14ac47eec1df27bb4d0",
+  "environment_key": "ruff-rust-toolchain",
+  "prompt": "Fix for `FURB157` removes digit separators\n\nThe fix in latest ruff (v0.13.1) converts `Decimal(\"1_000\")` to `Decimal(1000)` instead of to `Decimal(1_000)`.\n\nIt becomes more problematic for bigger values, where thousand formatting really helps to read a number, like `Decimal(15_000_000)`.\n\n _Originally posted by @m-aciek in [a related issue](https://github.com/astral-sh/ruff/issues/13807#issuecomment-[redacted revision])_",
+  "subsystem": "linter",
+  "task_id": "ruff__ruff-20588",
+  "test_commands": [
+    "cargo test -p ruff_linter"
+  ],
+  "timeouts": {
+    "agent_seconds": 1800,
+    "test_seconds": 900
+  }
+}

@@ -1,0 +1,51 @@
+diff --git a/crates/ruff_linter/resources/test/fixtures/refurb/FURB140.py b/crates/ruff_linter/resources/test/fixtures/refurb/FURB140.py
+index 2df7314c2a22e9309bcf4ae77374b019c233d5ef..ca042ec3dc6e9c0540e50a3e3c209b98ddd21505 100644
+--- a/crates/ruff_linter/resources/test/fixtures/refurb/FURB140.py
++++ b/crates/ruff_linter/resources/test/fixtures/refurb/FURB140.py
+@@ -57,3 +57,11 @@ from itertools import starmap as sm
+ [" ".join(x)(x, y) for x, y in zipped()]
+ 
+ [" ".join(x)(*x) for x in zipped()]
++
++all(
++    predicate(a, b)
++    # text
++    for a, b
++    # text
++    in some_iterable
++)
+diff --git a/crates/ruff_linter/src/rules/refurb/snapshots/ruff_linter__rules__refurb__tests__FURB140_FURB140.py.snap b/crates/ruff_linter/src/rules/refurb/snapshots/ruff_linter__rules__refurb__tests__FURB140_FURB140.py.snap
+index 515d7764bb630a2f9c27bd7fdf83d262050c67fe..dbf8864f3ae93e7ca03bea207435c5336689eb87 100644
+--- a/crates/ruff_linter/src/rules/refurb/snapshots/ruff_linter__rules__refurb__tests__FURB140_FURB140.py.snap
++++ b/crates/ruff_linter/src/rules/refurb/snapshots/ruff_linter__rules__refurb__tests__FURB140_FURB140.py.snap
+@@ -184,4 +184,29 @@ help: Replace with `itertools.starmap`
+ 31 + set(sm(foo, [(85, 60), (100, 80)]))
+ 32 | 
+ 33 | # Non-errors.
+-34 |
++34 | 
++
++FURB140 [*] Use `itertools.starmap` instead of the generator
++  --> FURB140.py:62:5
++   |
++61 |   all(
++62 | /     predicate(a, b)
++63 | |     # text
++64 | |     for a, b
++65 | |     # text
++66 | |     in some_iterable
++   | |____________________^
++67 |   )
++   |
++help: Replace with `itertools.starmap`
++59 | [" ".join(x)(*x) for x in zipped()]
++60 | 
++61 | all(
++   -     predicate(a, b)
++   -     # text
++   -     for a, b
++   -     # text
++   -     in some_iterable
++62 +     sm(predicate, some_iterable)
++63 | )
++note: This is an unsafe fix and may change runtime behavior

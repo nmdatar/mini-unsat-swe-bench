@@ -1,0 +1,32 @@
+diff --git a/crates/ruff_linter/resources/test/fixtures/flake8_simplify/SIM911.py b/crates/ruff_linter/resources/test/fixtures/flake8_simplify/SIM911.py
+index 3dd52b41398f4d31dbe5a699ac1bce17fed38a13..ee5bed6854ae9b47ee4713d424340c28ae705999 100644
+--- a/crates/ruff_linter/resources/test/fixtures/flake8_simplify/SIM911.py
++++ b/crates/ruff_linter/resources/test/fixtures/flake8_simplify/SIM911.py
+@@ -34,3 +34,7 @@ def foo():
+ # https://github.com/astral-sh/ruff/issues/18776
+ flag_stars = {}
+ for country, stars in(zip)(flag_stars.keys(), flag_stars.values()):...
++
++# Regression test for https://github.com/astral-sh/ruff/issues/18778
++d = {}
++for country, stars in zip(d.keys(*x), d.values("hello")):...
+diff --git a/crates/ruff_linter/src/rules/flake8_simplify/snapshots/ruff_linter__rules__flake8_simplify__tests__SIM911_SIM911.py.snap b/crates/ruff_linter/src/rules/flake8_simplify/snapshots/ruff_linter__rules__flake8_simplify__tests__SIM911_SIM911.py.snap
+index ffecf5ebeb2d941a3dd3ef069ad54a0d9b0d4293..3b2f5bdf35749bf9d5dc6f3a62fa8360f079baa6 100644
+--- a/crates/ruff_linter/src/rules/flake8_simplify/snapshots/ruff_linter__rules__flake8_simplify__tests__SIM911_SIM911.py.snap
++++ b/crates/ruff_linter/src/rules/flake8_simplify/snapshots/ruff_linter__rules__flake8_simplify__tests__SIM911_SIM911.py.snap
+@@ -81,6 +81,8 @@ SIM911 [*] Use ` flag_stars.items()` instead of `(zip)(flag_stars.keys(), flag_s
+ 35 | flag_stars = {}
+ 36 | for country, stars in(zip)(flag_stars.keys(), flag_stars.values()):...
+    |                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
++37 |
++38 | # Regression test for https://github.com/astral-sh/ruff/issues/18778
+    |
+ help: Replace `(zip)(flag_stars.keys(), flag_stars.values())` with ` flag_stars.items()`
+ 33 | 
+@@ -88,3 +90,6 @@ help: Replace `(zip)(flag_stars.keys(), flag_stars.values())` with ` flag_stars.
+ 35 | flag_stars = {}
+    - for country, stars in(zip)(flag_stars.keys(), flag_stars.values()):...
+ 36 + for country, stars in flag_stars.items():...
++37 | 
++38 | # Regression test for https://github.com/astral-sh/ruff/issues/18778
++39 | d = {}

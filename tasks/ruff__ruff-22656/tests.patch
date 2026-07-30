@@ -1,0 +1,61 @@
+diff --git a/crates/ruff_linter/resources/test/fixtures/flake8_bugbear/B009_B010.py b/crates/ruff_linter/resources/test/fixtures/flake8_bugbear/B009_B010.py
+index 3562a5a9892061f31b7d22065b242604fe05cb20..84f05533ea851859a8391576c24a8c36a24ca919 100644
+--- a/crates/ruff_linter/resources/test/fixtures/flake8_bugbear/B009_B010.py
++++ b/crates/ruff_linter/resources/test/fixtures/flake8_bugbear/B009_B010.py
+@@ -79,3 +79,10 @@ setattr(foo, "__debug__", 0)
+ # Example: the long s character "ſ" normalizes to "s" under NFKC.
+ getattr(foo, "ſ")
+ setattr(foo, "ſ", 1)
++
++
++getattr(
++    obj,
++    # text
++    "foo",
++)
+\ No newline at end of file
+diff --git a/crates/ruff_linter/src/rules/flake8_bugbear/snapshots/ruff_linter__rules__flake8_bugbear__tests__B009_B009_B010.py.snap b/crates/ruff_linter/src/rules/flake8_bugbear/snapshots/ruff_linter__rules__flake8_bugbear__tests__B009_B009_B010.py.snap
+index febc145dd7ed30fb444520c02b0b030e5d2392a2..58d09c27afcb084fff7d124d296579aef13e5251 100644
+--- a/crates/ruff_linter/src/rules/flake8_bugbear/snapshots/ruff_linter__rules__flake8_bugbear__tests__B009_B009_B010.py.snap
++++ b/crates/ruff_linter/src/rules/flake8_bugbear/snapshots/ruff_linter__rules__flake8_bugbear__tests__B009_B009_B010.py.snap
+@@ -377,4 +377,28 @@ help: Replace `getattr` with attribute access
+    - getattr(foo, "ſ")
+ 80 + foo.ſ
+ 81 | setattr(foo, "ſ", 1)
++82 | 
++83 | 
++note: This is an unsafe fix and may change runtime behavior
++
++B009 [*] Do not call `getattr` with a constant attribute value. It is not any safer than normal property access.
++  --> B009_B010.py:84:1
++   |
++84 | / getattr(
++85 | |     obj,
++86 | |     # text
++87 | |     "foo",
++88 | | )
++   | |_^
++   |
++help: Replace `getattr` with attribute access
++81 | setattr(foo, "ſ", 1)
++82 | 
++83 | 
++   - getattr(
++   -     obj,
++   -     # text
++   -     "foo",
++   - )
++84 + obj.foo
+ note: This is an unsafe fix and may change runtime behavior
+diff --git a/crates/ruff_linter/src/rules/flake8_bugbear/snapshots/ruff_linter__rules__flake8_bugbear__tests__B010_B009_B010.py.snap b/crates/ruff_linter/src/rules/flake8_bugbear/snapshots/ruff_linter__rules__flake8_bugbear__tests__B010_B009_B010.py.snap
+index 8dab4338a19767d873d0fd625965efafdbb6b91f..3770c7f6a4f1bce926b8687959656532052b68c2 100644
+--- a/crates/ruff_linter/src/rules/flake8_bugbear/snapshots/ruff_linter__rules__flake8_bugbear__tests__B010_B009_B010.py.snap
++++ b/crates/ruff_linter/src/rules/flake8_bugbear/snapshots/ruff_linter__rules__flake8_bugbear__tests__B010_B009_B010.py.snap
+@@ -133,4 +133,7 @@ help: Replace `setattr` with assignment
+ 80 | getattr(foo, "ſ")
+    - setattr(foo, "ſ", 1)
+ 81 + foo.ſ = 1
++82 | 
++83 | 
++84 | getattr(
+ note: This is an unsafe fix and may change runtime behavior

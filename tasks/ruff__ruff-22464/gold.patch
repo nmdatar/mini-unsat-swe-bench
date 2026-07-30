@@ -1,0 +1,39 @@
+diff --git a/crates/ruff_linter/src/rules/flake8_pytest_style/rules/parametrize.rs b/crates/ruff_linter/src/rules/flake8_pytest_style/rules/parametrize.rs
+index 904ca1c494dd2f6d5cda05d0aeae073d18d0bf40..6c72ef28404fe6a7c400b8688854a99697aaeeb2 100644
+--- a/crates/ruff_linter/src/rules/flake8_pytest_style/rules/parametrize.rs
++++ b/crates/ruff_linter/src/rules/flake8_pytest_style/rules/parametrize.rs
+@@ -705,7 +705,8 @@ fn handle_single_name(checker: &Checker, argnames: &Expr, value: &Expr, argvalue
+     //     assert isinstance(x, int)  # fails because `x` is a tuple, not an int
+     // ```
+     let argvalues_edits = unpack_single_element_items(checker, argvalues);
+-    let argnames_edit = Edit::range_replacement(checker.generator().expr(value), argnames.range());
++    let argnames_edit =
++        Edit::range_replacement(unparse_expr_in_sequence(value, checker), argnames.range());
+     let fix = if checker.comment_ranges().intersects(argnames_edit.range())
+         || argvalues_edits
+             .iter()
+@@ -743,13 +744,23 @@ fn unpack_single_element_items(checker: &Checker, expr: &Expr) -> Vec<Edit> {
+         }
+ 
+         edits.push(Edit::range_replacement(
+-            checker.generator().expr(elt),
++            unparse_expr_in_sequence(elt, checker),
+             value.range(),
+         ));
+     }
+     edits
+ }
+ 
++fn unparse_expr_in_sequence(expr: &Expr, checker: &Checker) -> String {
++    let content = checker.locator().slice(expr);
++    if let Expr::Tuple(tuple) = expr {
++        if !tuple.is_empty() && !tuple.parenthesized {
++            return format!("({content})");
++        }
++    }
++    content.to_string()
++}
++
+ fn handle_value_rows(
+     checker: &Checker,
+     elts: &[Expr],

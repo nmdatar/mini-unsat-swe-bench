@@ -1,0 +1,113 @@
+diff --git a/crates/ruff_python_formatter/resources/test/fixtures/ruff/expression/fstring.py b/crates/ruff_python_formatter/resources/test/fixtures/ruff/expression/fstring.py
+index fd658cc5ce8ec5fb6378d062be1ecbb6819e76f3..46322e38f2f23ffa712930b9b4eee8cd0e51e318 100644
+--- a/crates/ruff_python_formatter/resources/test/fixtures/ruff/expression/fstring.py
++++ b/crates/ruff_python_formatter/resources/test/fixtures/ruff/expression/fstring.py
+@@ -748,3 +748,7 @@ print(f"{  # Tuple with multiple elements that doesn't fit on a single line gets
+ 
+ # Regression tests for https://github.com/astral-sh/ruff/issues/15536
+ print(f"{ {}, 1, }")
++
++
++# The inner quotes should not be changed to double quotes before Python 3.12
++f"{f'''{'nested'} inner'''} outer"
+diff --git a/crates/ruff_python_formatter/tests/snapshots/black_compatibility@cases__fstring.py.snap b/crates/ruff_python_formatter/tests/snapshots/black_compatibility@cases__fstring.py.snap
+index 6ff1f73fd700637c8290234d66388242dd400757..f4140291a549cf91d8dbc10d07317ea17f8db500 100644
+--- a/crates/ruff_python_formatter/tests/snapshots/black_compatibility@cases__fstring.py.snap
++++ b/crates/ruff_python_formatter/tests/snapshots/black_compatibility@cases__fstring.py.snap
+@@ -28,12 +28,11 @@ but none started with prefix {parentdir_prefix}"
+  f'{{NOT \'a\' "formatted" "value"}}'
+  f"some f-string with {a} {few():.2f} {formatted.values!r}"
+ -f'some f-string with {a} {few(""):.2f} {formatted.values!r}'
+--f"{f'''{'nested'} inner'''} outer"
+++f"some f-string with {a} {few(''):.2f} {formatted.values!r}"
++ f"{f'''{'nested'} inner'''} outer"
+ -f"\"{f'{nested} inner'}\" outer"
+ -f"space between opening braces: { {a for a in (1, 2, 3)}}"
+ -f'Hello \'{tricky + "example"}\''
+-+f"some f-string with {a} {few(''):.2f} {formatted.values!r}"
+-+f"{f'''{"nested"} inner'''} outer"
+ +f'"{f"{nested} inner"}" outer'
+ +f"space between opening braces: { {a for a in (1, 2, 3)} }"
+ +f"Hello '{tricky + 'example'}'"
+@@ -49,7 +48,7 @@ f"{{NOT a formatted value}}"
+ f'{{NOT \'a\' "formatted" "value"}}'
+ f"some f-string with {a} {few():.2f} {formatted.values!r}"
+ f"some f-string with {a} {few(''):.2f} {formatted.values!r}"
+-f"{f'''{"nested"} inner'''} outer"
++f"{f'''{'nested'} inner'''} outer"
+ f'"{f"{nested} inner"}" outer'
+ f"space between opening braces: { {a for a in (1, 2, 3)} }"
+ f"Hello '{tricky + 'example'}'"
+@@ -72,17 +71,3 @@ f'Hello \'{tricky + "example"}\''
+ f"Tried directories {str(rootdirs)} \
+ but none started with prefix {parentdir_prefix}"
+ ```
+-
+-## New Unsupported Syntax Errors
+-
+-error[invalid-syntax]: Cannot reuse outer quote character in f-strings on Python 3.10 (syntax was added in Python 3.12)
+- --> fstring.py:6:9
+-  |
+-4 | f"some f-string with {a} {few():.2f} {formatted.values!r}"
+-5 | f"some f-string with {a} {few(''):.2f} {formatted.values!r}"
+-6 | f"{f'''{"nested"} inner'''} outer"
+-  |         ^
+-7 | f'"{f"{nested} inner"}" outer'
+-8 | f"space between opening braces: { {a for a in (1, 2, 3)} }"
+-  |
+-warning: Only accept new syntax errors if they are also present in the input. The formatter should not introduce syntax errors.
+diff --git a/crates/ruff_python_formatter/tests/snapshots/format@expression__fstring.py.snap b/crates/ruff_python_formatter/tests/snapshots/format@expression__fstring.py.snap
+index c9d90b17649d1037178a5436cd1ae4a898f5daf6..4460667febb6a4b99766112f9d8b8db437025a0f 100644
+--- a/crates/ruff_python_formatter/tests/snapshots/format@expression__fstring.py.snap
++++ b/crates/ruff_python_formatter/tests/snapshots/format@expression__fstring.py.snap
+@@ -754,6 +754,10 @@ print(f"{  # Tuple with multiple elements that doesn't fit on a single line gets
+ 
+ # Regression tests for https://github.com/astral-sh/ruff/issues/15536
+ print(f"{ {}, 1, }")
++
++
++# The inner quotes should not be changed to double quotes before Python 3.12
++f"{f'''{'nested'} inner'''} outer"
+ ```
+ 
+ ## Outputs
+@@ -1532,7 +1536,7 @@ f'{f"""other " """}'
+ f'{1: hy "user"}'
+ f'{1:hy "user"}'
+ f'{1: abcd "{1}" }'
+-f'{1: abcd "{"aa"}" }'
++f'{1: abcd "{'aa'}" }'
+ f'{1=: "abcd {'aa'}}'
+ f"{x:a{z:hy \"user\"}} '''"
+ 
+@@ -1581,6 +1585,10 @@ print(
+ 
+ # Regression tests for https://github.com/astral-sh/ruff/issues/15536
+ print(f"{ {}, 1 }")
++
++
++# The inner quotes should not be changed to double quotes before Python 3.12
++f"{f'''{'nested'} inner'''} outer"
+ ```
+ 
+ 
+@@ -2359,7 +2367,7 @@ f'{f"""other " """}'
+ f'{1: hy "user"}'
+ f'{1:hy "user"}'
+ f'{1: abcd "{1}" }'
+-f'{1: abcd "{"aa"}" }'
++f'{1: abcd "{'aa'}" }'
+ f'{1=: "abcd {'aa'}}'
+ f"{x:a{z:hy \"user\"}} '''"
+ 
+@@ -2408,6 +2416,10 @@ print(
+ 
+ # Regression tests for https://github.com/astral-sh/ruff/issues/15536
+ print(f"{ {}, 1 }")
++
++
++# The inner quotes should not be changed to double quotes before Python 3.12
++f"{f'''{'nested'} inner'''} outer"
+ ```
+ 
+ 

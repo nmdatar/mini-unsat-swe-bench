@@ -1,0 +1,14 @@
+{
+  "base_commit": "c920cf8cdb247a9fd8e15a4c9d2efa838f7a78a3",
+  "environment_key": "ruff-rust-toolchain",
+  "prompt": "[Fix error] `PT006` parametrize with single fixture where one of the values is an empty tuple\n\nMinified example `tests/test_ruff_bug.py`:\n```python\nimport pytest\n\n@pytest.mark.parametrize(\n    [\"whatever\"],\n    [\n        ((),),\n        ((1,),),\n    ],\n)\ndef test_pt006_fix_error(whatever):\n    assert 1 + 2 > sum(whatever)\n```\n\nOutput:\n```\nerror: Fix introduced a syntax error. Reverting all changes.\n\nThis indicates a bug in Ruff. If you could open an issue at:\n\n    https://github.com/astral-sh/ruff/issues/new?title=%5BFix%20error%5D\n\n...quoting the contents of `tests/test_ruff_bug.py`, the rule codes PT006, along with the `pyproject.toml` settings and executed command, we'd be very appreciative!\n\nPT006 Wrong type passed to first argument of `pytest.mark.parametrize`; expected `str`\n --> tests/test_ruff_bug.py:5:5\n  |\n4 | @pytest.mark.parametrize(\n5 |     [\"whatever\"],\n  |     ^^^^^^^^^^^^\n6 |     [\n7 |         ((),),\n  |\nhelp: Use a string for the first argument\n```\n\n`pyproject.toml`:\n```\n[tool.ruff.lint]\nselect = [\"PT006\"]\n```\n\nExecuted command: `ruff check --fix tests/test_ruff_bug.py`\n\nIf you remove any item in parametrization list, either `((),)` or `((1,),)`, the fix succeeds.",
+  "subsystem": "linter",
+  "task_id": "ruff__ruff-22464",
+  "test_commands": [
+    "cargo test -p ruff_linter"
+  ],
+  "timeouts": {
+    "agent_seconds": 1800,
+    "test_seconds": 900
+  }
+}

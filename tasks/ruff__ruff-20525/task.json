@@ -1,0 +1,14 @@
+{
+  "base_commit": "094bf70a605ff0511969ec0cd45816eef73293d6",
+  "environment_key": "ruff-rust-toolchain",
+  "prompt": "RUF010 diagnostic is unhelpful for an interpolation with debug text\n\n### Summary\n\n[`explicit-f-string-type-conversion` (RUF010)](https://docs.astral.sh/ruff/rules/explicit-f-string-type-conversion/) should be suppressed for interpolations that use `=` because there is no way to use a conversion flag to get the same output, which the user presumably intended, so the diagnostic is not helpful.\n```console\n$ cat >ruf010.py <<'# EOF'\nprint(f\"{ascii(1)=}\")\n# EOF\n\n$ python ruf010.py\nascii(1)='1'\n\n$ ruff --isolated check ruf010.py --select RUF010 --output-format concise -q\nruf010.py:1:10: RUF010 Use explicit conversion flag\n```\nAlternatively, if the diagnostic _is_ deemed helpful, I suggest reverting that piece of a related issue and marking the fix unsafe in this case. Either works; it\u2019s just this middle ground of hinting at a change but not showing it that seems unhelpful.",
+  "subsystem": "linter",
+  "task_id": "ruff__ruff-20525",
+  "test_commands": [
+    "cargo test -p ruff_linter"
+  ],
+  "timeouts": {
+    "agent_seconds": 1800,
+    "test_seconds": 900
+  }
+}

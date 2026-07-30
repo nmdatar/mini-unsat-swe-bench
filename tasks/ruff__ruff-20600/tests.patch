@@ -1,0 +1,76 @@
+diff --git a/crates/ruff_linter/resources/test/fixtures/ruff/RUF065.py b/crates/ruff_linter/resources/test/fixtures/ruff/RUF065.py
+index 9700871469ecb490c4bcbf105af3b40dcb9caf3f..d7de9df7d2372be92019b2cc544a3e6dc8abb27f 100644
+--- a/crates/ruff_linter/resources/test/fixtures/ruff/RUF065.py
++++ b/crates/ruff_linter/resources/test/fixtures/ruff/RUF065.py
+@@ -37,3 +37,9 @@ log(logging.INFO, "Hello %r", repr("World!"))
+ def str(s): return f"str = {s}"
+ # Don't flag this
+ logging.info("Hello %s", str("World!"))
++
++logging.info("Debug info: %r", repr("test\nstring"))
++logging.warning("Value: %r", repr(42))
++logging.error("Error: %r", repr([1, 2, 3]))
++logging.info("Debug info: %s", repr("test\nstring"))
++logging.warning("Value: %s", repr(42))
+diff --git a/crates/ruff_linter/src/rules/ruff/snapshots/ruff_linter__rules__ruff__tests__RUF065_RUF065.py.snap b/crates/ruff_linter/src/rules/ruff/snapshots/ruff_linter__rules__ruff__tests__RUF065_RUF065.py.snap
+index 81dfa8bfa138a7bcf6c823de133be824123a2fb0..9589c4555deda23889aed5617975f4cf74affeeb 100644
+--- a/crates/ruff_linter/src/rules/ruff/snapshots/ruff_linter__rules__ruff__tests__RUF065_RUF065.py.snap
++++ b/crates/ruff_linter/src/rules/ruff/snapshots/ruff_linter__rules__ruff__tests__RUF065_RUF065.py.snap
+@@ -1,6 +1,5 @@
+ ---
+ source: crates/ruff_linter/src/rules/ruff/mod.rs
+-assertion_line: 124
+ ---
+ RUF065 Unnecessary `str()` conversion when formatting with `%s`
+  --> RUF065.py:4:26
+@@ -22,26 +21,6 @@ RUF065 Unnecessary `str()` conversion when formatting with `%s`
+ 7 | # %s + repr()
+   |
+ 
+-RUF065 Unnecessary `repr()` conversion when formatting with `%r`
+-  --> RUF065.py:16:26
+-   |
+-15 | # %r + repr()
+-16 | logging.info("Hello %r", repr("World!"))
+-   |                          ^^^^^^^^^^^^^^
+-17 | logging.log(logging.INFO, "Hello %r", repr("World!"))
+-   |
+-
+-RUF065 Unnecessary `repr()` conversion when formatting with `%r`
+-  --> RUF065.py:17:39
+-   |
+-15 | # %r + repr()
+-16 | logging.info("Hello %r", repr("World!"))
+-17 | logging.log(logging.INFO, "Hello %r", repr("World!"))
+-   |                                       ^^^^^^^^^^^^^^
+-18 |
+-19 | from logging import info, log
+-   |
+-
+ RUF065 Unnecessary `str()` conversion when formatting with `%s`
+   --> RUF065.py:22:18
+    |
+@@ -61,23 +40,3 @@ RUF065 Unnecessary `str()` conversion when formatting with `%s`
+ 24 |
+ 25 | # %s + repr()
+    |
+-
+-RUF065 Unnecessary `repr()` conversion when formatting with `%r`
+-  --> RUF065.py:34:18
+-   |
+-33 | # %r + repr()
+-34 | info("Hello %r", repr("World!"))
+-   |                  ^^^^^^^^^^^^^^
+-35 | log(logging.INFO, "Hello %r", repr("World!"))
+-   |
+-
+-RUF065 Unnecessary `repr()` conversion when formatting with `%r`
+-  --> RUF065.py:35:31
+-   |
+-33 | # %r + repr()
+-34 | info("Hello %r", repr("World!"))
+-35 | log(logging.INFO, "Hello %r", repr("World!"))
+-   |                               ^^^^^^^^^^^^^^
+-36 |
+-37 | def str(s): return f"str = {s}"
+-   |

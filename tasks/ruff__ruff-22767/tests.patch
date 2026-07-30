@@ -1,0 +1,44 @@
+diff --git a/crates/ruff_linter/resources/test/fixtures/refurb/FURB105.py b/crates/ruff_linter/resources/test/fixtures/refurb/FURB105.py
+index aca23813b3f7a72791e4786de80bcbaa276a1b94..007d5822dec1ef3d737e2c38ec80c24f650ffac8 100644
+--- a/crates/ruff_linter/resources/test/fixtures/refurb/FURB105.py
++++ b/crates/ruff_linter/resources/test/fixtures/refurb/FURB105.py
+@@ -37,3 +37,9 @@ print("foo", "", "bar", "", sep=",")
+ print("", "", **kwargs)
+ print(*args, sep=",")
+ print(f"foo")
++
++
++print(
++    # text
++    ""
++)
+diff --git a/crates/ruff_linter/src/rules/refurb/snapshots/ruff_linter__rules__refurb__tests__FURB105_FURB105.py.snap b/crates/ruff_linter/src/rules/refurb/snapshots/ruff_linter__rules__refurb__tests__FURB105_FURB105.py.snap
+index d875fcff56477b999ac6758fab07d47f03f831f6..3256f326edb2a7b9e2735837e538ad9e92fca75c 100644
+--- a/crates/ruff_linter/src/rules/refurb/snapshots/ruff_linter__rules__refurb__tests__FURB105_FURB105.py.snap
++++ b/crates/ruff_linter/src/rules/refurb/snapshots/ruff_linter__rules__refurb__tests__FURB105_FURB105.py.snap
+@@ -417,4 +417,24 @@ help: Remove empty string
+ 24 + print(end="bar")
+ 25 | 
+ 26 | # OK.
+-27 |
++27 | 
++
++FURB105 [*] Unnecessary empty string passed to `print`
++  --> FURB105.py:42:1
++   |
++42 | / print(
++43 | |     # text
++44 | |     ""
++45 | | )
++   | |_^
++   |
++help: Remove empty string
++39 | print(f"foo")
++40 | 
++41 | 
++   - print(
++   -     # text
++   -     ""
++   - )
++42 + print()
++note: This is an unsafe fix and may change runtime behavior

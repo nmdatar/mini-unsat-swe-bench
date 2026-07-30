@@ -1,0 +1,94 @@
+diff --git a/crates/ruff_linter/resources/test/fixtures/pylint/dict_iter_missing_items.py b/crates/ruff_linter/resources/test/fixtures/pylint/dict_iter_missing_items.py
+index 4f850f267db15b67417c9952ad6536831897225c..53e6cc64ec940259eb91723cf0ed09170376f034 100644
+--- a/crates/ruff_linter/resources/test/fixtures/pylint/dict_iter_missing_items.py
++++ b/crates/ruff_linter/resources/test/fixtures/pylint/dict_iter_missing_items.py
+@@ -30,3 +30,23 @@ for a, b in d_tuple:
+     pass
+ for a, b in d_tuple_annotated: 
+     pass
++
++# Empty dict cases
++empty_dict = {}
++empty_dict["x"] = 1
++for k, v in empty_dict:
++    pass
++
++empty_dict_annotated_tuple_keys: dict[tuple[int, str], bool] = {}
++for k, v in empty_dict_annotated_tuple_keys:
++    pass
++
++empty_dict_unannotated = {}
++empty_dict_unannotated[("x", "y")] = True
++for k, v in empty_dict_unannotated:
++    pass
++
++empty_dict_annotated_str_keys: dict[str, int] = {}
++empty_dict_annotated_str_keys["x"] = 1
++for k, v in empty_dict_annotated_str_keys:
++    pass
+diff --git a/crates/ruff_linter/src/rules/pylint/snapshots/ruff_linter__rules__pylint__tests__PLE1141_dict_iter_missing_items.py.snap b/crates/ruff_linter/src/rules/pylint/snapshots/ruff_linter__rules__pylint__tests__PLE1141_dict_iter_missing_items.py.snap
+index eb244c5aae97ec7a49a6d9f08ef2d438a89c2c60..7b8dc75d6f7aa46952460ecea1209fe0ec38f311 100644
+--- a/crates/ruff_linter/src/rules/pylint/snapshots/ruff_linter__rules__pylint__tests__PLE1141_dict_iter_missing_items.py.snap
++++ b/crates/ruff_linter/src/rules/pylint/snapshots/ruff_linter__rules__pylint__tests__PLE1141_dict_iter_missing_items.py.snap
+@@ -39,3 +39,61 @@ help: Add a call to `.items()`
+ 18 | 
+ 19 | 
+ note: This is an unsafe fix and may change runtime behavior
++
++PLE1141 [*] Unpacking a dictionary in iteration without calling `.items()`
++  --> dict_iter_missing_items.py:37:13
++   |
++35 | empty_dict = {}
++36 | empty_dict["x"] = 1
++37 | for k, v in empty_dict:
++   |             ^^^^^^^^^^
++38 |     pass
++   |
++help: Add a call to `.items()`
++34 | # Empty dict cases
++35 | empty_dict = {}
++36 | empty_dict["x"] = 1
++   - for k, v in empty_dict:
++37 + for k, v in empty_dict.items():
++38 |     pass
++39 | 
++40 | empty_dict_annotated_tuple_keys: dict[tuple[int, str], bool] = {}
++note: This is an unsafe fix and may change runtime behavior
++
++PLE1141 [*] Unpacking a dictionary in iteration without calling `.items()`
++  --> dict_iter_missing_items.py:46:13
++   |
++44 | empty_dict_unannotated = {}
++45 | empty_dict_unannotated[("x", "y")] = True
++46 | for k, v in empty_dict_unannotated:
++   |             ^^^^^^^^^^^^^^^^^^^^^^
++47 |     pass
++   |
++help: Add a call to `.items()`
++43 | 
++44 | empty_dict_unannotated = {}
++45 | empty_dict_unannotated[("x", "y")] = True
++   - for k, v in empty_dict_unannotated:
++46 + for k, v in empty_dict_unannotated.items():
++47 |     pass
++48 | 
++49 | empty_dict_annotated_str_keys: dict[str, int] = {}
++note: This is an unsafe fix and may change runtime behavior
++
++PLE1141 [*] Unpacking a dictionary in iteration without calling `.items()`
++  --> dict_iter_missing_items.py:51:13
++   |
++49 | empty_dict_annotated_str_keys: dict[str, int] = {}
++50 | empty_dict_annotated_str_keys["x"] = 1
++51 | for k, v in empty_dict_annotated_str_keys:
++   |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
++52 |     pass
++   |
++help: Add a call to `.items()`
++48 | 
++49 | empty_dict_annotated_str_keys: dict[str, int] = {}
++50 | empty_dict_annotated_str_keys["x"] = 1
++   - for k, v in empty_dict_annotated_str_keys:
++51 + for k, v in empty_dict_annotated_str_keys.items():
++52 |     pass
++note: This is an unsafe fix and may change runtime behavior

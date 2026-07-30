@@ -1,0 +1,25 @@
+diff --git a/crates/ruff_linter/src/rules/refurb/rules/write_whole_file.rs b/crates/ruff_linter/src/rules/refurb/rules/write_whole_file.rs
+index bbee6dcb5a12f138bcc82426a61416d056b7e21f..da99733efd88854ff8933eec4c9685fd030955b6 100644
+--- a/crates/ruff_linter/src/rules/refurb/rules/write_whole_file.rs
++++ b/crates/ruff_linter/src/rules/refurb/rules/write_whole_file.rs
+@@ -5,7 +5,6 @@ use ruff_python_ast::{
+     relocate::relocate_expr,
+     visitor::{self, Visitor},
+ };
+-
+ use ruff_python_codegen::Generator;
+ use ruff_text_size::{Ranged, TextRange};
+ 
+diff --git a/crates/ruff_python_ast/src/nodes.rs b/crates/ruff_python_ast/src/nodes.rs
+index f71f420d09d1846d43dd2322231de1fb315fc226..5cb58e7f05c3aa8d9f10f7272c42d1528726be57 100644
+--- a/crates/ruff_python_ast/src/nodes.rs
++++ b/crates/ruff_python_ast/src/nodes.rs
+@@ -3372,7 +3372,7 @@ impl Arguments {
+     pub fn arguments_source_order(&self) -> impl Iterator<Item = ArgOrKeyword<'_>> {
+         let args = self.args.iter().map(ArgOrKeyword::Arg);
+         let keywords = self.keywords.iter().map(ArgOrKeyword::Keyword);
+-        args.merge_by(keywords, |left, right| left.start() < right.start())
++        args.merge_by(keywords, |left, right| left.start() <= right.start())
+     }
+ 
+     pub fn inner_range(&self) -> TextRange {

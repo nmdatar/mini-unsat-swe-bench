@@ -1,0 +1,14 @@
+{
+  "base_commit": "2c6c3e78f65394ba441e3bab7fd38244554c125a",
+  "environment_key": "ruff-rust-toolchain",
+  "prompt": "PYI061 fix can change operator precedence\n\n### Summary\n\nThe fix for [`redundant-none-literal` (PYI061)](https://docs.astral.sh/ruff/rules/redundant-none-literal/) in Python 3.10 and later changes a subscription into a `|` expression, which has different precedence, which can change the program\u2019s behavior outside of typing contexts. The fix should insert parentheses when necessary to maintain the correct precedence, i.e. `(Literal[1] | None).__dict__` in [this example](https://play.ruff.rs/[redacted revision]-e4a0-44c0-bce3-[redacted revision]):\n```console \n$ cat >pyi061.py <<'# EOF'\nfrom typing import Literal\nprint(Literal[1, None].__dict__)\n# EOF\n\n$ python pyi061.py\n{'_inst': True, '_name': None, '__origin__': typing.Literal, '__slots__': None, '__args__': (1, None), '__parameters__': (), '__module__': 'typing'}\n\n$ ruff --isolated check pyi061.py --select PYI061 --preview --target-version py310 --fix\nFound 1 error (1 fixed, 0 remaining).\n\n$ cat pyi061.py \nfrom typing import Literal\nprint(Literal[1] | None.__dict__)\n\n$ python pyi061.py 2>&1 | tail -n 1\nAttributeError: 'NoneType' object has no attribute '__dict__'. Did you mean: '__dir__'?\n```",
+  "subsystem": "linter",
+  "task_id": "ruff__ruff-20508",
+  "test_commands": [
+    "cargo test -p ruff_linter"
+  ],
+  "timeouts": {
+    "agent_seconds": 1800,
+    "test_seconds": 900
+  }
+}

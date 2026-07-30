@@ -1,0 +1,14 @@
+{
+  "base_commit": "692b7d7f0c5ffe5dff91286328f8d67e86a258c4",
+  "environment_key": "ruff-rust-toolchain",
+  "prompt": "DOC502 false positive on `raise e`\n\n### Summary\n\n[`docstring-extraneous-exception` (DOC502)](https://docs.astral.sh/ruff/rules/docstring-extraneous-exception/) reports a false positive when an exception mentioned in the docstring is caught and explicitly reraised (i.e. `raise e` or `raise e from None`, assuming `e` is bound in the `except` clause and not rebound before it is raised). It correctly ignores implicit reraising (i.e. just `raise`) of a documented exception. The upstream implementation in pydoclint gets it right both ways. [Example](https://play.ruff.rs/[redacted revision]-af0f-4ca4-a56e-[redacted revision]):\n```console\n$ cat >doc502.py <<'# EOF'\ndef f():\n    \"\"\"Do nothing.\n\n    Raises\n    ------\n    OSError\n        If the OS errors.\n    \"\"\"\n    try:\n        pass\n    except OSError as e:\n        raise e\n# EOF\n\n$ ruff --isolated check doc502.py --select DOC502 --preview --output-format concise -q\ndoc502.py:2:5: DOC502 Raised exception is not explicitly raised: `OSError`\n\n$ pydoclint doc502.py\nSkipping files that match this pattern: \\.git|\\.tox\ndoc502.py\n\ud83c\udf89 No violations \ud83c\udf89\n```",
+  "subsystem": "linter",
+  "task_id": "ruff__ruff-21011",
+  "test_commands": [
+    "cargo test -p ruff_linter"
+  ],
+  "timeouts": {
+    "agent_seconds": 1800,
+    "test_seconds": 900
+  }
+}

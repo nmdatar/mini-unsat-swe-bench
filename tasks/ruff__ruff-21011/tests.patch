@@ -1,0 +1,202 @@
+diff --git a/crates/ruff_linter/resources/test/fixtures/pydoclint/DOC502_google.py b/crates/ruff_linter/resources/test/fixtures/pydoclint/DOC502_google.py
+index f9e7f7a89f64a4bfe41eeabfdc5eb76de45bba99..9709d9ff53637a8d8ad201db8d153f6263429a08 100644
+--- a/crates/ruff_linter/resources/test/fixtures/pydoclint/DOC502_google.py
++++ b/crates/ruff_linter/resources/test/fixtures/pydoclint/DOC502_google.py
+@@ -81,3 +81,55 @@ def calculate_speed(distance: float, time: float) -> float:
+     except TypeError:
+         print("Not a number? Shame on you!")
+         raise
++
++
++# This should NOT trigger DOC502 because OSError is explicitly re-raised
++def f():
++    """Do nothing.
++
++    Raises:
++        OSError: If the OS errors.
++    """
++    try:
++        pass
++    except OSError as e:
++        raise e
++
++
++# This should NOT trigger DOC502 because OSError is explicitly re-raised with from None
++def g():
++    """Do nothing.
++
++    Raises:
++        OSError: If the OS errors.
++    """
++    try:
++        pass
++    except OSError as e:
++        raise e from None
++
++
++# This should NOT trigger DOC502 because ValueError is explicitly re-raised from tuple exception
++def h():
++    """Do nothing.
++
++    Raises:
++        ValueError: If something goes wrong.
++    """
++    try:
++        pass
++    except (ValueError, TypeError) as e:
++        raise e
++
++
++# This should NOT trigger DOC502 because TypeError is explicitly re-raised from tuple exception
++def i():
++    """Do nothing.
++
++    Raises:
++        TypeError: If something goes wrong.
++    """
++    try:
++        pass
++    except (ValueError, TypeError) as e:
++        raise e
+diff --git a/crates/ruff_linter/src/rules/pydoclint/snapshots/ruff_linter__rules__pydoclint__tests__docstring-missing-exception_DOC501_google.py.snap b/crates/ruff_linter/src/rules/pydoclint/snapshots/ruff_linter__rules__pydoclint__tests__docstring-missing-exception_DOC501_google.py.snap
+index ab1377017453ad637251a57636549410cc20323d..c0b82991ae9616c23db72a00bfa62114de1228b8 100644
+--- a/crates/ruff_linter/src/rules/pydoclint/snapshots/ruff_linter__rules__pydoclint__tests__docstring-missing-exception_DOC501_google.py.snap
++++ b/crates/ruff_linter/src/rules/pydoclint/snapshots/ruff_linter__rules__pydoclint__tests__docstring-missing-exception_DOC501_google.py.snap
+@@ -61,6 +61,66 @@ DOC501 Raised exception `FasterThanLightError` missing from docstring
+    |
+ help: Add `FasterThanLightError` to the docstring
+ 
++DOC501 Raised exception `ZeroDivisionError` missing from docstring
++  --> DOC501_google.py:70:5
++   |
++68 |   # DOC501
++69 |   def calculate_speed(distance: float, time: float) -> float:
++70 | /     """Calculate speed as distance divided by time.
++71 | |
++72 | |     Args:
++73 | |         distance: Distance traveled.
++74 | |         time: Time spent traveling.
++75 | |
++76 | |     Returns:
++77 | |         Speed as distance divided by time.
++78 | |     """
++   | |_______^
++79 |       try:
++80 |           return distance / time
++   |
++help: Add `ZeroDivisionError` to the docstring
++
++DOC501 Raised exception `ValueError` missing from docstring
++  --> DOC501_google.py:88:5
++   |
++86 |   # DOC501
++87 |   def calculate_speed(distance: float, time: float) -> float:
++88 | /     """Calculate speed as distance divided by time.
++89 | |
++90 | |     Args:
++91 | |         distance: Distance traveled.
++92 | |         time: Time spent traveling.
++93 | |
++94 | |     Returns:
++95 | |         Speed as distance divided by time.
++96 | |     """
++   | |_______^
++97 |       try:
++98 |           return distance / time
++   |
++help: Add `ValueError` to the docstring
++
++DOC501 Raised exception `ZeroDivisionError` missing from docstring
++  --> DOC501_google.py:88:5
++   |
++86 |   # DOC501
++87 |   def calculate_speed(distance: float, time: float) -> float:
++88 | /     """Calculate speed as distance divided by time.
++89 | |
++90 | |     Args:
++91 | |         distance: Distance traveled.
++92 | |         time: Time spent traveling.
++93 | |
++94 | |     Returns:
++95 | |         Speed as distance divided by time.
++96 | |     """
++   | |_______^
++97 |       try:
++98 |           return distance / time
++   |
++help: Add `ZeroDivisionError` to the docstring
++
+ DOC501 Raised exception `AnotherError` missing from docstring
+    --> DOC501_google.py:106:5
+     |
+diff --git a/crates/ruff_linter/src/rules/pydoclint/snapshots/ruff_linter__rules__pydoclint__tests__docstring-missing-exception_DOC501_google.py_ignore_one_line.snap b/crates/ruff_linter/src/rules/pydoclint/snapshots/ruff_linter__rules__pydoclint__tests__docstring-missing-exception_DOC501_google.py_ignore_one_line.snap
+index ab1377017453ad637251a57636549410cc20323d..c0b82991ae9616c23db72a00bfa62114de1228b8 100644
+--- a/crates/ruff_linter/src/rules/pydoclint/snapshots/ruff_linter__rules__pydoclint__tests__docstring-missing-exception_DOC501_google.py_ignore_one_line.snap
++++ b/crates/ruff_linter/src/rules/pydoclint/snapshots/ruff_linter__rules__pydoclint__tests__docstring-missing-exception_DOC501_google.py_ignore_one_line.snap
+@@ -61,6 +61,66 @@ DOC501 Raised exception `FasterThanLightError` missing from docstring
+    |
+ help: Add `FasterThanLightError` to the docstring
+ 
++DOC501 Raised exception `ZeroDivisionError` missing from docstring
++  --> DOC501_google.py:70:5
++   |
++68 |   # DOC501
++69 |   def calculate_speed(distance: float, time: float) -> float:
++70 | /     """Calculate speed as distance divided by time.
++71 | |
++72 | |     Args:
++73 | |         distance: Distance traveled.
++74 | |         time: Time spent traveling.
++75 | |
++76 | |     Returns:
++77 | |         Speed as distance divided by time.
++78 | |     """
++   | |_______^
++79 |       try:
++80 |           return distance / time
++   |
++help: Add `ZeroDivisionError` to the docstring
++
++DOC501 Raised exception `ValueError` missing from docstring
++  --> DOC501_google.py:88:5
++   |
++86 |   # DOC501
++87 |   def calculate_speed(distance: float, time: float) -> float:
++88 | /     """Calculate speed as distance divided by time.
++89 | |
++90 | |     Args:
++91 | |         distance: Distance traveled.
++92 | |         time: Time spent traveling.
++93 | |
++94 | |     Returns:
++95 | |         Speed as distance divided by time.
++96 | |     """
++   | |_______^
++97 |       try:
++98 |           return distance / time
++   |
++help: Add `ValueError` to the docstring
++
++DOC501 Raised exception `ZeroDivisionError` missing from docstring
++  --> DOC501_google.py:88:5
++   |
++86 |   # DOC501
++87 |   def calculate_speed(distance: float, time: float) -> float:
++88 | /     """Calculate speed as distance divided by time.
++89 | |
++90 | |     Args:
++91 | |         distance: Distance traveled.
++92 | |         time: Time spent traveling.
++93 | |
++94 | |     Returns:
++95 | |         Speed as distance divided by time.
++96 | |     """
++   | |_______^
++97 |       try:
++98 |           return distance / time
++   |
++help: Add `ZeroDivisionError` to the docstring
++
+ DOC501 Raised exception `AnotherError` missing from docstring
+    --> DOC501_google.py:106:5
+     |

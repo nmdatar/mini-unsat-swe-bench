@@ -1,0 +1,59 @@
+diff --git a/crates/ruff_linter/resources/test/fixtures/ruff/RUF016.py b/crates/ruff_linter/resources/test/fixtures/ruff/RUF016.py
+index 545ad2ec537c052837e61efe7c5aa542686f4c12..815456fc93ce65c7615aec57e5bc141bb6c042c6 100644
+--- a/crates/ruff_linter/resources/test/fixtures/ruff/RUF016.py
++++ b/crates/ruff_linter/resources/test/fixtures/ruff/RUF016.py
+@@ -113,3 +113,18 @@ var = bytearray(b"abc")["x"]
+ x = "x"
+ var = [1, 2, 3][0:x]
+ var = [1, 2, 3][x:1]
++
++# https://github.com/astral-sh/ruff/issues/20204
++
++# Should not emit for boolean index and slice bounds
++var = [1, 2, 3][False]
++var = [1, 2, 3][False:True:True]
++
++# Should emit for invalid access using t-string
++var = [1, 2][t"x"]
++
++# Should emit for invalid access using lambda
++var = [1, 2, 3][lambda: 0]
++
++# Should emit for invalid access using generator
++var = [1, 2, 3][(x for x in ())]
+diff --git a/crates/ruff_linter/src/rules/ruff/snapshots/ruff_linter__rules__ruff__tests__RUF016_RUF016.py.snap b/crates/ruff_linter/src/rules/ruff/snapshots/ruff_linter__rules__ruff__tests__RUF016_RUF016.py.snap
+index e2f4ab027848c9d4f50edd1527857bd466080ee4..22917b601a1b32c88eafb9b84eba3f5e9498c605 100644
+--- a/crates/ruff_linter/src/rules/ruff/snapshots/ruff_linter__rules__ruff__tests__RUF016_RUF016.py.snap
++++ b/crates/ruff_linter/src/rules/ruff/snapshots/ruff_linter__rules__ruff__tests__RUF016_RUF016.py.snap
+@@ -415,3 +415,31 @@ RUF016 Indexed access to type `list` uses type `str` instead of an integer or sl
+ 95 |
+ 96 | # Cannot emit on invalid access using variable in index
+    |
++
++RUF016 Indexed access to type `list` uses type `Template` instead of an integer or slice
++   --> RUF016.py:124:14
++    |
++123 | # Should emit for invalid access using t-string
++124 | var = [1, 2][t"x"]
++    |              ^^^^
++125 |
++126 | # Should emit for invalid access using lambda
++    |
++
++RUF016 Indexed access to type `list` uses type `lambda` instead of an integer or slice
++   --> RUF016.py:127:17
++    |
++126 | # Should emit for invalid access using lambda
++127 | var = [1, 2, 3][lambda: 0]
++    |                 ^^^^^^^^^
++128 |
++129 | # Should emit for invalid access using generator
++    |
++
++RUF016 Indexed access to type `list` uses type `generator` instead of an integer or slice
++   --> RUF016.py:130:17
++    |
++129 | # Should emit for invalid access using generator
++130 | var = [1, 2, 3][(x for x in ())]
++    |                 ^^^^^^^^^^^^^^^
++    |

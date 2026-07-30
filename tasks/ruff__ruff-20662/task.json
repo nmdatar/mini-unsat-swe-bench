@@ -1,0 +1,14 @@
+{
+  "base_commit": "11dae2cf1b3af94c57c0bcb18a5b42fee0046f2f",
+  "environment_key": "ruff-rust-toolchain",
+  "prompt": "FLY002 fix causes syntax error with double quotes in the strings\n\n### Summary\n\nWhen the joined items contain both a variable and a string with a double quote, the fix for [static-join-to-f-string (FLY002)](https://docs.astral.sh/ruff/rules/static-join-to-f-string/#static-join-to-f-string-fly002) will cause a syntax error [playground](https://play.ruff.rs/[redacted revision]-4eaf-47b8-9f5d-[redacted revision]):\n```powershell\nPS ~>echo @'\n\"\".join((foo, '\"'))\n'@ | uvx ruff check --select FLY002 - --fix --unsafe-fixes 2>&1 | rg \"syntax error\"\nerror: Fix introduced a syntax error. Reverting all changes.\n```",
+  "subsystem": "linter",
+  "task_id": "ruff__ruff-20662",
+  "test_commands": [
+    "cargo test -p ruff_linter"
+  ],
+  "timeouts": {
+    "agent_seconds": 1800,
+    "test_seconds": 900
+  }
+}

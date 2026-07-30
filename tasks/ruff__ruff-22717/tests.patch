@@ -1,0 +1,40 @@
+diff --git a/crates/ruff_linter/resources/test/fixtures/flake8_pie/PIE794.py b/crates/ruff_linter/resources/test/fixtures/flake8_pie/PIE794.py
+index 51981397899de72c68dd63507ebcd423449aa960..5e7adcc34ea5776893692f45cab6045fd10e22ed 100644
+--- a/crates/ruff_linter/resources/test/fixtures/flake8_pie/PIE794.py
++++ b/crates/ruff_linter/resources/test/fixtures/flake8_pie/PIE794.py
+@@ -50,3 +50,8 @@ class Person:
+     name: str = "Foo"
+     name: str = name + " Bar"
+     name: str = "Bar"  # PIE794
++
++
++class TextEdit:
++    start_line: int
++    start_line: int  # PIE794
+diff --git a/crates/ruff_linter/src/rules/flake8_pie/snapshots/ruff_linter__rules__flake8_pie__tests__PIE794_PIE794.py.snap b/crates/ruff_linter/src/rules/flake8_pie/snapshots/ruff_linter__rules__flake8_pie__tests__PIE794_PIE794.py.snap
+index 3a8a341d46bc21e899f6629845f1e04f9064a060..aed2f4a25fd259880f3e2f212afe17c299d9599e 100644
+--- a/crates/ruff_linter/src/rules/flake8_pie/snapshots/ruff_linter__rules__flake8_pie__tests__PIE794_PIE794.py.snap
++++ b/crates/ruff_linter/src/rules/flake8_pie/snapshots/ruff_linter__rules__flake8_pie__tests__PIE794_PIE794.py.snap
+@@ -108,4 +108,22 @@ help: Remove duplicate field definition for `name`
+ 50 |     name: str = "Foo"
+ 51 |     name: str = name + " Bar"
+    -     name: str = "Bar"  # PIE794
++52 | 
++53 | 
++54 | class TextEdit:
++note: This is an unsafe fix and may change runtime behavior
++
++PIE794 [*] Class field `start_line` is defined multiple times
++  --> PIE794.py:57:5
++   |
++55 | class TextEdit:
++56 |     start_line: int
++57 |     start_line: int  # PIE794
++   |     ^^^^^^^^^^^^^^^
++   |
++help: Remove duplicate field definition for `start_line`
++54 | 
++55 | class TextEdit:
++56 |     start_line: int
++   -     start_line: int  # PIE794
+ note: This is an unsafe fix and may change runtime behavior

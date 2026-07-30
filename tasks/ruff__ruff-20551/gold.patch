@@ -1,0 +1,16 @@
+diff --git a/crates/ruff_linter/src/rules/airflow/rules/removal_in_3.rs b/crates/ruff_linter/src/rules/airflow/rules/removal_in_3.rs
+index 2baf804d15f2963b0e2b85af6bf8e455f2695b17..41defac3d01d02d77d92a43628d92300ed46e41a 100644
+--- a/crates/ruff_linter/src/rules/airflow/rules/removal_in_3.rs
++++ b/crates/ruff_linter/src/rules/airflow/rules/removal_in_3.rs
+@@ -655,6 +655,11 @@ fn check_name(checker: &Checker, expr: &Expr, range: TextRange) {
+         },
+         // airflow.datasets
+         ["airflow", "datasets", "DatasetAliasEvent"] => Replacement::None,
++        ["airflow", "datasets", "DatasetEvent"] => Replacement::Message(
++            "`DatasetEvent` has been made private in Airflow 3. \
++             Use `dict[str, Any]` for the time being. \
++             An `AssetEvent` type will be added to the apache-airflow-task-sdk in a future version.",
++        ),
+ 
+         // airflow.hooks
+         ["airflow", "hooks", "base_hook", "BaseHook"] => Replacement::Rename {

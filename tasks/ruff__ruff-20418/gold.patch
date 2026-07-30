@@ -1,0 +1,28 @@
+diff --git a/crates/ruff_python_formatter/src/expression/expr_attribute.rs b/crates/ruff_python_formatter/src/expression/expr_attribute.rs
+index ebb0093ccb28ea9c2a687de30b64c330cee41c50..781b8b46017b4f77577e37a178a51dc894b49011 100644
+--- a/crates/ruff_python_formatter/src/expression/expr_attribute.rs
++++ b/crates/ruff_python_formatter/src/expression/expr_attribute.rs
+@@ -179,7 +179,22 @@ impl NeedsParentheses for ExprAttribute {
+             context.comments().ranges(),
+             context.source(),
+         ) {
+-            OptionalParentheses::Never
++            // We have to avoid creating syntax errors like
++            // ```python
++            // variable = (something) # trailing
++            // .my_attribute
++            // ```
++            // See https://github.com/astral-sh/ruff/issues/19350
++            if context
++                .comments()
++                .trailing(self.value.as_ref())
++                .iter()
++                .any(|comment| comment.line_position().is_end_of_line())
++            {
++                OptionalParentheses::Multiline
++            } else {
++                OptionalParentheses::Never
++            }
+         } else {
+             self.value.needs_parentheses(self.into(), context)
+         }

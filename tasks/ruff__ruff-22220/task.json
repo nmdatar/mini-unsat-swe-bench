@@ -1,0 +1,14 @@
+{
+  "base_commit": "6342cec842938f20df2991433c6ba3ba0f4db6c5",
+  "environment_key": "ruff-rust-toolchain",
+  "prompt": "PLR1714: Repeated equality comparison to the same literal value shouldn't convert to a set\n\n### Summary\n\nObserved this in and split it out of https://github.com/astral-sh/ruff/issues/21690.\n\n```python\ndef test(foo: str) -> None:\n    if foo == \"bar\" or foo == \"bar\":\n        pass\n```\n\nhttps://play.ruff.rs/[redacted revision]-3cf3-48fd-b42f-[redacted revision]\n\nPLR1714 changes this to:\n\n```python\ndef test(foo: str) -> None:\n    if foo in {\"bar\", \"bar\"}:\n        pass\n```\n\n~~If the values being compared are literals, the equality comparisons should be merged instead of converting to a set.~~",
+  "subsystem": "linter",
+  "task_id": "ruff__ruff-22220",
+  "test_commands": [
+    "cargo test -p ruff_linter"
+  ],
+  "timeouts": {
+    "agent_seconds": 1800,
+    "test_seconds": 900
+  }
+}

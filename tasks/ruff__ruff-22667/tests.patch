@@ -1,0 +1,67 @@
+diff --git a/crates/ruff_linter/resources/test/fixtures/refurb/FURB164.py b/crates/ruff_linter/resources/test/fixtures/refurb/FURB164.py
+index 81422d2cf83c6735df7dd675a3a222fe2123975d..1ac29fbf70b93e67055f85f08096cb4f097998f0 100644
+--- a/crates/ruff_linter/resources/test/fixtures/refurb/FURB164.py
++++ b/crates/ruff_linter/resources/test/fixtures/refurb/FURB164.py
+@@ -68,4 +68,10 @@ _ = Decimal.from_float(float("\N{HYPHEN-MINUS}nan"))
+ # See: https://github.com/astral-sh/ruff/issues/21257
+ # fixes must be safe
+ _ = Fraction.from_float(f=4.2)
+-_ = Fraction.from_decimal(dec=4)
+\ No newline at end of file
++_ = Fraction.from_decimal(dec=4)
++
++_ = (
++    Fraction
++    # text
++    .from_float(4.2)
++)
+diff --git a/crates/ruff_linter/src/rules/refurb/snapshots/ruff_linter__rules__refurb__tests__FURB164_FURB164.py.snap b/crates/ruff_linter/src/rules/refurb/snapshots/ruff_linter__rules__refurb__tests__FURB164_FURB164.py.snap
+index 7bd2ce8225cc4f55dc29acb66b51274f1c6d53e5..daf8663f82791dfb8182b8163e226d38c7af4ee0 100644
+--- a/crates/ruff_linter/src/rules/refurb/snapshots/ruff_linter__rules__refurb__tests__FURB164_FURB164.py.snap
++++ b/crates/ruff_linter/src/rules/refurb/snapshots/ruff_linter__rules__refurb__tests__FURB164_FURB164.py.snap
+@@ -712,6 +712,8 @@ help: Replace with `Fraction` constructor
+    - _ = Fraction.from_float(f=4.2)
+ 70 + _ = Fraction(4.2)
+ 71 | _ = Fraction.from_decimal(dec=4)
++72 | 
++73 | _ = (
+ 
+ FURB164 [*] Verbose method `from_decimal` in `Fraction` construction
+   --> FURB164.py:71:5
+@@ -720,6 +722,8 @@ FURB164 [*] Verbose method `from_decimal` in `Fraction` construction
+ 70 | _ = Fraction.from_float(f=4.2)
+ 71 | _ = Fraction.from_decimal(dec=4)
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
++72 |
++73 | _ = (
+    |
+ help: Replace with `Fraction` constructor
+ 68 | # See: https://github.com/astral-sh/ruff/issues/21257
+@@ -727,3 +731,27 @@ help: Replace with `Fraction` constructor
+ 70 | _ = Fraction.from_float(f=4.2)
+    - _ = Fraction.from_decimal(dec=4)
+ 71 + _ = Fraction(4)
++72 | 
++73 | _ = (
++74 |     Fraction
++
++FURB164 [*] Verbose method `from_float` in `Fraction` construction
++  --> FURB164.py:74:5
++   |
++73 |   _ = (
++74 | /     Fraction
++75 | |     # text
++76 | |     .from_float(4.2)
++   | |____________________^
++77 |   )
++   |
++help: Replace with `Fraction` constructor
++71 | _ = Fraction.from_decimal(dec=4)
++72 | 
++73 | _ = (
++   -     Fraction
++   -     # text
++   -     .from_float(4.2)
++74 +     Fraction(4.2)
++75 | )
++note: This is an unsafe fix and may change runtime behavior

@@ -1,0 +1,14 @@
+{
+  "base_commit": "1ebedf6df59469b2adb3bce8d6e6718f7ee93beb",
+  "environment_key": "ruff-rust-toolchain",
+  "prompt": "B009 and B010 should ignore non-NFKC attribute names\n\n### Summary\n\n[`get-attr-with-constant` (B009)](https://docs.astral.sh/ruff/rules/get-attr-with-constant/) and [`set-attr-with-constant` (B010)](https://docs.astral.sh/ruff/rules/set-attr-with-constant/) should ignore non-NFKC attribute names because the usual attribute syntax would change the program\u2019s behavior. [Example](https://play.ruff.rs/[redacted revision]-02f2-40df-9533-[redacted revision]):\n```console\n$ cat >b009_b010.py <<'# EOF'\nfrom types import SimpleNamespace\nns = SimpleNamespace(s=0)\nsetattr(ns, \"\u017f\", 1)\nprint(ns.s, getattr(ns, \"\u017f\"))\n# EOF\n\n$ python b009_b010.py\n0 1\n\n$ ruff check --isolated b009_b010.py --select B009,B010 --fix\nFound 2 errors (2 fixed, 0 remaining).\n\n$ cat b009_b010.py\nfrom types import SimpleNamespace\nns = SimpleNamespace(s=0)\nns.\u017f = 1\nprint(ns.s, ns.\u017f)\n\n$ python b009_b010.py\n1 1\n```",
+  "subsystem": "linter",
+  "task_id": "ruff__ruff-21131",
+  "test_commands": [
+    "cargo test -p ruff_linter"
+  ],
+  "timeouts": {
+    "agent_seconds": 1800,
+    "test_seconds": 900
+  }
+}

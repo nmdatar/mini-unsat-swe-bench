@@ -1,0 +1,20 @@
+diff --git a/crates/ruff_linter/src/rules/pyupgrade/rules/f_strings.rs b/crates/ruff_linter/src/rules/pyupgrade/rules/f_strings.rs
+index 938ff1aadbffc75fc20c013b8231c799331e4bcf..46379c8ef0a6db2213e04742c65b84877f747e3d 100644
+--- a/crates/ruff_linter/src/rules/pyupgrade/rules/f_strings.rs
++++ b/crates/ruff_linter/src/rules/pyupgrade/rules/f_strings.rs
+@@ -145,7 +145,6 @@ fn parenthesize(expr: &Expr, text: &str, context: FormatContext) -> bool {
+             Expr::BinOp(_)
+             | Expr::UnaryOp(_)
+             | Expr::BoolOp(_)
+-            | Expr::Named(_)
+             | Expr::Compare(_)
+             | Expr::If(_)
+             | Expr::Lambda(_)
+@@ -167,6 +166,7 @@ fn parenthesize(expr: &Expr, text: &str, context: FormatContext) -> bool {
+             _,
+             Expr::Generator(_)
+             | Expr::Dict(_)
++            | Expr::Named(_)
+             | Expr::Set(_)
+             | Expr::SetComp(_)
+             | Expr::DictComp(_),

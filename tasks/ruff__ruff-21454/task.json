@@ -1,0 +1,14 @@
+{
+  "base_commit": "5f501374c4a0ef546b90131241f0850251acb8d8",
+  "environment_key": "ruff-rust-toolchain",
+  "prompt": "Preview rule FURB103 reformats multiline strings\n\n### Summary\n\nThe preview rule FURB103 replaces real newlines with new line chars:\n\n```diff\n    -     with open(tmp_path / \"pyproject.toml\", \"w\") as f:\n    -         f.write(\n    -             dedent(\n    -                 \"\"\"\n    -                 [project]\n    -                 other = 1.234\n    -                 \"\"\"\n    -             )\n    -         )\n    +     pathlib.Path(tmp_path / \"pyproject.toml\").write_text(dedent(\"\"\"\\n                [project]\\n                other = 1.234\\n                \"\"\"))\n```",
+  "subsystem": "linter",
+  "task_id": "ruff__ruff-21454",
+  "test_commands": [
+    "cargo test -p ruff_linter"
+  ],
+  "timeouts": {
+    "agent_seconds": 1800,
+    "test_seconds": 900
+  }
+}

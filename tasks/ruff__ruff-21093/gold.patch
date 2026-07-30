@@ -1,0 +1,38 @@
+diff --git a/crates/ruff_linter/src/rules/airflow/rules/removal_in_3.rs b/crates/ruff_linter/src/rules/airflow/rules/removal_in_3.rs
+index df09b37e818bee18e9383b3c342aeed14ea7afe0..78c89da0b4978d883b3d318ba39f4a4261c50994 100644
+--- a/crates/ruff_linter/src/rules/airflow/rules/removal_in_3.rs
++++ b/crates/ruff_linter/src/rules/airflow/rules/removal_in_3.rs
+@@ -492,6 +492,12 @@ fn check_method(checker: &Checker, call_expr: &ExprCall) {
+             "collected_datasets" => Replacement::AttrName("collected_assets"),
+             _ => return,
+         },
++        ["airflow", "models", "dag", "DAG"] | ["airflow", "models", "DAG"] | ["airflow", "DAG"] => {
++            match attr.as_str() {
++                "create_dagrun" => Replacement::None,
++                _ => return,
++            }
++        }
+         ["airflow", "providers_manager", "ProvidersManager"] => match attr.as_str() {
+             "initialize_providers_dataset_uri_resources" => {
+                 Replacement::AttrName("initialize_providers_asset_uri_resources")
+diff --git a/crates/ruff_linter/src/rules/airflow/rules/suggested_to_update_3_0.rs b/crates/ruff_linter/src/rules/airflow/rules/suggested_to_update_3_0.rs
+index 7f191617972ce42d79f40212776870a3c0849a8f..327576cf9d4fbbf680d6e9c628662b5319779d96 100644
+--- a/crates/ruff_linter/src/rules/airflow/rules/suggested_to_update_3_0.rs
++++ b/crates/ruff_linter/src/rules/airflow/rules/suggested_to_update_3_0.rs
+@@ -288,10 +288,12 @@ fn check_name(checker: &Checker, expr: &Expr, range: TextRange) {
+         },
+ 
+         // airflow.model..DAG
+-        ["airflow", "models", .., "DAG"] => Replacement::SourceModuleMoved {
+-            module: "airflow.sdk",
+-            name: "DAG".to_string(),
+-        },
++        ["airflow", "models", "dag", "DAG"] | ["airflow", "models", "DAG"] | ["airflow", "DAG"] => {
++            Replacement::SourceModuleMoved {
++                module: "airflow.sdk",
++                name: "DAG".to_string(),
++            }
++        }
+ 
+         // airflow.sensors.base
+         [

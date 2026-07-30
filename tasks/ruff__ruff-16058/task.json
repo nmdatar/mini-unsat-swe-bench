@@ -1,0 +1,14 @@
+{
+  "base_commit": "34d54b6983d3a1feebc22adad4129204acf1d5ee",
+  "environment_key": "ruff-rust-toolchain",
+  "prompt": "UP012 fix does not handle non-bytes escape sequences\n\nWhen converting string literals to bytes literals, UP012 does not handle escape sequences that are only recognized in string literals. It should convert them to literal characters or to recognized escape sequences.\n\n```console\n$ ruff --version\nruff 0.5.6\n$ cat up012.py\nprint(\"\\N{DIGIT ONE}\".encode())\nprint(\"\\u0031\".encode())\nprint(\"\\U00000031\".encode())\n$ python up012.py \nb'1'\nb'1'\nb'1'\n$ ruff check --isolated --select UP012 up012.py --fix\nFound 3 errors (3 fixed, 0 remaining).\n$ python up012.py\nb'\\\\N{DIGIT ONE}'\nb'\\\\u0031'\nb'\\\\U00000031'\n```",
+  "subsystem": "linter",
+  "task_id": "ruff__ruff-16058",
+  "test_commands": [
+    "cargo test -p ruff_linter"
+  ],
+  "timeouts": {
+    "agent_seconds": 1800,
+    "test_seconds": 900
+  }
+}

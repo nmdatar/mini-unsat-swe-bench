@@ -1,0 +1,80 @@
+diff --git a/crates/ruff_linter/resources/test/fixtures/flake8_simplify/SIM910.py b/crates/ruff_linter/resources/test/fixtures/flake8_simplify/SIM910.py
+index e5aa9a97ed26cbd5af16a017627c0a1a35dc1d05..41d8bf69c1fdb1bd3a5260c805b122537f45664c 100644
+--- a/crates/ruff_linter/resources/test/fixtures/flake8_simplify/SIM910.py
++++ b/crates/ruff_linter/resources/test/fixtures/flake8_simplify/SIM910.py
+@@ -82,3 +82,10 @@ def get_key():
+ 
+ ages = {"Tom": 23, "Maria": 23, "Dog": 11}
+ age = ages.get(get_key(), None)
++
++
++age = ages.get(
++    "Cat",
++    # text
++    None,
++)
+diff --git a/crates/ruff_linter/src/rules/flake8_simplify/snapshots/ruff_linter__rules__flake8_simplify__tests__SIM910_SIM910.py.snap b/crates/ruff_linter/src/rules/flake8_simplify/snapshots/ruff_linter__rules__flake8_simplify__tests__SIM910_SIM910.py.snap
+index 49b1b6a9535ed68765d0f002151a0fc890c345c3..f48c7bfc95a8ce3f21e75671c883247146d0b201 100644
+--- a/crates/ruff_linter/src/rules/flake8_simplify/snapshots/ruff_linter__rules__flake8_simplify__tests__SIM910_SIM910.py.snap
++++ b/crates/ruff_linter/src/rules/flake8_simplify/snapshots/ruff_linter__rules__flake8_simplify__tests__SIM910_SIM910.py.snap
+@@ -170,3 +170,26 @@ help: Replace `dict.get("Cat", None)` with `dict.get("Cat")`
+ 58 | 
+ 59 | 
+ 60 | # https://github.com/astral-sh/ruff/issues/20341
++
++SIM910 [*] Use `dict.get()` without default value
++  --> SIM910.py:87:7
++   |
++87 |   age = ages.get(
++   |  _______^
++88 | |     "Cat",
++89 | |     # text
++90 | |     None,
++91 | | )
++   | |_^
++   |
++help: Remove default value
++84 | age = ages.get(get_key(), None)
++85 | 
++86 | 
++   - age = ages.get(
++   -     "Cat",
++   -     # text
++   -     None,
++   - )
++87 + age = ages.get("Cat")
++note: This is an unsafe fix and may change runtime behavior
+diff --git a/crates/ruff_linter/src/rules/flake8_simplify/snapshots/ruff_linter__rules__flake8_simplify__tests__preview__SIM910_SIM910.py.snap b/crates/ruff_linter/src/rules/flake8_simplify/snapshots/ruff_linter__rules__flake8_simplify__tests__preview__SIM910_SIM910.py.snap
+index 79e12c5d8b26107770e2f34226d250db69a92d60..7daebe91d0fd13c9dd09b775e4e941e3cd0c68aa 100644
+--- a/crates/ruff_linter/src/rules/flake8_simplify/snapshots/ruff_linter__rules__flake8_simplify__tests__preview__SIM910_SIM910.py.snap
++++ b/crates/ruff_linter/src/rules/flake8_simplify/snapshots/ruff_linter__rules__flake8_simplify__tests__preview__SIM910_SIM910.py.snap
+@@ -244,3 +244,29 @@ help: Replace `ages.get(get_key(), None)` with `ages.get(get_key())`
+ 83 | ages = {"Tom": 23, "Maria": 23, "Dog": 11}
+    - age = ages.get(get_key(), None)
+ 84 + age = ages.get(get_key())
++85 | 
++86 | 
++87 | age = ages.get(
++
++SIM910 [*] Use `dict.get()` without default value
++  --> SIM910.py:87:7
++   |
++87 |   age = ages.get(
++   |  _______^
++88 | |     "Cat",
++89 | |     # text
++90 | |     None,
++91 | | )
++   | |_^
++   |
++help: Remove default value
++84 | age = ages.get(get_key(), None)
++85 | 
++86 | 
++   - age = ages.get(
++   -     "Cat",
++   -     # text
++   -     None,
++   - )
++87 + age = ages.get("Cat")
++note: This is an unsafe fix and may change runtime behavior

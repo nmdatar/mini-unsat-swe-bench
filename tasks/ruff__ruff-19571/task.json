@@ -1,0 +1,14 @@
+{
+  "base_commit": "bc89d0394ca2ee3161df37b8fa3de307d001e54f",
+  "environment_key": "ruff-rust-toolchain",
+  "prompt": "C409 fix omits comma for `tuple([1],)`\n\n### Summary\n\nIf a `tuple` call has a trailing comma and its argument is a single-element list display, the fix for [unnecessary-literal-within-tuple-call (C409)](https://docs.astral.sh/ruff/rules/unnecessary-literal-within-tuple-call/) doesn\u2019t add a trailing comma, which changes the program\u2019s behavior. [Example](https://play.ruff.rs/[redacted revision]-a364-4093-b2d5-[redacted revision]):\n```console\n$ cat >c409.py <<'# EOF'\nprint(tuple([1],))\n# EOF\n\n$ python c409.py\n(1,)\n\n$ ruff --isolated check c409.py --select C409 --unsafe-fixes --fix\nFound 1 error (1 fixed, 0 remaining).\n\n$ cat c409.py\nprint((1))\n\n$ python c409.py\n1\n```",
+  "subsystem": "linter",
+  "task_id": "ruff__ruff-19571",
+  "test_commands": [
+    "cargo test -p ruff_linter"
+  ],
+  "timeouts": {
+    "agent_seconds": 1800,
+    "test_seconds": 900
+  }
+}

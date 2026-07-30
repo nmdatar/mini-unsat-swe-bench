@@ -1,0 +1,76 @@
+diff --git a/crates/ruff/src/commands/rule.rs b/crates/ruff/src/commands/rule.rs
+index adc761b3e5160a9da0a0ee22cb0297b7f8a4d438..6d797f87440a3db7e700b569e2ad694a5e0f4abf 100644
+--- a/crates/ruff/src/commands/rule.rs
++++ b/crates/ruff/src/commands/rule.rs
+@@ -7,6 +7,7 @@ use serde::{Serialize, Serializer};
+ use strum::IntoEnumIterator;
+ 
+ use ruff_linter::FixAvailability;
++use ruff_linter::codes::RuleGroup;
+ use ruff_linter::registry::{Linter, Rule, RuleNamespace};
+ 
+ use crate::args::HelpFormat;
+@@ -19,9 +20,11 @@ struct Explanation<'a> {
+     summary: &'a str,
+     message_formats: &'a [&'a str],
+     fix: String,
++    fix_availability: FixAvailability,
+     #[expect(clippy::struct_field_names)]
+     explanation: Option<&'a str>,
+     preview: bool,
++    status: RuleGroup,
+ }
+ 
+ impl<'a> Explanation<'a> {
+@@ -36,8 +39,10 @@ impl<'a> Explanation<'a> {
+             summary: rule.message_formats()[0],
+             message_formats: rule.message_formats(),
+             fix,
++            fix_availability: rule.fixable(),
+             explanation: rule.explanation(),
+             preview: rule.is_preview(),
++            status: rule.group(),
+         }
+     }
+ }
+diff --git a/crates/ruff_linter/src/codes.rs b/crates/ruff_linter/src/codes.rs
+index 86e3bf8ebcacb604190b299ebae40f3706554be7..8b762c2c721ec92dc3fca14c41165e8eb41cda8f 100644
+--- a/crates/ruff_linter/src/codes.rs
++++ b/crates/ruff_linter/src/codes.rs
+@@ -5,6 +5,7 @@
+ use std::fmt::Formatter;
+ 
+ use ruff_db::diagnostic::SecondaryCode;
++use serde::Serialize;
+ use strum_macros::EnumIter;
+ 
+ use crate::registry::Linter;
+@@ -74,7 +75,7 @@ impl serde::Serialize for NoqaCode {
+     }
+ }
+ 
+-#[derive(Debug, Copy, Clone)]
++#[derive(Debug, Copy, Clone, Serialize)]
+ pub enum RuleGroup {
+     /// The rule is stable.
+     Stable,
+diff --git a/crates/ruff_linter/src/violation.rs b/crates/ruff_linter/src/violation.rs
+index f32fa40e9adcb0b8d21329bde0219df669fbf6b4..bcf671d4894d5e3e6ad3d7496186a5d2d1fcd3ad 100644
+--- a/crates/ruff_linter/src/violation.rs
++++ b/crates/ruff_linter/src/violation.rs
+@@ -1,12 +1,14 @@
+ use std::fmt::{Debug, Display};
+ 
++use serde::Serialize;
++
+ use ruff_db::diagnostic::Diagnostic;
+ use ruff_source_file::SourceFile;
+ use ruff_text_size::TextRange;
+ 
+ use crate::{codes::Rule, message::create_lint_diagnostic};
+ 
+-#[derive(Debug, Copy, Clone)]
++#[derive(Debug, Copy, Clone, Serialize)]
+ pub enum FixAvailability {
+     Sometimes,
+     Always,

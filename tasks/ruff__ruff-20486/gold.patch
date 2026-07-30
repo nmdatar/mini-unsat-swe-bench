@@ -1,0 +1,54 @@
+diff --git a/crates/ruff_linter/src/checkers/ast/analyze/expression.rs b/crates/ruff_linter/src/checkers/ast/analyze/expression.rs
+index 97dc1052dbbc056c19febabb9ee73bf4f4883beb..26ea1cf986e866051e5494d0556221ba4256ff6d 100644
+--- a/crates/ruff_linter/src/checkers/ast/analyze/expression.rs
++++ b/crates/ruff_linter/src/checkers/ast/analyze/expression.rs
+@@ -717,7 +717,9 @@ pub(crate) fn expression(expr: &Expr, checker: &Checker) {
+                 flake8_bugbear::rules::re_sub_positional_args(checker, call);
+             }
+             if checker.is_rule_enabled(Rule::UnreliableCallableCheck) {
+-                flake8_bugbear::rules::unreliable_callable_check(checker, expr, func, args);
++                flake8_bugbear::rules::unreliable_callable_check(
++                    checker, expr, func, args, keywords,
++                );
+             }
+             if checker.is_rule_enabled(Rule::StripWithMultiCharacters) {
+                 flake8_bugbear::rules::strip_with_multi_characters(checker, expr, func, args);
+diff --git a/crates/ruff_linter/src/rules/flake8_bugbear/rules/unreliable_callable_check.rs b/crates/ruff_linter/src/rules/flake8_bugbear/rules/unreliable_callable_check.rs
+index b432ed369d2b3be193c20cf4d8efe7cd704744c2..4aa582533e92ec8fd9d4e4f871430b13b8999850 100644
+--- a/crates/ruff_linter/src/rules/flake8_bugbear/rules/unreliable_callable_check.rs
++++ b/crates/ruff_linter/src/rules/flake8_bugbear/rules/unreliable_callable_check.rs
+@@ -90,7 +90,11 @@ pub(crate) fn unreliable_callable_check(
+     expr: &Expr,
+     func: &Expr,
+     args: &[Expr],
++    keywords: &[ast::Keyword],
+ ) {
++    if !keywords.is_empty() {
++        return;
++    }
+     let [obj, attr, ..] = args else {
+         return;
+     };
+@@ -103,7 +107,21 @@ pub(crate) fn unreliable_callable_check(
+     let Some(builtins_function) = checker.semantic().resolve_builtin_symbol(func) else {
+         return;
+     };
+-    if !matches!(builtins_function, "hasattr" | "getattr") {
++
++    // Validate function arguments based on function name
++    let valid_args = match builtins_function {
++        "hasattr" => {
++            // hasattr should have exactly 2 positional arguments and no keywords
++            args.len() == 2
++        }
++        "getattr" => {
++            // getattr should have 2 or 3 positional arguments and no keywords
++            args.len() == 2 || args.len() == 3
++        }
++        _ => return,
++    };
++
++    if !valid_args {
+         return;
+     }
+ 

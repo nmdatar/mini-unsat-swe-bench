@@ -1,0 +1,95 @@
+diff --git a/crates/ruff/tests/format.rs b/crates/ruff/tests/format.rs
+index 35443daa2394bc7bf26c7fe625dafee104576521..f1369048f7326a70b1e3e9c997a75c03cf6f8624 100644
+--- a/crates/ruff/tests/format.rs
++++ b/crates/ruff/tests/format.rs
+@@ -500,6 +500,35 @@ OTHER = "OTHER"
+     Ok(())
+ }
+ 
++/// Regression test for <https://github.com/astral-sh/ruff/issues/20035>
++#[test]
++fn deduplicate_directory_and_explicit_file() -> Result<()> {
++    let tempdir = TempDir::new()?;
++    let root = tempdir.path();
++
++    let main = root.join("main.py");
++    fs::write(&main, "x   = 1\n")?;
++
++    assert_cmd_snapshot!(
++        Command::new(get_cargo_bin(BIN_NAME))
++            .current_dir(root)
++            .args(["format", "--no-cache", "--check"])
++            .arg(".")
++            .arg("main.py"),
++        @r"
++    success: false
++    exit_code: 1
++    ----- stdout -----
++    Would reformat: main.py
++    1 file would be reformatted
++
++    ----- stderr -----
++    "
++    );
++
++    Ok(())
++}
++
+ #[test]
+ fn syntax_error() -> Result<()> {
+     let tempdir = TempDir::new()?;
+diff --git a/crates/ruff/tests/lint.rs b/crates/ruff/tests/lint.rs
+index b54e69996d1978147359022cf1019abaad439f69..492665555a0710a9c4e7c0b5469c3a5f1e6fe4db 100644
+--- a/crates/ruff/tests/lint.rs
++++ b/crates/ruff/tests/lint.rs
+@@ -271,6 +271,50 @@ OTHER = "OTHER"
+     Ok(())
+ }
+ 
++/// Regression test for <https://github.com/astral-sh/ruff/issues/20035>
++#[test]
++fn deduplicate_directory_and_explicit_file() -> Result<()> {
++    let tempdir = TempDir::new()?;
++    let root = tempdir.path();
++    let ruff_toml = tempdir.path().join("ruff.toml");
++    fs::write(
++        &ruff_toml,
++        r#"
++[lint]
++exclude = ["main.py"]
++"#,
++    )?;
++
++    let main = root.join("main.py");
++    fs::write(&main, "import os\n")?;
++
++    insta::with_settings!({
++        filters => vec![(tempdir_filter(&tempdir).as_str(), "[TMP]/")]
++    }, {
++        assert_cmd_snapshot!(
++            Command::new(get_cargo_bin(BIN_NAME))
++                .current_dir(root)
++                .args(STDIN_BASE_OPTIONS)
++                .args(["--config", &ruff_toml.file_name().unwrap().to_string_lossy()])
++                .arg(".")
++                // Explicitly pass main.py, should be linted regardless of it being excluded by lint.exclude
++                .arg("main.py"),
++            @r"
++    success: false
++    exit_code: 1
++    ----- stdout -----
++    main.py:1:8: F401 [*] `os` imported but unused
++    Found 1 error.
++    [*] 1 fixable with the `--fix` option.
++
++    ----- stderr -----
++    "
++        );
++    });
++
++    Ok(())
++}
++
+ #[test]
+ fn exclude_stdin() -> Result<()> {
+     let tempdir = TempDir::new()?;

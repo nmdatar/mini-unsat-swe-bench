@@ -1,0 +1,14 @@
+{
+  "base_commit": "9ab276b34527c6aa2a3fce3a786292a2c6c082f9",
+  "environment_key": "ruff-rust-toolchain",
+  "prompt": "Formatting an overlapping set of files can lead to errors\n\n### Summary\n\nThis is probably on us, but I thought it would be good to bring it to your attention at least for doc purposes.\n\nWe were running `ruff format <dir1> <dir2>` on some generated code as part of our build pipeline. From time to time, the format step will blow up with syntax errors in some of the source files, i.e. as if the source python code is not valid python. After splitting the command into two separate format commands (one for dir 1 and one for dir 2), the issue got resolved (this was guesswork-type of fix).\n\nSo we took a harder look and we saw that the dir2 is a subdir of dir1 and we are passing it because it is in .gitignore. So I went and looked at the ruff format source code and noticed it is doing a formatting of all given arguments in parallel: https://github.com/astral-sh/ruff/blob/main/crates/ruff/src/commands/format.rs#L108\n\nIs it possible there is a race condition here where formatting on dir may mess up the formatting of of another, overlapping dir?",
+  "subsystem": "configuration",
+  "task_id": "ruff__ruff-20105",
+  "test_commands": [
+    "cargo test -p ruff_workspace"
+  ],
+  "timeouts": {
+    "agent_seconds": 1800,
+    "test_seconds": 900
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "base_commit": "590ce9d9ed70db0578b14a4c93aaaba31485724a",
+  "environment_key": "ruff-rust-toolchain",
+  "prompt": "Add easier way to gather all available rules from ruff\n\nSince 0.2.0 version, my fuzzer CI stopped working.\n\nIn CI, first I start to search for broken files, minimize sample size and at the end minimize number of rules, that are needed to produce problem.\n\nMinimization of rules is done via this steps:\n- getting all rules from ruff - this is done via `ruff rule --all` command and manually parsing all rules in ()\n- splitting available rules by half and checking if ruff still produce error\n- repeating until found minimal amount of rules\n\n0.2.0 version removed rule PLR1706 which is still available in `ruff rule --all` with section `## Removal` and ruff started to fail each time with message\n```\nruff failed\n  Cause: Rule `PLR1706` was removed and cannot be selected.\n```\n\nAt least for now I can modify a little rule parser, but probably this will be more problematic in future.\n\nSo maybe ruff could produce simple list of rules(enabled/removed etc.) like `AN001,AN002` or export them to json file via `rull rule --export a.json` or ruff rule --available-simple?",
+  "subsystem": "linter",
+  "task_id": "ruff__ruff-20168",
+  "test_commands": [
+    "cargo test -p ruff_linter"
+  ],
+  "timeouts": {
+    "agent_seconds": 1800,
+    "test_seconds": 900
+  }
+}

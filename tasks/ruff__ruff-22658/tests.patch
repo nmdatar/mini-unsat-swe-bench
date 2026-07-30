@@ -1,0 +1,53 @@
+diff --git a/crates/ruff_linter/resources/test/fixtures/flake8_bugbear/B013.py b/crates/ruff_linter/resources/test/fixtures/flake8_bugbear/B013.py
+index bb28f08220a99ecb26e38874b0e2e7e33f2194a0..4b505ed58f352c42ce8042825bb9f5853960bf27 100644
+--- a/crates/ruff_linter/resources/test/fixtures/flake8_bugbear/B013.py
++++ b/crates/ruff_linter/resources/test/fixtures/flake8_bugbear/B013.py
+@@ -18,4 +18,12 @@ list_exceptions = [FileExistsError, FileNotFoundError]
+ try:
+     pass
+ except (*list_exceptions,):
+-    pass
+\ No newline at end of file
++    pass
++
++try:
++    ...
++except (
++        ValueError,
++        # text
++        ):
++    ...
+\ No newline at end of file
+diff --git a/crates/ruff_linter/src/rules/flake8_bugbear/snapshots/ruff_linter__rules__flake8_bugbear__tests__B013_B013.py.snap b/crates/ruff_linter/src/rules/flake8_bugbear/snapshots/ruff_linter__rules__flake8_bugbear__tests__B013_B013.py.snap
+index 558df83a88db6506dc8ba4b1de6afc80de8aaecd..f286c3f49735d2a4b0e662cb5ef95d56f8b7a0bf 100644
+--- a/crates/ruff_linter/src/rules/flake8_bugbear/snapshots/ruff_linter__rules__flake8_bugbear__tests__B013_B013.py.snap
++++ b/crates/ruff_linter/src/rules/flake8_bugbear/snapshots/ruff_linter__rules__flake8_bugbear__tests__B013_B013.py.snap
+@@ -39,3 +39,28 @@ help: Replace with `except ValueError`
+ 14 |     pass
+ 15 | 
+ 16 | list_exceptions = [FileExistsError, FileNotFoundError]
++
++B013 [*] A length-one tuple literal is redundant in exception handlers
++  --> B013.py:25:8
++   |
++23 |   try:
++24 |       ...
++25 |   except (
++   |  ________^
++26 | |         ValueError,
++27 | |         # text
++28 | |         ):
++   | |_________^
++29 |       ...
++   |
++help: Replace with `except ValueError`
++22 | 
++23 | try:
++24 |     ...
++   - except (
++   -         ValueError,
++   -         # text
++   -         ):
++25 + except ValueError:
++26 |     ...
++note: This is an unsafe fix and may change runtime behavior

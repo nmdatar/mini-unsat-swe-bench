@@ -1,0 +1,37 @@
+diff --git a/crates/ruff_linter/resources/test/fixtures/flake8_bugbear/B004.py b/crates/ruff_linter/resources/test/fixtures/flake8_bugbear/B004.py
+index b064101ed4cd36e04c836dd261840fa8bcb691ed..92ec34823340b24bed0a72c107d72d33fdbf5ab2 100644
+--- a/crates/ruff_linter/resources/test/fixtures/flake8_bugbear/B004.py
++++ b/crates/ruff_linter/resources/test/fixtures/flake8_bugbear/B004.py
+@@ -52,3 +52,21 @@ class A:
+ 
+ assert hasattr(A(), "__call__")
+ assert callable(A()) is False
++
++# https://github.com/astral-sh/ruff/issues/20440
++def test_invalid_hasattr_calls():
++    hasattr(0, "__call__", 0)  # 3 args - invalid
++    hasattr(0, "__call__", x=0)  # keyword arg - invalid
++    hasattr(0, "__call__", 0, x=0)  # 3 args + keyword - invalid
++    hasattr()  # no args - invalid
++    hasattr(0)  # 1 arg - invalid
++    hasattr(*(), "__call__", "extra")  # unpacking - invalid
++    hasattr(*())  # unpacking - invalid
++
++def test_invalid_getattr_calls():
++    getattr(0, "__call__", None, "extra")  # 4 args - invalid
++    getattr(0, "__call__", default=None)  # keyword arg - invalid
++    getattr()  # no args - invalid
++    getattr(0)  # 1 arg - invalid
++    getattr(*(), "__call__", None, "extra")  # unpacking - invalid
++    getattr(*())  # unpacking - invalid
+diff --git a/crates/ruff_linter/src/rules/flake8_bugbear/snapshots/ruff_linter__rules__flake8_bugbear__tests__B004_B004.py.snap b/crates/ruff_linter/src/rules/flake8_bugbear/snapshots/ruff_linter__rules__flake8_bugbear__tests__B004_B004.py.snap
+index 8170d5bcad622e70feda2e5abf8661ef650e7bc4..c64029081797190689324e041040bf6b4b038d15 100644
+--- a/crates/ruff_linter/src/rules/flake8_bugbear/snapshots/ruff_linter__rules__flake8_bugbear__tests__B004_B004.py.snap
++++ b/crates/ruff_linter/src/rules/flake8_bugbear/snapshots/ruff_linter__rules__flake8_bugbear__tests__B004_B004.py.snap
+@@ -156,4 +156,6 @@ help: Replace with `callable()`
+    - assert hasattr(A(), "__call__")
+ 53 + assert callable(A())
+ 54 | assert callable(A()) is False
++55 | 
++56 | # https://github.com/astral-sh/ruff/issues/20440
+ note: This is an unsafe fix and may change runtime behavior

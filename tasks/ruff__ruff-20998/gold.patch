@@ -1,0 +1,53 @@
+diff --git a/crates/ruff_linter/src/rules/flake8_bugbear/rules/map_without_explicit_strict.rs b/crates/ruff_linter/src/rules/flake8_bugbear/rules/map_without_explicit_strict.rs
+index 13c6806433e7ddaf14a65d8dbc9edb4388564610..0eba117469e9a22752c5557ff6218ff59567be17 100644
+--- a/crates/ruff_linter/src/rules/flake8_bugbear/rules/map_without_explicit_strict.rs
++++ b/crates/ruff_linter/src/rules/flake8_bugbear/rules/map_without_explicit_strict.rs
+@@ -9,7 +9,7 @@ use crate::rules::flake8_bugbear::helpers::any_infinite_iterables;
+ use crate::{AlwaysFixableViolation, Applicability, Fix};
+ 
+ /// ## What it does
+-/// Checks for `map` calls without an explicit `strict` parameter when called with two or more iterables.
++/// Checks for `map` calls without an explicit `strict` parameter when called with two or more iterables, or any starred argument.
+ ///
+ /// This rule applies to Python 3.14 and later, where `map` accepts a `strict` keyword
+ /// argument. For details, see: [What’s New in Python 3.14](https://docs.python.org/dev/whatsnew/3.14.html).
+@@ -62,7 +62,12 @@ pub(crate) fn map_without_explicit_strict(checker: &Checker, call: &ast::ExprCal
+ 
+     if semantic.match_builtin_expr(&call.func, "map")
+         && call.arguments.find_keyword("strict").is_none()
+-        && call.arguments.args.len() >= 3 // function + at least 2 iterables
++        && (
++            // at least 2 iterables (+ 1 function)
++            call.arguments.args.len() >= 3
++            // or a starred argument
++            || call.arguments.args.iter().any(ast::Expr::is_starred_expr)
++        )
+         && !any_infinite_iterables(call.arguments.args.iter().skip(1), semantic)
+     {
+         checker
+diff --git a/crates/ruff_linter/src/rules/flake8_bugbear/rules/zip_without_explicit_strict.rs b/crates/ruff_linter/src/rules/flake8_bugbear/rules/zip_without_explicit_strict.rs
+index a432bbdce97e95a9b280f791302a14c7576cf218..102d6b0a57400d90dec047f2ea02e1f65b96b540 100644
+--- a/crates/ruff_linter/src/rules/flake8_bugbear/rules/zip_without_explicit_strict.rs
++++ b/crates/ruff_linter/src/rules/flake8_bugbear/rules/zip_without_explicit_strict.rs
+@@ -9,7 +9,7 @@ use crate::rules::flake8_bugbear::helpers::any_infinite_iterables;
+ use crate::{AlwaysFixableViolation, Applicability, Fix};
+ 
+ /// ## What it does
+-/// Checks for `zip` calls without an explicit `strict` parameter.
++/// Checks for `zip` calls without an explicit `strict` parameter when called with two or more iterables, or any starred argument.
+ ///
+ /// ## Why is this bad?
+ /// By default, if the iterables passed to `zip` are of different lengths, the
+@@ -58,6 +58,12 @@ pub(crate) fn zip_without_explicit_strict(checker: &Checker, call: &ast::ExprCal
+ 
+     if semantic.match_builtin_expr(&call.func, "zip")
+         && call.arguments.find_keyword("strict").is_none()
++        && (
++            // at least 2 iterables
++            call.arguments.args.len() >= 2
++            // or a starred argument
++            || call.arguments.args.iter().any(ast::Expr::is_starred_expr)
++        )
+         && !any_infinite_iterables(call.arguments.args.iter(), semantic)
+     {
+         checker

@@ -1,0 +1,12 @@
+diff --git a/crates/ruff_linter/src/rules/airflow/rules/removal_in_3.rs b/crates/ruff_linter/src/rules/airflow/rules/removal_in_3.rs
+index 78c89da0b4978d883b3d318ba39f4a4261c50994..562f37230d07edadd43e610401f99bdcadb5962e 100644
+--- a/crates/ruff_linter/src/rules/airflow/rules/removal_in_3.rs
++++ b/crates/ruff_linter/src/rules/airflow/rules/removal_in_3.rs
+@@ -196,6 +196,7 @@ fn check_call_arguments(checker: &Checker, qualified_name: &QualifiedName, argum
+     match qualified_name.segments() {
+         ["airflow", .., "DAG" | "dag"] => {
+             // with replacement
++            diagnostic_for_argument(checker, arguments, "concurrency", Some("max_active_tasks"));
+             diagnostic_for_argument(checker, arguments, "fail_stop", Some("fail_fast"));
+             diagnostic_for_argument(checker, arguments, "schedule_interval", Some("schedule"));
+             diagnostic_for_argument(checker, arguments, "timetable", Some("schedule"));

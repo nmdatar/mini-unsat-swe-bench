@@ -1,0 +1,67 @@
+diff --git a/crates/ruff_python_formatter/src/comments/placement.rs b/crates/ruff_python_formatter/src/comments/placement.rs
+index 28397b6dcfcf8094a825b45ba32b8a819ad5c23d..76449285bef5c6234ca82a6ab0d1cb9fc535288b 100644
+--- a/crates/ruff_python_formatter/src/comments/placement.rs
++++ b/crates/ruff_python_formatter/src/comments/placement.rs
+@@ -871,7 +871,20 @@ fn handle_parameter_comment<'a>(
+             CommentPlacement::Default(comment)
+         }
+     } else if comment.start() < parameter.name.start() {
+-        CommentPlacement::leading(parameter, comment)
++        // For lambdas, where the parameters cannot be parenthesized and the first parameter thus
++        // starts at the same position as the parent parameters, mark a comment before the first
++        // parameter as leading on the parameters rather than the individual parameter to prevent
++        // the whole parameter list from breaking.
++        //
++        // Note that this check is not needed above because lambda parameters cannot have
++        // annotations.
++        if let Some(AnyNodeRef::Parameters(parameters)) = comment.enclosing_parent()
++            && parameters.start() == parameter.start()
++        {
++            CommentPlacement::leading(parameters, comment)
++        } else {
++            CommentPlacement::leading(parameter, comment)
++        }
+     } else {
+         CommentPlacement::Default(comment)
+     }
+@@ -1835,10 +1848,8 @@ fn handle_lambda_comment<'a>(
+         // )
+         // ```
+         if comment.start() < parameters.start() {
+-            return if let Some(first) = parameters.iter().next()
+-                && comment.line_position().is_own_line()
+-            {
+-                CommentPlacement::leading(first.as_parameter(), comment)
++            return if comment.line_position().is_own_line() {
++                CommentPlacement::leading(parameters, comment)
+             } else {
+                 CommentPlacement::dangling(comment.enclosing_node(), comment)
+             };
+diff --git a/crates/ruff_python_formatter/src/expression/expr_lambda.rs b/crates/ruff_python_formatter/src/expression/expr_lambda.rs
+index 335f1123234662ec2bab5da23a74f6720648ae9c..f91666ecf7af2e024efd56d5654749396f0f812e 100644
+--- a/crates/ruff_python_formatter/src/expression/expr_lambda.rs
++++ b/crates/ruff_python_formatter/src/expression/expr_lambda.rs
+@@ -32,8 +32,8 @@ impl FormatNodeRule<ExprLambda> for FormatExprLambda {
+                 .split_at(dangling.partition_point(|comment| comment.end() < parameters.start()));
+ 
+             if dangling_before_parameters.is_empty() {
+-                // If the first parameter has a leading comment, insert a hard line break. This
+-                // comment is associated as a leading comment on the first parameter:
++                // If the parameters have a leading comment, insert a hard line break. This
++                // comment is associated as a leading comment on the parameters:
+                 //
+                 // ```py
+                 // (
+@@ -86,11 +86,7 @@ impl FormatNodeRule<ExprLambda> for FormatExprLambda {
+                 //     *x: x
+                 // )
+                 // ```
+-                if parameters
+-                    .iter()
+-                    .next()
+-                    .is_some_and(|parameter| comments.has_leading(parameter.as_parameter()))
+-                {
++                if comments.has_leading(&**parameters) {
+                     hard_line_break().fmt(f)?;
+                 } else {
+                     write!(f, [space()])?;

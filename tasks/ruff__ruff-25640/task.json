@@ -1,0 +1,14 @@
+{
+  "base_commit": "e89b2b148e14edab0cb2a48963a11af18e8d0a65",
+  "environment_key": "ruff-rust-toolchain",
+  "prompt": "Allow rule names in `ruff rule`\n\nSummary\n--\n\nFrom what I can tell, there's not really an easy way to preview-gate this. I don't think we have access to configuration in this subcommand, and it doesn't seem easy to pass it to clap even if we had it. However, I don't think there's much downside to being more permissive here and allowing this even before other human-readable names work.\n\nTest Plan\n--\n\nNew CLI test\n\nI also tested the new shell completions:\n\n```console\n\u276f source <(cargo run --quiet --bin ruff -- generate-shell-completion zsh)\n\n\u276f ruff rule unused-<TAB>\nunused-annotation              -- F842\nunused-async                   -- RUF029\nunused-class-method-argument   -- ARG003\nunused-function-argument       -- ARG001\nunused-import                  -- F401\nunused-lambda-argument         -- ARG005\nunused-loop-control-variable   -- B007\nunused-method-argument         -- ARG002\nunused-noqa                    -- RUF100\nunused-private-protocol        -- PYI046\nunused-private-type-alias      -- PYI047\nunused-private-type-var        -- PYI018\nunused-private-typed-dict      -- PYI049\nunused-static-method-argument  -- ARG004\nunused-unpacked-variable       -- RUF059\nunused-variable                -- F841\n```\n\nPart of a related issue",
+  "subsystem": "linter",
+  "task_id": "ruff__ruff-25640",
+  "test_commands": [
+    "cargo test -p ruff_linter"
+  ],
+  "timeouts": {
+    "agent_seconds": 1800,
+    "test_seconds": 900
+  }
+}

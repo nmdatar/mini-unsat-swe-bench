@@ -1,0 +1,20 @@
+diff --git a/crates/ruff_linter/src/rules/ruff/rules/unnecessary_round.rs b/crates/ruff_linter/src/rules/ruff/rules/unnecessary_round.rs
+index c7fe4687e86c80b44634611c04d419afafc1caa5..e2ab51e1dbdd7fe51b1d36fc0f787e35c33f603f 100644
+--- a/crates/ruff_linter/src/rules/ruff/rules/unnecessary_round.rs
++++ b/crates/ruff_linter/src/rules/ruff/rules/unnecessary_round.rs
+@@ -143,6 +143,15 @@ pub(super) fn rounded_and_ndigits<'a>(
+         return None;
+     }
+ 
++    // *args
++    if arguments.args.iter().any(Expr::is_starred_expr) {
++        return None;
++    }
++    // **kwargs
++    if arguments.keywords.iter().any(|kw| kw.arg.is_none()) {
++        return None;
++    }
++
+     let rounded = arguments.find_argument_value("number", 0)?;
+     let ndigits = arguments.find_argument_value("ndigits", 1);
+ 

@@ -1,0 +1,174 @@
+diff --git a/crates/ruff_python_formatter/resources/test/fixtures/ruff/expression/attribute.py b/crates/ruff_python_formatter/resources/test/fixtures/ruff/expression/attribute.py
+index 6f5a7ac1a60d8922edee77b73e0d342f61f91fe0..a760491b3d64f1cc704a3b7afca1f1084b13f815 100644
+--- a/crates/ruff_python_formatter/resources/test/fixtures/ruff/expression/attribute.py
++++ b/crates/ruff_python_formatter/resources/test/fixtures/ruff/expression/attribute.py
+@@ -169,3 +169,53 @@ result = (
+     # dangling before dot
+     .b # trailing end-of-line
+ )
++
++# Regression test for https://github.com/astral-sh/ruff/issues/19350
++variable = (
++    (something)  # a comment
++    .first_method("some string")
++)
++
++variable = (
++    something # a commentdddddddddddddddddddddddddddddd
++    .first_method("some string")
++)
++
++if (
++    (something)  # a commentdddddddddddddddddddddddddddddd
++    .first_method("some string")
++): pass
++
++variable = (
++    (something # a comment
++    ).first_method("some string")
++)
++
++if (
++    (something # a comment
++    ).first_method("some string") # second comment
++): pass
++
++variable = ( # 1
++    # 2
++    (something)  # 3
++    # 4
++    .first_method("some string") # 5
++    # 6
++) # 7
++
++
++if (
++    (something
++    # trailing own line on value
++    )
++    .first_method("some string")
++): ...
++
++variable = (
++    (something
++    # 1
++    )  # 2
++    .first_method("some string")
++)
++
+diff --git a/crates/ruff_python_formatter/tests/snapshots/format@expression__attribute.py.snap b/crates/ruff_python_formatter/tests/snapshots/format@expression__attribute.py.snap
+index 89ce7d237b16d2e2f3c889498e77cc3b4ad83671..4677ca06de511dcaf39f31a5178722a6db77af0a 100644
+--- a/crates/ruff_python_formatter/tests/snapshots/format@expression__attribute.py.snap
++++ b/crates/ruff_python_formatter/tests/snapshots/format@expression__attribute.py.snap
+@@ -175,6 +175,56 @@ result = (
+     # dangling before dot
+     .b # trailing end-of-line
+ )
++
++# Regression test for https://github.com/astral-sh/ruff/issues/19350
++variable = (
++    (something)  # a comment
++    .first_method("some string")
++)
++
++variable = (
++    something # a commentdddddddddddddddddddddddddddddd
++    .first_method("some string")
++)
++
++if (
++    (something)  # a commentdddddddddddddddddddddddddddddd
++    .first_method("some string")
++): pass
++
++variable = (
++    (something # a comment
++    ).first_method("some string")
++)
++
++if (
++    (something # a comment
++    ).first_method("some string") # second comment
++): pass
++
++variable = ( # 1
++    # 2
++    (something)  # 3
++    # 4
++    .first_method("some string") # 5
++    # 6
++) # 7
++
++
++if (
++    (something
++    # trailing own line on value
++    )
++    .first_method("some string")
++): ...
++
++variable = (
++    (something
++    # 1
++    )  # 2
++    .first_method("some string")
++)
++
+ ```
+ 
+ ## Output
+@@ -328,4 +378,54 @@ result = (
+     # dangling before dot
+     .b  # trailing end-of-line
+ )
++
++# Regression test for https://github.com/astral-sh/ruff/issues/19350
++variable = (
++    (something)  # a comment
++    .first_method("some string")
++)
++
++variable = something.first_method(  # a commentdddddddddddddddddddddddddddddd
++    "some string"
++)
++
++if (
++    (something)  # a commentdddddddddddddddddddddddddddddd
++    .first_method("some string")
++):
++    pass
++
++variable = (
++    something  # a comment
++).first_method("some string")
++
++if (
++    (
++        something  # a comment
++    ).first_method("some string")  # second comment
++):
++    pass
++
++variable = (  # 1
++    # 2
++    (something)  # 3
++    # 4
++    .first_method("some string")  # 5
++    # 6
++)  # 7
++
++
++if (
++    something
++    # trailing own line on value
++).first_method("some string"):
++    ...
++
++variable = (
++    (
++        something
++        # 1
++    )  # 2
++    .first_method("some string")
++)
+ ```

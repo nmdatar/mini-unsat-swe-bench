@@ -1,0 +1,14 @@
+{
+  "base_commit": "83134fb3803695b21c84d565f794f11be7fdd772",
+  "environment_key": "ruff-rust-toolchain",
+  "prompt": "Statistics output doesn't show `[*]` markers for partially-fixable error types\n\n### Description\n\nWhen using `--statistics`, the summary line correctly reports the number of fixable errors, but individual error type lines don't show the fixable marker (`[*]`) when some instances of that error type are fixable.\n\n### Reproduction\n\nRun the following command on the [karpathy/nanochat](https://github.com/karpathy/nanochat) repository (tested using branch `master`, which was on commit `[redacted revision]`):\n\n```\n\u276f ruff check --select ANN --statistics --unsafe-fixes\n326     ANN001  missing-type-function-argument\n182     ANN201  missing-return-type-undocumented-public-function\n 33     ANN204  missing-return-type-special-method\n 22     ANN003  missing-type-kwargs\n 15     ANN202  missing-return-type-private-function\n 12     ANN002  missing-type-args\n  7     ANN206  missing-return-type-class-method\nFound 597 errors.\n[*] 80 fixable with the --fix option.\n\n\u276f ruff check --select ANN --statistics --unsafe-fixes --fix\n326     ANN001  missing-type-function-argument\n137     ANN201  missing-return-type-undocumented-public-function\n 22     ANN003  missing-type-kwargs\n 12     ANN002  missing-type-args\n  9     ANN202  missing-return-type-private-function\n  7     ANN206  missing-return-type-class-method\n  4     ANN204  missing-return-type-special-method\nFound 597 errors (80 fixed, 517 remaining).\n```\n\n### Current behavior\n\nOutput shows no marker for which of the errors are fixable :\n\n### Expected behavior\n\nError type lines should indicate fixability:\n\n- `[*]` when all instances are fixable\n- `[~]` (or similar symbol) when only some instances are fixable\n\nAlternatively, a new column with the count of fixable issues.\n\nThis would clearly communicate that fixes are available for this error type, while distinguishing partial from full fixability.",
+  "subsystem": "other-core",
+  "task_id": "ruff__ruff-21513",
+  "test_commands": [
+    "cargo test --workspace"
+  ],
+  "timeouts": {
+    "agent_seconds": 1800,
+    "test_seconds": 900
+  }
+}

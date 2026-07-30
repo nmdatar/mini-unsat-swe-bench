@@ -1,0 +1,14 @@
+{
+  "base_commit": "4c4ddc8c29e649dad381b21c90593226687825e1",
+  "environment_key": "ruff-rust-toolchain",
+  "prompt": "DOC502: False positive if following text contains a colon\n\n### Summary\n\nPossibly related to https://github.com/astral-sh/ruff/issues/16578 but somewhat different: Text after the `Raises` block triggers a false positive for DOC502 if that text contains a colon.\n\nIn my case, the relevant part of the docstring contains Sphinx directives, properly unindented:\n\n```\nRaises:\n    ExtraneousDataError:\n        ``exact`` is True and there's data left over at the end of the byte\n        string.\n\n.. versionadded:: 0.7.0\n    The ``init_kwargs`` argument.\n```\n\nThis results in a false positive:\n\n```\nRaised exception is not explicitly raised: `. versionadded` (DOC502) [Ln 7, Col 5]\n```\n\nNote the line number is also wrong; it's line 27 of the docstring, line 6 of the `Raises` section if you include the line with \"Raises\" on it.\n\nIt seems like Ruff thinks `versionadded:` is part of the `Raises` block, even though it's unindented. Interestingly, removing both colons from `versionadded` makes the issue go away. Adding just one back triggers the bug again.\n\nPlayground link: https://play.ruff.rs/[redacted revision]-d661-4af3-83e0-[redacted revision]",
+  "subsystem": "linter",
+  "task_id": "ruff__ruff-20535",
+  "test_commands": [
+    "cargo test -p ruff_linter"
+  ],
+  "timeouts": {
+    "agent_seconds": 1800,
+    "test_seconds": 900
+  }
+}

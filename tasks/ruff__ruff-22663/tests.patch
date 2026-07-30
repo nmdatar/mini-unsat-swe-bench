@@ -1,0 +1,47 @@
+diff --git a/crates/ruff_linter/resources/test/fixtures/ruff/RUF019.py b/crates/ruff_linter/resources/test/fixtures/ruff/RUF019.py
+index 89e22e9d97030c7625166d4fa3b0b8ba19a7c3a1..62f1445aa145f59a9890ae4e82e81902847ea5e1 100644
+--- a/crates/ruff_linter/resources/test/fixtures/ruff/RUF019.py
++++ b/crates/ruff_linter/resources/test/fixtures/ruff/RUF019.py
+@@ -22,3 +22,11 @@ v = "k" in d and d["k"]
+ 
+ if f() in d and d[f()]:
+     pass
++
++
++if (
++        "key" in d
++        and  # text
++        d ["key"]
++):
++    ...
+diff --git a/crates/ruff_linter/src/rules/ruff/snapshots/ruff_linter__rules__ruff__tests__RUF019_RUF019.py.snap b/crates/ruff_linter/src/rules/ruff/snapshots/ruff_linter__rules__ruff__tests__RUF019_RUF019.py.snap
+index ba96087e04d76d4ebfcaabd25c3d005fc4968a91..d2250c2c76d9532874d9f14cc74785a9c1ee9f1c 100644
+--- a/crates/ruff_linter/src/rules/ruff/snapshots/ruff_linter__rules__ruff__tests__RUF019_RUF019.py.snap
++++ b/crates/ruff_linter/src/rules/ruff/snapshots/ruff_linter__rules__ruff__tests__RUF019_RUF019.py.snap
+@@ -114,3 +114,26 @@ help: Replace with `dict.get`
+ 19 | 
+ 20 | # OK
+ 21 | v = "k" in d and d["k"]
++
++RUF019 [*] Unnecessary key check before dictionary access
++  --> RUF019.py:28:9
++   |
++27 |   if (
++28 | /         "key" in d
++29 | |         and  # text
++30 | |         d ["key"]
++   | |_________________^
++31 |   ):
++32 |       ...
++   |
++help: Replace with `dict.get`
++25 | 
++26 | 
++27 | if (
++   -         "key" in d
++   -         and  # text
++   -         d ["key"]
++28 +         d.get("key")
++29 | ):
++30 |     ...
++note: This is an unsafe fix and may change runtime behavior

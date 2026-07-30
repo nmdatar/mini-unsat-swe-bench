@@ -1,0 +1,14 @@
+{
+  "base_commit": "349061117c18683db607bc66140d5c870210b40a",
+  "environment_key": "ruff-rust-toolchain",
+  "prompt": "[`airflow`] warning `airflow....DAG.create_dagrun` has been removed (`AIR301`)\n\n## Summary\n\n* Warn that `airflow....DAG.create_dagrun` has been removed",
+  "subsystem": "linter",
+  "task_id": "ruff__ruff-21093",
+  "test_commands": [
+    "cargo test -p ruff_linter"
+  ],
+  "timeouts": {
+    "agent_seconds": 1800,
+    "test_seconds": 900
+  }
+}

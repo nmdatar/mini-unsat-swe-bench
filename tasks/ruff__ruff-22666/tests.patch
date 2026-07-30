@@ -1,0 +1,51 @@
+diff --git a/crates/ruff_linter/resources/test/fixtures/refurb/FURB181.py b/crates/ruff_linter/resources/test/fixtures/refurb/FURB181.py
+index 559f67ee30442ea8e76c14c6a1d23f31f972867c..5c178cdcd35659702a4a7433d11423092263ff8e 100644
+--- a/crates/ruff_linter/resources/test/fixtures/refurb/FURB181.py
++++ b/crates/ruff_linter/resources/test/fixtures/refurb/FURB181.py
+@@ -55,3 +55,12 @@ class Hash:
+ 
+ 
+ Hash().digest().hex()
++
++
++hashed = (
++    sha512(b"some data")
++    .digest(
++        # text
++    )
++    .hex()
++)
+\ No newline at end of file
+diff --git a/crates/ruff_linter/src/rules/refurb/snapshots/ruff_linter__rules__refurb__tests__FURB181_FURB181.py.snap b/crates/ruff_linter/src/rules/refurb/snapshots/ruff_linter__rules__refurb__tests__FURB181_FURB181.py.snap
+index d437b1ae07e33bf6d9768d3e04a46725195d340f..384a5f8359fb2eafe18c6fdb73f41001fc9b4d73 100644
+--- a/crates/ruff_linter/src/rules/refurb/snapshots/ruff_linter__rules__refurb__tests__FURB181_FURB181.py.snap
++++ b/crates/ruff_linter/src/rules/refurb/snapshots/ruff_linter__rules__refurb__tests__FURB181_FURB181.py.snap
+@@ -322,3 +322,28 @@ help: Replace with `.hexdigest()`
+ 39 | 
+ 40 | # not yet supported
+ 41 | h = sha256()
++
++FURB181 [*] Use of hashlib's `.digest().hex()`
++  --> FURB181.py:61:5
++   |
++60 |   hashed = (
++61 | /     sha512(b"some data")
++62 | |     .digest(
++63 | |         # text
++64 | |     )
++65 | |     .hex()
++   | |__________^
++66 |   )
++   |
++help: Replace with `.hexdigest()`
++58 | 
++59 | 
++60 | hashed = (
++   -     sha512(b"some data")
++   -     .digest(
++   -         # text
++   -     )
++   -     .hex()
++61 +     sha512(b"some data").hexdigest()
++62 | )
++note: This is an unsafe fix and may change runtime behavior

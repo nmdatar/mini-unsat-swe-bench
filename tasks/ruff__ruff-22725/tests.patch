@@ -1,0 +1,69 @@
+diff --git a/crates/ruff_linter/resources/test/fixtures/flake8_pytest_style/PT011.py b/crates/ruff_linter/resources/test/fixtures/flake8_pytest_style/PT011.py
+index e52493547389d99a06b670716d75f95957ca5e42..956a86eddbcd444883cb077433a03512eb852645 100644
+--- a/crates/ruff_linter/resources/test/fixtures/flake8_pytest_style/PT011.py
++++ b/crates/ruff_linter/resources/test/fixtures/flake8_pytest_style/PT011.py
+@@ -51,3 +51,13 @@ def test_error_match_is_empty():
+ def test_ok_t_string_match():
+     with pytest.raises(ValueError, match=t""):
+         raise ValueError("Can't divide 1 by 0")
++
++
++def test_ok_check_provided():
++    with pytest.raises(ValueError, check=lambda e: str(e) == "error"):
++        raise ValueError("error")
++
++
++def test_error_check_is_none():
++    with pytest.raises(ValueError, check=None):
++        raise ValueError("Can't divide 1 by 0")
+diff --git a/crates/ruff_linter/src/rules/flake8_pytest_style/snapshots/ruff_linter__rules__flake8_pytest_style__tests__PT011_default.snap b/crates/ruff_linter/src/rules/flake8_pytest_style/snapshots/ruff_linter__rules__flake8_pytest_style__tests__PT011_default.snap
+index db9480f4e5c1773dd2130174eb34bf0704618407..57edcc2d090cdacc5f770651eda6652a1da28d60 100644
+--- a/crates/ruff_linter/src/rules/flake8_pytest_style/snapshots/ruff_linter__rules__flake8_pytest_style__tests__PT011_default.snap
++++ b/crates/ruff_linter/src/rules/flake8_pytest_style/snapshots/ruff_linter__rules__flake8_pytest_style__tests__PT011_default.snap
+@@ -58,3 +58,12 @@ PT011 `pytest.raises(ValueError)` is too broad, set the `match` parameter or use
+    |                        ^^^^^^^^^^
+ 49 |         raise ValueError("Can't divide 1 by 0")
+    |
++
++PT011 `pytest.raises(ValueError)` is too broad, set the `match` parameter or use a more specific exception
++  --> PT011.py:62:24
++   |
++61 | def test_error_check_is_none():
++62 |     with pytest.raises(ValueError, check=None):
++   |                        ^^^^^^^^^^
++63 |         raise ValueError("Can't divide 1 by 0")
++   |
+diff --git a/crates/ruff_linter/src/rules/flake8_pytest_style/snapshots/ruff_linter__rules__flake8_pytest_style__tests__PT011_extend_broad_exceptions.snap b/crates/ruff_linter/src/rules/flake8_pytest_style/snapshots/ruff_linter__rules__flake8_pytest_style__tests__PT011_extend_broad_exceptions.snap
+index 5616bf836d7a6ea49cd35c6b554b613ec91571fb..cf965fcfc8a0a39332b18e5a54bd53f8ef925dd9 100644
+--- a/crates/ruff_linter/src/rules/flake8_pytest_style/snapshots/ruff_linter__rules__flake8_pytest_style__tests__PT011_extend_broad_exceptions.snap
++++ b/crates/ruff_linter/src/rules/flake8_pytest_style/snapshots/ruff_linter__rules__flake8_pytest_style__tests__PT011_extend_broad_exceptions.snap
+@@ -67,3 +67,12 @@ PT011 `pytest.raises(ValueError)` is too broad, set the `match` parameter or use
+    |                        ^^^^^^^^^^
+ 49 |         raise ValueError("Can't divide 1 by 0")
+    |
++
++PT011 `pytest.raises(ValueError)` is too broad, set the `match` parameter or use a more specific exception
++  --> PT011.py:62:24
++   |
++61 | def test_error_check_is_none():
++62 |     with pytest.raises(ValueError, check=None):
++   |                        ^^^^^^^^^^
++63 |         raise ValueError("Can't divide 1 by 0")
++   |
+diff --git a/crates/ruff_linter/src/rules/flake8_pytest_style/snapshots/ruff_linter__rules__flake8_pytest_style__tests__PT011_glob_all.snap b/crates/ruff_linter/src/rules/flake8_pytest_style/snapshots/ruff_linter__rules__flake8_pytest_style__tests__PT011_glob_all.snap
+index c1ee088e974400c1c34e0208bc9c73574c02dead..dd7fd686c28ddf622efaf6701a56a56474964aac 100644
+--- a/crates/ruff_linter/src/rules/flake8_pytest_style/snapshots/ruff_linter__rules__flake8_pytest_style__tests__PT011_glob_all.snap
++++ b/crates/ruff_linter/src/rules/flake8_pytest_style/snapshots/ruff_linter__rules__flake8_pytest_style__tests__PT011_glob_all.snap
+@@ -87,3 +87,12 @@ PT011 `pytest.raises(ValueError)` is too broad, set the `match` parameter or use
+    |                        ^^^^^^^^^^
+ 49 |         raise ValueError("Can't divide 1 by 0")
+    |
++
++PT011 `pytest.raises(ValueError)` is too broad, set the `match` parameter or use a more specific exception
++  --> PT011.py:62:24
++   |
++61 | def test_error_check_is_none():
++62 |     with pytest.raises(ValueError, check=None):
++   |                        ^^^^^^^^^^
++63 |         raise ValueError("Can't divide 1 by 0")
++   |

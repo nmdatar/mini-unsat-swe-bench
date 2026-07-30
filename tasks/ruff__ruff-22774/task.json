@@ -1,0 +1,14 @@
+{
+  "base_commit": "8c37136b0eff732ac48dcb03d8e627789ff0b68f",
+  "environment_key": "ruff-rust-toolchain",
+  "prompt": "[`pyupgrade`] Make fix unsafe if it deletes comments (`UP039`)\n\n## Summary",
+  "subsystem": "linter",
+  "task_id": "ruff__ruff-22774",
+  "test_commands": [
+    "cargo test -p ruff_linter"
+  ],
+  "timeouts": {
+    "agent_seconds": 1800,
+    "test_seconds": 900
+  }
+}

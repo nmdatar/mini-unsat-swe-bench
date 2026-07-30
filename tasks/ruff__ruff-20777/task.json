@@ -1,0 +1,14 @@
+{
+  "base_commit": "b0c6217e0bd52d2656401a297f09b8650f452307",
+  "environment_key": "ruff-rust-toolchain",
+  "prompt": "Render unsupported syntax errors in formatter tests\n\n## Summary\n\nBased on the suggestion in https://github.com/astral-sh/ruff/issues/20774#issuecomment-[redacted revision], I added rendering of unsupported syntax errors in our `format` test. \n\nIn support of this, I added a `DummyFileResolver` type to `ruff_db` to pass to `DisplayDiagnostics::new` (first commit). Another option would obviously be implementing this directly in the fixtures, but we'd have to import a `NotebookIndex` somehow; either by depending directly on `ruff_notebook` or re-exporting it from `ruff_db`. I thought it might be convenient elsewhere to have a dummy resolver, for example in the parser, where we currently have a separate rendering pipeline [copied](https://github.com/astral-sh/ruff/blob/main/crates/ruff_python_parser/tests/fixtures.rs#L321) from our old rendering code in `ruff_linter`. I also briefly tried implementing a `TestDb` in the formatter since I noticed the `ruff_python_formatter::db` module, but that was turning into a lot more code than the dummy resolver.\n\nWe could also push this a bit further if we wanted. I didn't add the new snapshots to the black compatibility tests or to the preview snapshots, for example. I thought it was kind of noisy enough (and helpful enough) already, though. We could also use a shorter diagnostic format, but the full output seems most useful once we accept this initial large batch of changes.",
+  "subsystem": "linter",
+  "task_id": "ruff__ruff-20777",
+  "test_commands": [
+    "cargo test -p ruff_linter"
+  ],
+  "timeouts": {
+    "agent_seconds": 1800,
+    "test_seconds": 900
+  }
+}

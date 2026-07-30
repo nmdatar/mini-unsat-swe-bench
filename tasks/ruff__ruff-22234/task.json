@@ -1,0 +1,14 @@
+{
+  "base_commit": "d5c39d3f9fc5ac279ffbc97c7d8350d56067e7c4",
+  "environment_key": "ruff-rust-toolchain",
+  "prompt": "[`refurb`] Do not add `abc.ABC` if already present (`FURB180`)\n\n## Summary\n\nAccording to the `FURB180` rule, `abc.ABC` should be used instead of `metaclass=abc.ABCMeta`. This issue can be fixed automatically, but if the class being checked already contains `abc.ABC`, it would be added a second time.\n\nFixes: a related issue",
+  "subsystem": "linter",
+  "task_id": "ruff__ruff-22234",
+  "test_commands": [
+    "cargo test -p ruff_linter"
+  ],
+  "timeouts": {
+    "agent_seconds": 1800,
+    "test_seconds": 900
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "base_commit": "aa63c24b8f4a82f5f54dc90c4e6b5adadbf3e1b2",
+  "environment_key": "ruff-rust-toolchain",
+  "prompt": "[ruff] Treat panics as fatal diagnostics, sort panics last\n\n- Convert panics to diagnostics with id `Panic`, severity `Fatal`, and the error as the diagnostic message, annotated with a `Span` with empty code block and no range.\n- Updates the post-linting message diagnostic handling to track the maximum severity seen, and then prints the \"report a bug in ruff\" message only if the max severity was `Fatal`\n\nThis depends on the sorting changes since it creates diagnostics with no range specified.",
+  "subsystem": "linter",
+  "task_id": "ruff__ruff-20258",
+  "test_commands": [
+    "cargo test -p ruff_linter"
+  ],
+  "timeouts": {
+    "agent_seconds": 1800,
+    "test_seconds": 900
+  }
+}

@@ -1,0 +1,55 @@
+diff --git a/crates/ruff_python_formatter/src/expression/expr_lambda.rs b/crates/ruff_python_formatter/src/expression/expr_lambda.rs
+index 63e8aa6d9701fdae2c06e9fbc35490667423ceb7..14ec1393d8c7f469e4d023a463cb12ccd409985b 100644
+--- a/crates/ruff_python_formatter/src/expression/expr_lambda.rs
++++ b/crates/ruff_python_formatter/src/expression/expr_lambda.rs
+@@ -145,6 +145,7 @@ impl FormatNodeRule<ExprLambda> for FormatExprLambda {
+         let fmt_body = FormatBody {
+             body,
+             dangling_header_comments,
++            needs_parentheses: body.needs_parentheses(item.into(), f.context()),
+         };
+ 
+         match self.layout {
+@@ -262,6 +263,7 @@ struct FormatBody<'a> {
+     /// )
+     /// ```
+     dangling_header_comments: &'a [SourceComment],
++    needs_parentheses: OptionalParentheses,
+ }
+ 
+ impl Format<PyFormatContext<'_>> for FormatBody<'_> {
+@@ -269,6 +271,7 @@ impl Format<PyFormatContext<'_>> for FormatBody<'_> {
+         let FormatBody {
+             dangling_header_comments,
+             body,
++            needs_parentheses,
+         } = self;
+ 
+         let body = *body;
+@@ -438,6 +441,14 @@ impl Format<PyFormatContext<'_>> for FormatBody<'_> {
+         else if has_own_parentheses(body, f.context()).is_some() {
+             body.format().fmt(f)
+         }
++        // Include parentheses for cases that always require them, such as named expressions:
++        //
++        // ```py
++        // lambda x: (y := x + 1)
++        // ```
++        else if matches!(needs_parentheses, OptionalParentheses::Always) {
++            body.format().with_options(Parentheses::Always).fmt(f)
++        }
+         // Finally, for expressions without their own parentheses, use
+         // `parenthesize_if_expands` to add parentheses around the body, only if it expands
+         // across multiple lines. The `Parentheses::Never` here also removes unnecessary
+diff --git a/crates/ruff_python_formatter/src/expression/expr_named.rs b/crates/ruff_python_formatter/src/expression/expr_named.rs
+index 117e42825ebb5dff9d80d261c3b2d4d040790cc7..a983a0c16020e0a41f61ecfc501d1d007382f809 100644
+--- a/crates/ruff_python_formatter/src/expression/expr_named.rs
++++ b/crates/ruff_python_formatter/src/expression/expr_named.rs
+@@ -66,6 +66,7 @@ impl NeedsParentheses for ExprNamed {
+             || parent.is_stmt_delete()
+             || parent.is_stmt_for()
+             || parent.is_stmt_function_def()
++            || parent.is_expr_lambda()
+         {
+             OptionalParentheses::Always
+         } else {

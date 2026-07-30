@@ -1,0 +1,42 @@
+diff --git a/crates/ruff_linter/src/rules/flake8_simplify/rules/zip_dict_keys_and_values.rs b/crates/ruff_linter/src/rules/flake8_simplify/rules/zip_dict_keys_and_values.rs
+index 19169b72c7f8978b1a7ff8a3f0f30943ffac3662..f84c7eb2a6d0ee631a5fd4230deb51b588a467a7 100644
+--- a/crates/ruff_linter/src/rules/flake8_simplify/rules/zip_dict_keys_and_values.rs
++++ b/crates/ruff_linter/src/rules/flake8_simplify/rules/zip_dict_keys_and_values.rs
+@@ -1,4 +1,5 @@
+ use ast::{ExprAttribute, ExprName, Identifier};
++use ruff_diagnostics::Applicability;
+ use ruff_macros::{ViolationMetadata, derive_message_formats};
+ use ruff_python_ast::{self as ast, Arguments, Expr};
+ use ruff_python_semantic::analyze::typing::is_dict;
+@@ -30,6 +31,9 @@ use crate::{checkers::ast::Checker, fix::snippet::SourceCodeSnippet};
+ ///     print(f"{country}'s flag has {stars} stars.")
+ /// ```
+ ///
++/// ## Fix safety
++/// This rule's fix is marked as safe, unless the expression contains comments.
++///
+ /// ## References
+ /// - [Python documentation: `dict.items`](https://docs.python.org/3/library/stdtypes.html#dict.items)
+ #[derive(ViolationMetadata)]
+@@ -122,10 +126,17 @@ pub(crate) fn zip_dict_keys_and_values(checker: &Checker, expr: &ast::ExprCall)
+         },
+         expr.range(),
+     );
+-    diagnostic.set_fix(Fix::safe_edit(Edit::range_replacement(
+-        expected,
+-        expr.range(),
+-    )));
++
++    let applicability = if checker.comment_ranges().intersects(expr.range()) {
++        Applicability::Unsafe
++    } else {
++        Applicability::Safe
++    };
++
++    diagnostic.set_fix(Fix::applicable_edit(
++        Edit::range_replacement(expected, expr.range()),
++        applicability,
++    ));
+ }
+ 
+ fn get_var_attr_args(expr: &Expr) -> Option<(&ExprName, &Identifier, &Arguments)> {

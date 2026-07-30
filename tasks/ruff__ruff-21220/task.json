@@ -1,0 +1,14 @@
+{
+  "base_commit": "f14631e1ccf3862d5360c376382b04f2cedbed63",
+  "environment_key": "ruff-rust-toolchain",
+  "prompt": "[`airflow`] extend deprecated argument `concurrency` in `airflow..DAG` (`AIR301`)\n\n## Summary\n\n* extend AIR301 to include deprecated argument `concurrency` in `airflow....DAG`",
+  "subsystem": "linter",
+  "task_id": "ruff__ruff-21220",
+  "test_commands": [
+    "cargo test -p ruff_linter"
+  ],
+  "timeouts": {
+    "agent_seconds": 1800,
+    "test_seconds": 900
+  }
+}

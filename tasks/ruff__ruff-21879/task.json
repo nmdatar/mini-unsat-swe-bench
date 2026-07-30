@@ -1,0 +1,14 @@
+{
+  "base_commit": "0bec5c0362b553047506bdd9e70b0c45420ef059",
+  "environment_key": "ruff-rust-toolchain",
+  "prompt": "Fix leading comment formatting for lambdas with multiple parameters\n\n## Summary\n\nThis is a follow-up to a related issue. As soon as I started merging a related issue into a related issue, I realized that I had missed a test case with `**kwargs` after the `*args` parameter. Such a case is supposed to be formatted on one line like:\n\n```py\n# input\n(\n    lambda\n    # comment\n    *x,\n    **y: x\n)\n\n# output\n(\n    lambda\n    # comment\n    *x, **y: x\n)\n```\n\nwhich you can still see on the [playground](https://play.ruff.rs/[redacted revision]-1358-40d2-819f-[redacted revision]?secondary=Format), but on `main` after a related issue, this was formatted as:\n\n```py\n(\n    lambda\n    # comment\n    *x,\n    **y: x\n)\n```\n\nbecause the leading comment on the first parameter caused the whole group around the parameters to break.\n\nInstead of making these comments leading comments on the first parameter, this PR makes them leading comments on the parameters list as a whole.",
+  "subsystem": "formatter",
+  "task_id": "ruff__ruff-21879",
+  "test_commands": [
+    "cargo test -p ruff_formatter"
+  ],
+  "timeouts": {
+    "agent_seconds": 1800,
+    "test_seconds": 900
+  }
+}

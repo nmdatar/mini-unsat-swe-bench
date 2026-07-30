@@ -1,0 +1,14 @@
+{
+  "base_commit": "76127e5fb538ec7642af00a4dc68230ab52cf050",
+  "environment_key": "ruff-rust-toolchain",
+  "prompt": "PLE1141 fix is suppressed for empty `dict`\n\n### Summary\n\nThe fix for [`dict-iter-missing-items` (PLE1141)](https://docs.astral.sh/ruff/rules/dict-iter-missing-items/) is suppressed when the relevant `dict`\u2019s keys are all 2-tuples in its initial binding. This usually makes sense, but it doesn\u2019t make sense when the `dict` is defined as empty. In that case, there is no reason to assume that any keys added later will be 2-tuples, and that is a rare pattern so they probably won\u2019t be, so PLE1141 should allow the fix. If the empty `dict` is annotated to have 2-tuple keys, as in `dict[tuple[int, str], bool]`, though, it is still appropriate to suppress the fix. [Example](https://play.ruff.rs/[redacted revision]-ba24-4009-a49d-[redacted revision]):\n```console\n$ cat >ple1141.py <<'# EOF'\ndata = {}\ndata[\"x\"] = 1\nfor k, v in data:\n    print(f\"{k=} {v=}\")\n# EOF\n\n$ ruff --isolated check ple1141.py --select PLE1141 --preview\nAll checks passed!\n```",
+  "subsystem": "linter",
+  "task_id": "ruff__ruff-21290",
+  "test_commands": [
+    "cargo test -p ruff_linter"
+  ],
+  "timeouts": {
+    "agent_seconds": 1800,
+    "test_seconds": 900
+  }
+}

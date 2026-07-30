@@ -1,0 +1,14 @@
+{
+  "base_commit": "bf6617895902c69d54fa2fa1373bc2f25664fb34",
+  "environment_key": "ruff-rust-toolchain",
+  "prompt": "`unreliable-callable-check` (B004) should be marked unsafe\n\n### Summary\n\nThe fix for [`unreliable-callable-check` (B004)](https://docs.astral.sh/ruff/rules/unreliable-callable-check/) should be marked unsafe because the replacement is not exactly equivalent to the original expression. (If they were equivalent, `callable` wouldn\u2019t have been reintroduced in Python 3.2.) [Example](https://play.ruff.rs/[redacted revision]-76d5-45ac-a269-[redacted revision]):\n```console\n$ cat >b004.py <<'# EOF'\nimport operator\nprint(hasattr(operator, \"__call__\"))\n\nclass C:\n    def __init__(self): self.__call__ = None\nprint(hasattr(C(), \"__call__\"))\n# EOF\n\n$ python b004.py\nTrue\nTrue\n\n$ ruff --isolated check b004.py --select B004 --fix\nFound 2 errors (2 fixed, 0 remaining).\n\n$ python b004.py\nFalse\nFalse\n```",
+  "subsystem": "linter",
+  "task_id": "ruff__ruff-20318",
+  "test_commands": [
+    "cargo test -p ruff_linter"
+  ],
+  "timeouts": {
+    "agent_seconds": 1800,
+    "test_seconds": 900
+  }
+}

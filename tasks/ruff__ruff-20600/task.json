@@ -1,0 +1,14 @@
+{
+  "base_commit": "6b3c493cff01ad1ab51102048d0d4f489b1e1aa4",
+  "environment_key": "ruff-rust-toolchain",
+  "prompt": "[`ruff`] Do not flag `%r` + `repr()` combinations (`RUF065`)\n\n## Summary\n\nFixes the first part of a related issue",
+  "subsystem": "linter",
+  "task_id": "ruff__ruff-20600",
+  "test_commands": [
+    "cargo test -p ruff_linter"
+  ],
+  "timeouts": {
+    "agent_seconds": 1800,
+    "test_seconds": 900
+  }
+}

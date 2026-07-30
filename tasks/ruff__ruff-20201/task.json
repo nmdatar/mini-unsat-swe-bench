@@ -1,0 +1,14 @@
+{
+  "base_commit": "bbfcf6e111648052783bdb68ec71706fc69b714f",
+  "environment_key": "ruff-rust-toolchain",
+  "prompt": "C417 fix introduces a syntax error for `yield` in lambda expression\n\n### Summary\n\nThe fix for [`unnecessary-map` (C417)](https://docs.astral.sh/ruff/rules/unnecessary-map/) introduces a syntax error when the lambda expression contains a yield expression. The fix, and possibly the rule, should be suppressed in that case. [Example](https://play.ruff.rs/[redacted revision]-a98f-4643-9efd-[redacted revision]):\n```console\n$ cat >c417.py <<'# EOF'\nbase = 0\ngens = map(lambda x: (yield base + x), [1, 2, 3])\nfor gen in gens:\n    print(*[*gen])\n    base += 20\n# EOF\n\n$ python c417.py\n1\n22\n43\n\n$ ruff --isolated check c417.py --select C417 --unsafe-fixes --fix\nFound 1 error (1 fixed, 0 remaining).\n\n$ python c417.py 2>&1 | tail -n 3\n    gens = ((yield base + x) for x in [1, 2, 3])\n             ^^^^^^^^^^^^^^\nSyntaxError: 'yield' inside generator expression\n```",
+  "subsystem": "linter",
+  "task_id": "ruff__ruff-20201",
+  "test_commands": [
+    "cargo test -p ruff_linter"
+  ],
+  "timeouts": {
+    "agent_seconds": 1800,
+    "test_seconds": 900
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "base_commit": "beda157528c5e7598f757b009c026f3e2f262cbe",
+  "environment_key": "ruff-rust-toolchain",
+  "prompt": "[`flake8-bugbear`] Allow `B901` in pytest hook wrappers\n\n## Summary\nStop raising return-in-generator with pytest hook wrappers (@hookimpl(wrapper=True)). They are specifically designed to use this pattern: https://docs.pytest.org/en/stable/how-to/writing_hook_functions.html#hook-wrappers-executing-around-other-hooks\n\nBefore: return-in-generator reports would surface with pytest hook wrappers\n\nAfter: specifically check for pytest hook wrappers before reporting return-in-generator \n\nTesting:\nWrote some tests to cover different cases",
+  "subsystem": "linter",
+  "task_id": "ruff__ruff-21931",
+  "test_commands": [
+    "cargo test -p ruff_linter"
+  ],
+  "timeouts": {
+    "agent_seconds": 1800,
+    "test_seconds": 900
+  }
+}

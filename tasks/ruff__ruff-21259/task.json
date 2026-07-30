@@ -1,0 +1,14 @@
+{
+  "base_commit": "21ec8aa7d494ec1314806f4f781b18c801c40794",
+  "environment_key": "ruff-rust-toolchain",
+  "prompt": "FURB164 fixes should be safe in a few cases\n\n### Summary\n\nSome fixes of [`unnecessary-from-float` (FURB164)](https://docs.astral.sh/ruff/rules/unnecessary-from-float/) are marked unsafe but are actually safe: when the argument is specified as a keyword argument but would otherwise be marked safe, and when the argument to `Fraction.from_decimal` is a `Decimal`. [Example](https://play.ruff.rs/[redacted revision]-7488-4848-b1d0-[redacted revision]):\n\n```console\n$ cat >furb164.py <<'# EOF'\nfrom decimal import Decimal\nfrom fractions import Fraction\nprint(Fraction.from_float(f=4.2))\nprint(Fraction.from_decimal(dec=4))\nprint(Fraction.from_decimal(Decimal(\"4.2\")))\nprint(Fraction.from_decimal(dec=Decimal(\"4.2\")))\n# EOF\n\n$ python furb164.py\n[redacted revision]/[redacted revision]\n4\n21/5\n21/5\n\n$ ruff --isolated check furb164.py --select FURB164 --preview --output-format concise -q\nfurb164.py:3:7: FURB164 Verbose method `from_float` in `Fraction` construction\nfurb164.py:4:7: FURB164 Verbose method `from_decimal` in `Fraction` construction\nfurb164.py:5:7: FURB164 Verbose method `from_decimal` in `Fraction` construction\nfurb164.py:6:7: FURB164 Verbose method `from_decimal` in `Fraction` construction\n\n$ ruff --isolated check furb164.py --select FURB164 --preview --unsafe-fixes --fix\nFound 4 errors (4 fixed, 0 remaining).\n\n$ cat furb164.py\nfrom decimal import Decimal\nfrom fractions import Fraction\nprint(Fraction(4.2))\nprint(Fraction(4))\nprint(Fraction(Decimal(\"4.2\")))\nprint(Fraction(Decimal(\"4.2\")))\n\n$ python furb164.py\n[redacted revision]/[redacted revision]\n4\n21/5\n21/5\n```",
+  "subsystem": "linter",
+  "task_id": "ruff__ruff-21259",
+  "test_commands": [
+    "cargo test -p ruff_linter"
+  ],
+  "timeouts": {
+    "agent_seconds": 1800,
+    "test_seconds": 900
+  }
+}

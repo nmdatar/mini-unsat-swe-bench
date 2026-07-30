@@ -1,0 +1,14 @@
+diff --git a/crates/ruff_linter/src/rules/airflow/rules/suggested_to_update_3_0.rs b/crates/ruff_linter/src/rules/airflow/rules/suggested_to_update_3_0.rs
+index 41bc35d352c3217e130940c4bf0ca35f8ab21c02..a7c83abbca338b54e1a369015f2af86bd0c6c210 100644
+--- a/crates/ruff_linter/src/rules/airflow/rules/suggested_to_update_3_0.rs
++++ b/crates/ruff_linter/src/rules/airflow/rules/suggested_to_update_3_0.rs
+@@ -157,6 +157,9 @@ fn check_call_arguments(checker: &Checker, qualified_name: &QualifiedName, argum
+         ["airflow", .., "DAG" | "dag"] => {
+             diagnostic_for_argument(checker, arguments, "sla_miss_callback", None);
+         }
++        ["airflow", "timetables", "datasets", "DatasetOrTimeSchedule"] => {
++            diagnostic_for_argument(checker, arguments, "datasets", Some("assets"));
++        }
+         segments => {
+             if is_airflow_builtin_or_provider(segments, "operators", "Operator") {
+                 diagnostic_for_argument(checker, arguments, "sla", None);

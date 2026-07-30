@@ -1,0 +1,89 @@
+diff --git a/crates/ruff_linter/resources/test/fixtures/flake8_implicit_str_concat/ISC.py b/crates/ruff_linter/resources/test/fixtures/flake8_implicit_str_concat/ISC.py
+index a26864e35e3e49768b3015c06abef5087b345c43..871eaee71d523b6edcd6a0fb990068cf74d30c9c 100644
+--- a/crates/ruff_linter/resources/test/fixtures/flake8_implicit_str_concat/ISC.py
++++ b/crates/ruff_linter/resources/test/fixtures/flake8_implicit_str_concat/ISC.py
+@@ -208,3 +208,17 @@ _ = t"b {f"c" f"d {t"e" t"f"} g"} h"
+ _ = f"b {t"abc" \
+     t"def"} g"
+ 
++
++# Explicit concatenation with either operand being
++# a string literal that wraps across multiple lines (in parentheses)
++# reports diagnostic - no autofix.
++# See https://github.com/astral-sh/ruff/issues/19757
++_ = "abc" + (
++    "def"
++    "ghi"
++)
++
++_ = (
++    "abc"
++    "def"
++) + "ghi"
+diff --git a/crates/ruff_linter/src/rules/flake8_implicit_str_concat/snapshots/ruff_linter__rules__flake8_implicit_str_concat__tests__ISC003_ISC.py.snap b/crates/ruff_linter/src/rules/flake8_implicit_str_concat/snapshots/ruff_linter__rules__flake8_implicit_str_concat__tests__ISC003_ISC.py.snap
+index 7e142fef362ff42e1a349791834ec6d657423443..a5d9c727e06f3c6656a5a932e0f51792e925c30b 100644
+--- a/crates/ruff_linter/src/rules/flake8_implicit_str_concat/snapshots/ruff_linter__rules__flake8_implicit_str_concat__tests__ISC003_ISC.py.snap
++++ b/crates/ruff_linter/src/rules/flake8_implicit_str_concat/snapshots/ruff_linter__rules__flake8_implicit_str_concat__tests__ISC003_ISC.py.snap
+@@ -357,3 +357,33 @@ help: Remove redundant '+' operator to implicitly concatenate
+ 203 | )
+ 204 | 
+ 205 | # nested examples with both t and f-strings
++
++ISC003 Explicitly concatenated string should be implicitly concatenated
++   --> ISC.py:216:5
++    |
++214 |   # reports diagnostic - no autofix.
++215 |   # See https://github.com/astral-sh/ruff/issues/19757
++216 |   _ = "abc" + (
++    |  _____^
++217 | |     "def"
++218 | |     "ghi"
++219 | | )
++    | |_^
++220 |
++221 |   _ = (
++    |
++help: Remove redundant '+' operator to implicitly concatenate
++
++ISC003 Explicitly concatenated string should be implicitly concatenated
++   --> ISC.py:221:5
++    |
++219 |   )
++220 |
++221 |   _ = (
++    |  _____^
++222 | |     "abc"
++223 | |     "def"
++224 | | ) + "ghi"
++    | |_________^
++    |
++help: Remove redundant '+' operator to implicitly concatenate
+diff --git a/crates/ruff_linter/src/rules/flake8_implicit_str_concat/snapshots/ruff_linter__rules__flake8_implicit_str_concat__tests__multiline_ISC002_ISC.py.snap b/crates/ruff_linter/src/rules/flake8_implicit_str_concat/snapshots/ruff_linter__rules__flake8_implicit_str_concat__tests__multiline_ISC002_ISC.py.snap
+index 30b777f4e025fbb9ef3697f867fdff7c7ef3b40e..b0882b15b3ff06e5edc374493219a4c650dc0a65 100644
+--- a/crates/ruff_linter/src/rules/flake8_implicit_str_concat/snapshots/ruff_linter__rules__flake8_implicit_str_concat__tests__multiline_ISC002_ISC.py.snap
++++ b/crates/ruff_linter/src/rules/flake8_implicit_str_concat/snapshots/ruff_linter__rules__flake8_implicit_str_concat__tests__multiline_ISC002_ISC.py.snap
+@@ -89,3 +89,24 @@ ISC002 Implicitly concatenated string literals over multiple lines
+ 209 | |     t"def"} g"
+     | |__________^
+     |
++
++ISC002 Implicitly concatenated string literals over multiple lines
++   --> ISC.py:217:5
++    |
++215 |   # See https://github.com/astral-sh/ruff/issues/19757
++216 |   _ = "abc" + (
++217 | /     "def"
++218 | |     "ghi"
++    | |_________^
++219 |   )
++    |
++
++ISC002 Implicitly concatenated string literals over multiple lines
++   --> ISC.py:222:5
++    |
++221 |   _ = (
++222 | /     "abc"
++223 | |     "def"
++    | |_________^
++224 |   ) + "ghi"
++    |

@@ -1,0 +1,145 @@
+diff --git a/crates/ruff_linter/src/codes.rs b/crates/ruff_linter/src/codes.rs
+index 41cfc4c2f3181e186a57a3ce91eecb04ea189f9c..4b72a4ac9b9c38753a858d701daf28bcca56ffbb 100644
+--- a/crates/ruff_linter/src/codes.rs
++++ b/crates/ruff_linter/src/codes.rs
+@@ -1226,3 +1226,9 @@ impl std::fmt::Display for Rule {
+         f.write_str(self.into())
+     }
+ }
++
++#[derive(thiserror::Error, Debug)]
++pub enum FromNameError {
++    #[error("unknown rule name")]
++    Unknown,
++}
+diff --git a/crates/ruff_linter/src/registry.rs b/crates/ruff_linter/src/registry.rs
+index 9351cb5de26a099cd985a486987b45e536194ac1..600549e539c194affbb904ab648a7de15a7fd1ac 100644
+--- a/crates/ruff_linter/src/registry.rs
++++ b/crates/ruff_linter/src/registry.rs
+@@ -382,7 +382,10 @@ pub const INCOMPATIBLE_CODES: &[(Rule, Rule, &str); 2] = &[
+ 
+ #[cfg(feature = "clap")]
+ pub mod clap_completion {
+-    use clap::builder::{PossibleValue, TypedValueParser, ValueParserFactory};
++    use clap::builder::{
++        PossibleValue, PossibleValuesParser, TypedValueParser, ValueParserFactory,
++    };
++    use clap::error::ContextKind;
+     use strum::IntoEnumIterator;
+ 
+     use crate::registry::Rule;
+@@ -390,6 +393,19 @@ pub mod clap_completion {
+     #[derive(Clone)]
+     pub struct RuleParser;
+ 
++    impl RuleParser {
++        fn values() -> impl Iterator<Item = PossibleValue> {
++            Rule::iter().flat_map(|rule| {
++                let code = rule.noqa_code().to_string();
++                let name = rule.name().as_str();
++                [
++                    PossibleValue::new(&code).help(name),
++                    PossibleValue::new(name).help(code),
++                ]
++            })
++        }
++    }
++
+     impl ValueParserFactory for Rule {
+         type Parser = RuleParser;
+ 
+@@ -407,33 +423,17 @@ pub mod clap_completion {
+             arg: Option<&clap::Arg>,
+             value: &std::ffi::OsStr,
+         ) -> Result<Self::Value, clap::Error> {
+-            let value = value
+-                .to_str()
+-                .ok_or_else(|| clap::Error::new(clap::error::ErrorKind::InvalidUtf8))?;
+-
+-            Rule::from_code(value).map_err(|_| {
+-                let mut error =
+-                    clap::Error::new(clap::error::ErrorKind::ValueValidation).with_cmd(cmd);
+-                if let Some(arg) = arg {
+-                    error.insert(
+-                        clap::error::ContextKind::InvalidArg,
+-                        clap::error::ContextValue::String(arg.to_string()),
+-                    );
+-                }
+-                error.insert(
+-                    clap::error::ContextKind::InvalidValue,
+-                    clap::error::ContextValue::String(value.to_string()),
+-                );
+-                error
+-            })
++            PossibleValuesParser::new(Self::values())
++                .try_map(|value| Rule::from_code(&value).or_else(|_| Rule::from_name(&value)))
++                .parse_ref(cmd, arg, value)
++                .map_err(|mut error| {
++                    error.remove(ContextKind::ValidValue);
++                    error
++                })
+         }
+ 
+         fn possible_values(&self) -> Option<Box<dyn Iterator<Item = PossibleValue> + '_>> {
+-            Some(Box::new(Rule::iter().map(|rule| {
+-                let name = rule.noqa_code().to_string();
+-                let help = rule.name().as_str();
+-                PossibleValue::new(name).help(help)
+-            })))
++            Some(Box::new(Self::values()))
+         }
+     }
+ }
+diff --git a/crates/ruff_macros/src/map_codes.rs b/crates/ruff_macros/src/map_codes.rs
+index 08878fc3156eab3b2ed318fd1bdfe2994392f16c..675c5b46dd2714e3ec8ece655a931fd27ccd2270 100644
+--- a/crates/ruff_macros/src/map_codes.rs
++++ b/crates/ruff_macros/src/map_codes.rs
+@@ -8,7 +8,10 @@ use syn::{
+     parenthesized, parse::Parse, spanned::Spanned,
+ };
+ 
+-use crate::rule_code_prefix::{get_prefix_ident, intersection_all};
++use crate::{
++    kebab_case::kebab_case,
++    rule_code_prefix::{get_prefix_ident, intersection_all},
++};
+ 
+ /// A rule entry in the big match statement such a
+ /// `(Pycodestyle, "E112") => (RuleGroup::Preview, rules::pycodestyle::rules::logical_lines::NoIndentedBlock),`
+@@ -390,11 +393,13 @@ fn register_rules<'a>(input: impl Iterator<Item = &'a Rule>) -> TokenStream {
+     let mut rule_group_match_arms = quote!();
+     let mut rule_file_match_arms = quote!();
+     let mut rule_line_match_arms = quote!();
++    let mut rule_parse_match_arms = quote!();
+ 
+     for Rule {
+         name, attrs, path, ..
+     } in input
+     {
++        let kebab_name = kebab_case(name);
+         rule_variants.extend(quote! {
+             #(#attrs)*
+             #name,
+@@ -416,6 +421,7 @@ fn register_rules<'a>(input: impl Iterator<Item = &'a Rule>) -> TokenStream {
+         rule_line_match_arms.extend(
+             quote! {#(#attrs)* Self::#name => <#path as crate::ViolationMetadata>::line(),},
+         );
++        rule_parse_match_arms.extend(quote! {#(#attrs)* #kebab_name => Ok(Self::#name),});
+     }
+ 
+     quote! {
+@@ -463,6 +469,14 @@ fn register_rules<'a>(input: impl Iterator<Item = &'a Rule>) -> TokenStream {
+             pub fn line(&self) -> u32 {
+                 match self { #rule_line_match_arms }
+             }
++
++            /// Try to parse a kebab-case rule name into a `Rule`.
++            pub fn from_name(name: &str) -> Result<Self, FromNameError> {
++                match name {
++                    #rule_parse_match_arms
++                    _ => Err(FromNameError::Unknown),
++                }
++            }
+         }
+     }
+ }

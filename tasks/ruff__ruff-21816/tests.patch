@@ -1,0 +1,103 @@
+diff --git a/crates/ruff_linter/resources/test/fixtures/pydocstyle/D417.py b/crates/ruff_linter/resources/test/fixtures/pydocstyle/D417.py
+index 7c5a1f538c856c7d559c4f478a173f0cae2011e9..510bf77bf8588f3d5d1ebd69be54924dbaf42a4c 100644
+--- a/crates/ruff_linter/resources/test/fixtures/pydocstyle/D417.py
++++ b/crates/ruff_linter/resources/test/fixtures/pydocstyle/D417.py
+@@ -218,3 +218,26 @@ def should_not_fail(payload, Args):
+         Args:
+             The other arguments.
+     """
++
++
++# Test cases for Unpack[TypedDict] kwargs
++from typing import TypedDict
++from typing_extensions import Unpack
++
++class User(TypedDict):
++    id: int
++    name: str
++
++def function_with_unpack_args_should_not_fail(query: str, **kwargs: Unpack[User]):
++    """Function with Unpack kwargs.
++
++    Args:
++        query: some arg
++    """
++
++def function_with_unpack_and_missing_arg_doc_should_fail(query: str, **kwargs: Unpack[User]):
++    """Function with Unpack kwargs but missing query arg documentation.
++
++    Args:
++        **kwargs: keyword arguments
++    """
+diff --git a/crates/ruff_linter/src/rules/pydocstyle/snapshots/ruff_linter__rules__pydocstyle__tests__d417_google.snap b/crates/ruff_linter/src/rules/pydocstyle/snapshots/ruff_linter__rules__pydocstyle__tests__d417_google.snap
+index 63b975feb9ec6b6f723c743fd5a444fca12c3a6c..44b20a8c6b0b1a4b34b2a9f109f9e1700b715ba6 100644
+--- a/crates/ruff_linter/src/rules/pydocstyle/snapshots/ruff_linter__rules__pydocstyle__tests__d417_google.snap
++++ b/crates/ruff_linter/src/rules/pydocstyle/snapshots/ruff_linter__rules__pydocstyle__tests__d417_google.snap
+@@ -101,3 +101,13 @@ D417 Missing argument description in the docstring for `should_fail`: `Args`
+ 200 |     """
+ 201 |     Send a message.
+     |
++
++D417 Missing argument description in the docstring for `function_with_unpack_and_missing_arg_doc_should_fail`: `query`
++   --> D417.py:238:5
++    |
++236 |     """
++237 |
++238 | def function_with_unpack_and_missing_arg_doc_should_fail(query: str, **kwargs: Unpack[User]):
++    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
++239 |     """Function with Unpack kwargs but missing query arg documentation.
++    |
+diff --git a/crates/ruff_linter/src/rules/pydocstyle/snapshots/ruff_linter__rules__pydocstyle__tests__d417_google_ignore_var_parameters.snap b/crates/ruff_linter/src/rules/pydocstyle/snapshots/ruff_linter__rules__pydocstyle__tests__d417_google_ignore_var_parameters.snap
+index f645ff960e08ee09fba40cd19712f59d950bd813..7ff0f72bf03ba10cd2e99b23ae68ab7323f96de8 100644
+--- a/crates/ruff_linter/src/rules/pydocstyle/snapshots/ruff_linter__rules__pydocstyle__tests__d417_google_ignore_var_parameters.snap
++++ b/crates/ruff_linter/src/rules/pydocstyle/snapshots/ruff_linter__rules__pydocstyle__tests__d417_google_ignore_var_parameters.snap
+@@ -83,3 +83,13 @@ D417 Missing argument description in the docstring for `should_fail`: `Args`
+ 200 |     """
+ 201 |     Send a message.
+     |
++
++D417 Missing argument description in the docstring for `function_with_unpack_and_missing_arg_doc_should_fail`: `query`
++   --> D417.py:238:5
++    |
++236 |     """
++237 |
++238 | def function_with_unpack_and_missing_arg_doc_should_fail(query: str, **kwargs: Unpack[User]):
++    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
++239 |     """Function with Unpack kwargs but missing query arg documentation.
++    |
+diff --git a/crates/ruff_linter/src/rules/pydocstyle/snapshots/ruff_linter__rules__pydocstyle__tests__d417_unspecified.snap b/crates/ruff_linter/src/rules/pydocstyle/snapshots/ruff_linter__rules__pydocstyle__tests__d417_unspecified.snap
+index 63b975feb9ec6b6f723c743fd5a444fca12c3a6c..44b20a8c6b0b1a4b34b2a9f109f9e1700b715ba6 100644
+--- a/crates/ruff_linter/src/rules/pydocstyle/snapshots/ruff_linter__rules__pydocstyle__tests__d417_unspecified.snap
++++ b/crates/ruff_linter/src/rules/pydocstyle/snapshots/ruff_linter__rules__pydocstyle__tests__d417_unspecified.snap
+@@ -101,3 +101,13 @@ D417 Missing argument description in the docstring for `should_fail`: `Args`
+ 200 |     """
+ 201 |     Send a message.
+     |
++
++D417 Missing argument description in the docstring for `function_with_unpack_and_missing_arg_doc_should_fail`: `query`
++   --> D417.py:238:5
++    |
++236 |     """
++237 |
++238 | def function_with_unpack_and_missing_arg_doc_should_fail(query: str, **kwargs: Unpack[User]):
++    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
++239 |     """Function with Unpack kwargs but missing query arg documentation.
++    |
+diff --git a/crates/ruff_linter/src/rules/pydocstyle/snapshots/ruff_linter__rules__pydocstyle__tests__d417_unspecified_ignore_var_parameters.snap b/crates/ruff_linter/src/rules/pydocstyle/snapshots/ruff_linter__rules__pydocstyle__tests__d417_unspecified_ignore_var_parameters.snap
+index 63b975feb9ec6b6f723c743fd5a444fca12c3a6c..44b20a8c6b0b1a4b34b2a9f109f9e1700b715ba6 100644
+--- a/crates/ruff_linter/src/rules/pydocstyle/snapshots/ruff_linter__rules__pydocstyle__tests__d417_unspecified_ignore_var_parameters.snap
++++ b/crates/ruff_linter/src/rules/pydocstyle/snapshots/ruff_linter__rules__pydocstyle__tests__d417_unspecified_ignore_var_parameters.snap
+@@ -101,3 +101,13 @@ D417 Missing argument description in the docstring for `should_fail`: `Args`
+ 200 |     """
+ 201 |     Send a message.
+     |
++
++D417 Missing argument description in the docstring for `function_with_unpack_and_missing_arg_doc_should_fail`: `query`
++   --> D417.py:238:5
++    |
++236 |     """
++237 |
++238 | def function_with_unpack_and_missing_arg_doc_should_fail(query: str, **kwargs: Unpack[User]):
++    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
++239 |     """Function with Unpack kwargs but missing query arg documentation.
++    |

@@ -1,0 +1,58 @@
+diff --git a/crates/ruff_linter/resources/test/fixtures/flake8_bugbear/B014.py b/crates/ruff_linter/resources/test/fixtures/flake8_bugbear/B014.py
+index 99cbd2a2499c5560be5c04f4e905430be8a9e727..8798c51eeaabda3f81cac482f687044955cb57ac 100644
+--- a/crates/ruff_linter/resources/test/fixtures/flake8_bugbear/B014.py
++++ b/crates/ruff_linter/resources/test/fixtures/flake8_bugbear/B014.py
+@@ -88,3 +88,14 @@ try:
+     pas
+ except(re.error, re.error):
+     p
++
++
++try:
++    pass
++except (
++    ValueError,
++    ValueError,
++    # text
++    TypeError,
++):
++    pass
+diff --git a/crates/ruff_linter/src/rules/flake8_bugbear/snapshots/ruff_linter__rules__flake8_bugbear__tests__B014_B014.py.snap b/crates/ruff_linter/src/rules/flake8_bugbear/snapshots/ruff_linter__rules__flake8_bugbear__tests__B014_B014.py.snap
+index e4bd89d12e99d2cf77ff216c2eec3e410192c23d..406eb0469ffc41ae48b27b84ff69f98fafd5bbbf 100644
+--- a/crates/ruff_linter/src/rules/flake8_bugbear/snapshots/ruff_linter__rules__flake8_bugbear__tests__B014_B014.py.snap
++++ b/crates/ruff_linter/src/rules/flake8_bugbear/snapshots/ruff_linter__rules__flake8_bugbear__tests__B014_B014.py.snap
+@@ -96,3 +96,34 @@ help: De-duplicate exceptions
+    - except(re.error, re.error):
+ 89 + except re.error:
+ 90 |     p
++91 | 
++92 | 
++
++B014 [*] Exception handler with duplicate exception: `ValueError`
++   --> B014.py:95:8
++    |
++ 93 |   try:
++ 94 |       pass
++ 95 |   except (
++    |  ________^
++ 96 | |     ValueError,
++ 97 | |     ValueError,
++ 98 | |     # text
++ 99 | |     TypeError,
++100 | | ):
++    | |_^
++101 |       pass
++    |
++help: De-duplicate exceptions
++92 | 
++93 | try:
++94 |     pass
++   - except (
++   -     ValueError,
++   -     ValueError,
++   -     # text
++   -     TypeError,
++   - ):
++95 + except (ValueError, TypeError):
++96 |     pass
++note: This is an unsafe fix and may change runtime behavior

@@ -1,0 +1,94 @@
+diff --git a/crates/ruff_python_formatter/resources/test/fixtures/ruff/expression/lambda.py b/crates/ruff_python_formatter/resources/test/fixtures/ruff/expression/lambda.py
+index 4a7090ff1329e9617444f5b7c22ba3bb06fd297e..660d5644e9df0ed2c9285d6be78547cce512c302 100644
+--- a/crates/ruff_python_formatter/resources/test/fixtures/ruff/expression/lambda.py
++++ b/crates/ruff_python_formatter/resources/test/fixtures/ruff/expression/lambda.py
+@@ -228,3 +228,24 @@ def a():
+         g = 10
+     )
+ 
++(
++    lambda
++    * # comment 2
++    x:
++    x
++)
++
++(
++    lambda # comment 1
++    * # comment 2
++    x:
++    x
++)
++
++(
++    lambda # comment 1
++    y,
++    * # comment 2
++    x:
++    x
++)
+diff --git a/crates/ruff_python_formatter/tests/snapshots/format@expression__lambda.py.snap b/crates/ruff_python_formatter/tests/snapshots/format@expression__lambda.py.snap
+index 03332c6f924e43cf5321ed70fd3894f0383bdc86..3009dfaefccefb8ad6fec52eb8d8828e46d658c5 100644
+--- a/crates/ruff_python_formatter/tests/snapshots/format@expression__lambda.py.snap
++++ b/crates/ruff_python_formatter/tests/snapshots/format@expression__lambda.py.snap
+@@ -1,7 +1,6 @@
+ ---
+ source: crates/ruff_python_formatter/tests/fixtures.rs
+ input_file: crates/ruff_python_formatter/resources/test/fixtures/ruff/expression/lambda.py
+-snapshot_kind: text
+ ---
+ ## Input
+ ```python
+@@ -235,6 +234,27 @@ def a():
+         g = 10
+     )
+ 
++(
++    lambda
++    * # comment 2
++    x:
++    x
++)
++
++(
++    lambda # comment 1
++    * # comment 2
++    x:
++    x
++)
++
++(
++    lambda # comment 1
++    y,
++    * # comment 2
++    x:
++    x
++)
+ ```
+ 
+ ## Output
+@@ -473,4 +493,24 @@ def a():
+         g=2: d,
+         g=10,
+     )
++
++
++(
++    lambda
++    # comment 2
++    *x: x
++)
++
++(
++    lambda  # comment 1
++    # comment 2
++    *x: x
++)
++
++(
++    lambda  # comment 1
++    y,
++    # comment 2
++    *x: x
++)
+ ```

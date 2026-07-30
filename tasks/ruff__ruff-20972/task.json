@@ -1,0 +1,14 @@
+{
+  "base_commit": "64ab79e5721ec6fdd2182fbf9d39a26534ccca43",
+  "environment_key": "ruff-rust-toolchain",
+  "prompt": "DOC102 false negative for NumPy-style comma-separated parameters\n\n### Summary\n\n[The NumPy docstring style guide says](https://numpydoc.readthedocs.io/en/stable/format.html#parameters) \u201cWhen two or more input parameters have exactly the same type, shape and description, they can be combined\u201d, but [`docstring-extraneous-parameter` (DOC102)](https://docs.astral.sh/ruff/rules/docstring-extraneous-parameter/) doesn\u2019t support that, which causes false negatives. [Example](https://play.ruff.rs/[redacted revision]-c72c-4cd8-b967-[redacted revision]):\n```console\n$ cat >doc102.py <<'# EOF'\ndef leq(x: object, y: object) -> bool:\n    \"\"\"Compare two objects for loose equality.\n\n    Parameters\n    ----------\n    x1, x2 : object\n        Objects.\n\n    Returns\n    -------\n    bool\n        Whether the objects are identical or equal.\n    \"\"\"\n    return x is y or x == y\n# EOF\n\n$ ruff --isolated check doc102.py --select DOC102 --preview\nAll checks passed!\n```",
+  "subsystem": "linter",
+  "task_id": "ruff__ruff-20972",
+  "test_commands": [
+    "cargo test -p ruff_linter"
+  ],
+  "timeouts": {
+    "agent_seconds": 1800,
+    "test_seconds": 900
+  }
+}

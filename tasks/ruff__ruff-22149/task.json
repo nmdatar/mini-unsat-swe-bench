@@ -1,0 +1,14 @@
+{
+  "base_commit": "beda157528c5e7598f757b009c026f3e2f262cbe",
+  "environment_key": "ruff-rust-toolchain",
+  "prompt": "UP032 fix misinterprets `\\N` in a raw string as an escape sequence\n\n### Summary\n\nThe fix for [`f-string` (UP032)](https://docs.astral.sh/ruff/rules/f-string/) can introduce a runtime error by misinterpreting `\\N` in a raw string literal, where it is not an escape sequence. The fix in a related issue should not apply to raw strings. [Example](https://play.ruff.rs/[redacted revision]-7f7d-458f-8752-[redacted revision]):\n```console\n$ cat >up032.py <<'# EOF'\nprint(r\"\\N{angle}AOB = {angle}\u00b0\".format(angle=180))\n# EOF\n\n$ python up032.py\n\\N180AOB = 180\u00b0\n\n$ ruff --isolated check up032.py --select UP032 --fix\nFound 1 error (1 fixed, 0 remaining).\n\n$ cat up032.py\nprint(rf\"\\N{angle}AOB = {180}\u00b0\")\n\n$ python up032.py 2>&1 | tail -n 1\nNameError: name 'angle' is not defined. Did you mean: 'range'?\n```",
+  "subsystem": "linter",
+  "task_id": "ruff__ruff-22149",
+  "test_commands": [
+    "cargo test -p ruff_linter"
+  ],
+  "timeouts": {
+    "agent_seconds": 1800,
+    "test_seconds": 900
+  }
+}

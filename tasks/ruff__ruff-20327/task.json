@@ -1,0 +1,14 @@
+{
+  "base_commit": "4de7d653bd6696919feb15eb20be3f54755b44dc",
+  "environment_key": "ruff-rust-toolchain",
+  "prompt": "[Infinite loop] I002 and UP026\n\n### Summary\n\nRuff fails to converge when [`missing-required-import` (I002)](https://docs.astral.sh/ruff/rules/missing-required-import/) and [`deprecated-mock-import` (UP026)](https://docs.astral.sh/ruff/rules/deprecated-mock-import/) are selected and `import mock` is required. [Example](https://play.ruff.rs/[redacted revision]-af26-4fa7-9004-[redacted revision]):\n```console\n$ echo 1 | ruff --isolated check - --select I002,UP026 --config 'lint.isort.required-imports=[\"import mock\"]' --fix\n\nerror: Failed to converge after 100 iterations.\n\nThis indicates a bug in Ruff. If you could open an issue at:\n\n    https://github.com/astral-sh/ruff/issues/new?title=%5BInfinite%20loop%5D\n\n...quoting the contents of `-`, the rule codes I002, along with the `pyproject.toml` settings and executed command, we'd be very appreciative!\n\nfrom unittest import mock\nfrom unittest import mock\nfrom unittest import mock\nfrom unittest import mock\nfrom unittest import mock\nfrom unittest import mock\nfrom unittest import mock\nfrom unittest import mock\nfrom unittest import mock\nfrom unittest import mock\nfrom unittest import mock\nfrom unittest import mock\nfrom unittest import mock\nfrom unittest import mock\nfrom unittest import mock\nfrom unittest import mock\nfrom unittest import mock\nfrom unittest import mock\nfrom unittest import mock\nfrom unittest import mock\nfrom unittest import mock\nfrom unittest import mock\nfrom unittest import mock\nfrom unittest import mock\nfrom unittest import mock\nfrom unittest import mock\nfrom unittest import mock\nfrom unittest import mock\nfrom unittest import mock\nfrom unittest import mock\nfrom unittest import mock\nfrom unittest import mock\nfrom unittest import mock\nfrom unittest import mock\nfrom unittest import mock\nfrom unittest import mock\nfrom unittest import mock\nfrom unittest import mock\nfrom unittest import mock\nfrom unittest import mock\nfrom unittest import mock\nfrom unittest import mock\nfrom unittest import mock\nfrom unittest import mock\nfrom unittest import mock\nfrom unittest import mock\nfrom unittest import mock\nfrom unittest import mock\nfrom unittest import mock\nfrom unittest import mock\n1\n-:1:1: I002 Missing required import: `import mock`\nFound 101 errors (100 fixed, 1 remaining).\n[*] 1 fixable with the `--fix` option.\n```",
+  "subsystem": "linter",
+  "task_id": "ruff__ruff-20327",
+  "test_commands": [
+    "cargo test -p ruff_linter"
+  ],
+  "timeouts": {
+    "agent_seconds": 1800,
+    "test_seconds": 900
+  }
+}

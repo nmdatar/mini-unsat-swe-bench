@@ -1,0 +1,74 @@
+diff --git a/crates/ruff_linter/resources/test/fixtures/refurb/FURB110.py b/crates/ruff_linter/resources/test/fixtures/refurb/FURB110.py
+index 6efd0aaee4d3c94536838696b0c2b867a19db080..7f9b63bb5546b601bb835a86c62fb3c7535f56a7 100644
+--- a/crates/ruff_linter/resources/test/fixtures/refurb/FURB110.py
++++ b/crates/ruff_linter/resources/test/fixtures/refurb/FURB110.py
+@@ -47,3 +47,11 @@ z = (
+     if y > 0
+     else None
+ )
++
++
++z = (
++    x
++    if x
++    # text
++    else y
++)
+\ No newline at end of file
+diff --git a/crates/ruff_linter/src/rules/refurb/snapshots/ruff_linter__rules__refurb__tests__FURB110_FURB110.py.snap b/crates/ruff_linter/src/rules/refurb/snapshots/ruff_linter__rules__refurb__tests__FURB110_FURB110.py.snap
+index 44eef8b8ff0880637d8d15cc93cb38052af11391..d6f0f6cf1fb233c70a24349e5e8cc84d27decedc 100644
+--- a/crates/ruff_linter/src/rules/refurb/snapshots/ruff_linter__rules__refurb__tests__FURB110_FURB110.py.snap
++++ b/crates/ruff_linter/src/rules/refurb/snapshots/ruff_linter__rules__refurb__tests__FURB110_FURB110.py.snap
+@@ -113,6 +113,7 @@ help: Replace with `or` operator
+ 17 |     # Test for y.
+ 18 |     y
+ 19 | )
++note: This is an unsafe fix and may change runtime behavior
+ 
+ FURB110 [*] Replace ternary `if` expression with `or` operator
+   --> FURB110.py:23:5
+@@ -142,6 +143,7 @@ help: Replace with `or` operator
+ 27 |         # Test for y.
+ 28 |         y
+ 29 |     )
++note: This is an unsafe fix and may change runtime behavior
+ 
+ FURB110 [*] Replace ternary `if` expression with `or` operator
+   --> FURB110.py:34:5
+@@ -171,6 +173,7 @@ help: Replace with `or` operator
+ 35 | )
+ 36 | 
+ 37 | # FURB110
++note: This is an unsafe fix and may change runtime behavior
+ 
+ FURB110 [*] Replace ternary `if` expression with `or` operator
+   --> FURB110.py:44:5
+@@ -197,3 +200,28 @@ help: Replace with `or` operator
+    -     else None
+ 46 +     else None)
+ 47 | )
++48 | 
++49 | 
++
++FURB110 [*] Replace ternary `if` expression with `or` operator
++  --> FURB110.py:53:5
++   |
++52 |   z = (
++53 | /     x
++54 | |     if x
++55 | |     # text
++56 | |     else y
++   | |__________^
++57 |   )
++   |
++help: Replace with `or` operator
++50 | 
++51 | 
++52 | z = (
++   -     x
++   -     if x
++   -     # text
++   -     else y
++53 +     x or y
++54 | )
++note: This is an unsafe fix and may change runtime behavior

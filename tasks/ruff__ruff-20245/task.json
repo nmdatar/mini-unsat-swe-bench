@@ -1,0 +1,14 @@
+{
+  "base_commit": "555b9f78d642e94f9debc8a7e41daad8ffd238d8",
+  "environment_key": "ruff-rust-toolchain",
+  "prompt": "`invalid-rule-code` (`RUF102`) doesn't respect rule redirects\n\n### Summary\n\nThis came up in the [ecosystem check]([redacted source link]) when trying to stabilize the rule for the 0.13 release. Using the `TC002` example with an added `TCH002` noqa (`TCH` has been remapped to `TC`):\n\n```py\nfrom __future__ import annotations\n\nimport pandas as pd  # noqa: TCH002\n\ndef func(df: pd.DataFrame) -> int:\n    return len(df)\n```\n\nSelecting both `TC002` and `RUF102` shows that `TC002` is suppressed (the noqa code works and is not invalid), but `RUF102` still fires:\n\n```shell\n> ruff check try.py --select TC002 --select RUF102 --preview\nRUF102 [*] Invalid rule code in `# noqa`: TCH002\n --> try.py:3:22\n  |\n1 | from __future__ import annotations\n2 |\n3 | import pandas as pd  # noqa: TCH002\n  |                      ^^^^^^^^^^^^^^\n  |\nhelp: Remove the rule code\n\nFound 1 error.\n[*] 1 fixable with the `--fix` option.\n```",
+  "subsystem": "linter",
+  "task_id": "ruff__ruff-20245",
+  "test_commands": [
+    "cargo test -p ruff_linter"
+  ],
+  "timeouts": {
+    "agent_seconds": 1800,
+    "test_seconds": 900
+  }
+}

@@ -1,0 +1,114 @@
+diff --git a/crates/ruff_python_formatter/src/comments/placement.rs b/crates/ruff_python_formatter/src/comments/placement.rs
+index f28f9b18a868a9aa1ccb0c0aefd035b27a9eb646..28397b6dcfcf8094a825b45ba32b8a819ad5c23d 100644
+--- a/crates/ruff_python_formatter/src/comments/placement.rs
++++ b/crates/ruff_python_formatter/src/comments/placement.rs
+@@ -1816,7 +1816,7 @@ fn handle_lambda_comment<'a>(
+     source: &str,
+ ) -> CommentPlacement<'a> {
+     if let Some(parameters) = lambda.parameters.as_deref() {
+-        // Comments between the `lambda` and the parameters are dangling on the lambda:
++        // End-of-line comments between the `lambda` and the parameters are dangling on the lambda:
+         // ```python
+         // (
+         //     lambda  # comment
+@@ -1824,8 +1824,24 @@ fn handle_lambda_comment<'a>(
+         //     y
+         // )
+         // ```
++        //
++        // But own-line comments are leading on the first parameter, if it exists:
++        // ```python
++        // (
++        //     lambda
++        //     # comment
++        //     x:
++        //     y
++        // )
++        // ```
+         if comment.start() < parameters.start() {
+-            return CommentPlacement::dangling(comment.enclosing_node(), comment);
++            return if let Some(first) = parameters.iter().next()
++                && comment.line_position().is_own_line()
++            {
++                CommentPlacement::leading(first.as_parameter(), comment)
++            } else {
++                CommentPlacement::dangling(comment.enclosing_node(), comment)
++            };
+         }
+ 
+         // Comments between the parameters and the body are dangling on the lambda:
+diff --git a/crates/ruff_python_formatter/src/expression/expr_lambda.rs b/crates/ruff_python_formatter/src/expression/expr_lambda.rs
+index c5890fba248c0cdc50da225671619e0244d9381a..335f1123234662ec2bab5da23a74f6720648ae9c 100644
+--- a/crates/ruff_python_formatter/src/expression/expr_lambda.rs
++++ b/crates/ruff_python_formatter/src/expression/expr_lambda.rs
+@@ -32,7 +32,69 @@ impl FormatNodeRule<ExprLambda> for FormatExprLambda {
+                 .split_at(dangling.partition_point(|comment| comment.end() < parameters.start()));
+ 
+             if dangling_before_parameters.is_empty() {
+-                write!(f, [space()])?;
++                // If the first parameter has a leading comment, insert a hard line break. This
++                // comment is associated as a leading comment on the first parameter:
++                //
++                // ```py
++                // (
++                //     lambda
++                //     * # comment
++                //     x:
++                //     x
++                // )
++                // ```
++                //
++                // so a hard line break is needed to avoid formatting it like:
++                //
++                // ```py
++                // (
++                //     lambda # comment
++                //     *x: x
++                // )
++                // ```
++                //
++                // which is unstable because it's missing the second space before the comment.
++                //
++                // Inserting the line break causes it to format like:
++                //
++                // ```py
++                // (
++                //     lambda
++                //     # comment
++                //     *x :x
++                // )
++                // ```
++                //
++                // which is also consistent with the formatting in the presence of an actual
++                // dangling comment on the lambda:
++                //
++                // ```py
++                // (
++                //     lambda # comment 1
++                //     * # comment 2
++                //     x:
++                //     x
++                // )
++                // ```
++                //
++                // formats to:
++                //
++                // ```py
++                // (
++                //     lambda  # comment 1
++                //     # comment 2
++                //     *x: x
++                // )
++                // ```
++                if parameters
++                    .iter()
++                    .next()
++                    .is_some_and(|parameter| comments.has_leading(parameter.as_parameter()))
++                {
++                    hard_line_break().fmt(f)?;
++                } else {
++                    write!(f, [space()])?;
++                }
+             } else {
+                 write!(f, [dangling_comments(dangling_before_parameters)])?;
+             }

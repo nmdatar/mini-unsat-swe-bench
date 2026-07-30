@@ -1,0 +1,108 @@
+diff --git a/crates/ruff_linter/resources/test/fixtures/pydoclint/DOC502_google.py b/crates/ruff_linter/resources/test/fixtures/pydoclint/DOC502_google.py
+index 9709d9ff53637a8d8ad201db8d153f6263429a08..916b11c6345ae6642f7ddba1eabfa524e2a87953 100644
+--- a/crates/ruff_linter/resources/test/fixtures/pydoclint/DOC502_google.py
++++ b/crates/ruff_linter/resources/test/fixtures/pydoclint/DOC502_google.py
+@@ -83,6 +83,37 @@ def calculate_speed(distance: float, time: float) -> float:
+         raise
+ 
+ 
++# DOC502 regression for Sphinx directive after Raises (issue #18959)
++def foo():
++    """First line.
++
++    Raises:
++        ValueError:
++            some text
++
++    .. versionadded:: 0.7.0
++        The ``init_kwargs`` argument.
++    """
++    raise ValueError
++
++
++# DOC502 regression for following section with colons
++def example_with_following_section():
++    """Summary.
++    
++    Returns:
++        str: The resulting expression.
++    
++    Raises:
++        ValueError: If the unit is not valid.
++    
++    Relation to `time_range_lookup`:
++        - Handles the "start of" modifier.
++        - Example: "start of month" → `DATETRUNC()`.
++    """
++    raise ValueError
++
++
+ # This should NOT trigger DOC502 because OSError is explicitly re-raised
+ def f():
+     """Do nothing.
+diff --git a/crates/ruff_linter/resources/test/fixtures/pydoclint/DOC502_numpy.py b/crates/ruff_linter/resources/test/fixtures/pydoclint/DOC502_numpy.py
+index 5e8bf5f36ef81acde6a72475f5abfcaf55851000..c32814597d69417cabf23abd8086a65544c7c48d 100644
+--- a/crates/ruff_linter/resources/test/fixtures/pydoclint/DOC502_numpy.py
++++ b/crates/ruff_linter/resources/test/fixtures/pydoclint/DOC502_numpy.py
+@@ -117,3 +117,33 @@ def calculate_speed(distance: float, time: float) -> float:
+     except TypeError:
+         print("Not a number? Shame on you!")
+         raise
++
++
++# DOC502 regression for Sphinx directive after Raises (issue #18959)
++def foo():
++    """First line.
++
++    Raises
++    ------
++    ValueError
++        some text
++
++    .. versionadded:: 0.7.0
++        The ``init_kwargs`` argument.
++    """
++    raise ValueError
++
++# Make sure we don't bail out on a Sphinx directive in the description of one
++# of the exceptions
++def foo():
++    """First line.
++
++    Raises
++    ------
++    ValueError
++        some text
++        .. math:: e^{xception}
++    ZeroDivisionError
++        Will not be raised, DOC502
++    """
++    raise ValueError
+diff --git a/crates/ruff_linter/src/rules/pydoclint/snapshots/ruff_linter__rules__pydoclint__tests__docstring-extraneous-exception_DOC502_numpy.py.snap b/crates/ruff_linter/src/rules/pydoclint/snapshots/ruff_linter__rules__pydoclint__tests__docstring-extraneous-exception_DOC502_numpy.py.snap
+index fd28bded5d94350d5c1f77a9f094e8eaff9adfea..2bb6d04b0bc3ae4535e2be7d09ca6ffef4bf07ae 100644
+--- a/crates/ruff_linter/src/rules/pydoclint/snapshots/ruff_linter__rules__pydoclint__tests__docstring-extraneous-exception_DOC502_numpy.py.snap
++++ b/crates/ruff_linter/src/rules/pydoclint/snapshots/ruff_linter__rules__pydoclint__tests__docstring-extraneous-exception_DOC502_numpy.py.snap
+@@ -95,3 +95,23 @@ DOC502 Raised exception is not explicitly raised: `DivisionByZero`
+ 82 |           return distance / time
+    |
+ help: Remove `DivisionByZero` from the docstring
++
++DOC502 Raised exception is not explicitly raised: `ZeroDivisionError`
++   --> DOC502_numpy.py:139:5
++    |
++137 |   # of the exceptions
++138 |   def foo():
++139 | /     """First line.
++140 | |
++141 | |     Raises
++142 | |     ------
++143 | |     ValueError
++144 | |         some text
++145 | |         .. math:: e^{xception}
++146 | |     ZeroDivisionError
++147 | |         Will not be raised, DOC502
++148 | |     """
++    | |_______^
++149 |       raise ValueError
++    |
++help: Remove `ZeroDivisionError` from the docstring

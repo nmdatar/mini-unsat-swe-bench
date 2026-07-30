@@ -1,0 +1,14 @@
+{
+  "base_commit": "3608c620acf16258fac3dea7a803934e5846e78b",
+  "environment_key": "ruff-rust-toolchain",
+  "prompt": "[`flake8-bugbear`] Make fix unsafe if it deletes comments (`B013`)\n\n## Summary",
+  "subsystem": "linter",
+  "task_id": "ruff__ruff-22658",
+  "test_commands": [
+    "cargo test -p ruff_linter"
+  ],
+  "timeouts": {
+    "agent_seconds": 1800,
+    "test_seconds": 900
+  }
+}

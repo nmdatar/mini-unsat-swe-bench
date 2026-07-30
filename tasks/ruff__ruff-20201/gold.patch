@@ -1,0 +1,32 @@
+diff --git a/crates/ruff_linter/src/rules/flake8_comprehensions/rules/unnecessary_map.rs b/crates/ruff_linter/src/rules/flake8_comprehensions/rules/unnecessary_map.rs
+index e31c4b15a097c9c34111e4c1052960883606ca77..362c03b68c79b9a8ab53113b2c0190dcde6264a5 100644
+--- a/crates/ruff_linter/src/rules/flake8_comprehensions/rules/unnecessary_map.rs
++++ b/crates/ruff_linter/src/rules/flake8_comprehensions/rules/unnecessary_map.rs
+@@ -122,6 +122,13 @@ pub(crate) fn unnecessary_map(checker: &Checker, call: &ast::ExprCall) {
+         }
+     };
+ 
++    // If the lambda body contains a `yield` or `yield from`, rewriting `map(lambda ...)` to a
++    // generator expression or any comprehension is invalid Python syntax
++    // (e.g., `yield` is not allowed inside generator or comprehension expressions). In such cases, skip.
++    if lambda_contains_yield(&lambda.body) {
++        return;
++    }
++
+     for iterable in iterables {
+         // For example, (x+1 for x in (c:=a)) is invalid syntax
+         // so we can't suggest it.
+@@ -183,6 +190,13 @@ fn map_lambda_and_iterables<'a>(
+     Some((lambda, iterables))
+ }
+ 
++/// Returns true if the expression tree contains a `yield` or `yield from` expression.
++fn lambda_contains_yield(expr: &Expr) -> bool {
++    any_over_expr(expr, &|expr| {
++        matches!(expr, Expr::Yield(_) | Expr::YieldFrom(_))
++    })
++}
++
+ /// A lambda as the first argument to `map()` has the "expected" arity when:
+ ///
+ /// * It has exactly one parameter

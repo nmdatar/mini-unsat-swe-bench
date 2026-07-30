@@ -1,0 +1,14 @@
+{
+  "base_commit": "ed355b6173ef2ef4ea07c88cb653a8c6dbe18819",
+  "environment_key": "ruff-rust-toolchain",
+  "prompt": "Handle suppression comments with duplicated codes\n\ncontext: [redacted source link]",
+  "subsystem": "linter",
+  "task_id": "ruff__ruff-22613",
+  "test_commands": [
+    "cargo test -p ruff_linter"
+  ],
+  "timeouts": {
+    "agent_seconds": 1800,
+    "test_seconds": 900
+  }
+}

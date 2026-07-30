@@ -1,0 +1,14 @@
+{
+  "base_commit": "3dbbb76654f67d7de6ca4b8a41886a3434f565bb",
+  "environment_key": "ruff-rust-toolchain",
+  "prompt": "suspicious-url-open-usage (S310) should handle string literal\n\n### Summary\n\n```\nimport urllib.request\npath = \"https://example.com/data.csv\"\nurllib.request.urlretrieve(path, \"data.csv\")\n```\nThis currently raises suspicious-url-open-usage (S310), but it should not because path can be inferred to have Literal['https://example.com/data.csv'] type and that's safe.",
+  "subsystem": "linter",
+  "task_id": "ruff__ruff-21469",
+  "test_commands": [
+    "cargo test -p ruff_linter"
+  ],
+  "timeouts": {
+    "agent_seconds": 1800,
+    "test_seconds": 900
+  }
+}

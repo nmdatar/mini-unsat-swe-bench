@@ -1,0 +1,52 @@
+diff --git a/crates/ruff_linter/resources/test/fixtures/pyupgrade/UP032_0.py b/crates/ruff_linter/resources/test/fixtures/pyupgrade/UP032_0.py
+index 0fd9a7da2d8950057eca1979bba65b81fa5c7835..53e993795b5f5b29fe7e550d968bef584497fb50 100644
+--- a/crates/ruff_linter/resources/test/fixtures/pyupgrade/UP032_0.py
++++ b/crates/ruff_linter/resources/test/fixtures/pyupgrade/UP032_0.py
+@@ -269,3 +269,10 @@ raise ValueError(
+ # Not a valid type annotation but this test shouldn't result in a panic.
+ # Refer: https://github.com/astral-sh/ruff/issues/11736
+ x: "'{} + {}'.format(x, y)"
++
++# Regression https://github.com/astral-sh/ruff/issues/21000
++# Fix should parenthesize walrus
++if __name__ == "__main__":
++    number = 0
++    string = "{}".format(number := number + 1)
++    print(string)
+diff --git a/crates/ruff_linter/src/rules/pyupgrade/snapshots/ruff_linter__rules__pyupgrade__tests__UP032_0.py.snap b/crates/ruff_linter/src/rules/pyupgrade/snapshots/ruff_linter__rules__pyupgrade__tests__UP032_0.py.snap
+index 1efc909fb3bc47906a60286b3026bee1947be516..2ecb24ea072e98e4d0549c9d1e689953bdf89ef1 100644
+--- a/crates/ruff_linter/src/rules/pyupgrade/snapshots/ruff_linter__rules__pyupgrade__tests__UP032_0.py.snap
++++ b/crates/ruff_linter/src/rules/pyupgrade/snapshots/ruff_linter__rules__pyupgrade__tests__UP032_0.py.snap
+@@ -1320,6 +1320,8 @@ UP032 [*] Use f-string instead of `format` call
+ 270 | # Refer: https://github.com/astral-sh/ruff/issues/11736
+ 271 | x: "'{} + {}'.format(x, y)"
+     |     ^^^^^^^^^^^^^^^^^^^^^^
++272 |
++273 | # Regression https://github.com/astral-sh/ruff/issues/21000
+     |
+ help: Convert to f-string
+ 268 | 
+@@ -1327,3 +1329,23 @@ help: Convert to f-string
+ 270 | # Refer: https://github.com/astral-sh/ruff/issues/11736
+     - x: "'{} + {}'.format(x, y)"
+ 271 + x: "f'{x} + {y}'"
++272 | 
++273 | # Regression https://github.com/astral-sh/ruff/issues/21000
++274 | # Fix should parenthesize walrus
++
++UP032 [*] Use f-string instead of `format` call
++   --> UP032_0.py:277:14
++    |
++275 | if __name__ == "__main__":
++276 |     number = 0
++277 |     string = "{}".format(number := number + 1)
++    |              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
++278 |     print(string)
++    |
++help: Convert to f-string
++274 | # Fix should parenthesize walrus
++275 | if __name__ == "__main__":
++276 |     number = 0
++    -     string = "{}".format(number := number + 1)
++277 +     string = f"{(number := number + 1)}"
++278 |     print(string)

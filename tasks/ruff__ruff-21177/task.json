@@ -1,0 +1,14 @@
+{
+  "base_commit": "521217bb904a03542f06306c462379a6bcbb54fc",
+  "environment_key": "ruff-rust-toolchain",
+  "prompt": "PLR1708 false positives on nested functions\n\n### Summary\n\n[`stop-iteration-return` (PLR1708)](https://docs.astral.sh/ruff/rules/stop-iteration-return/) reports false positives when a non-generator function raises `StopIteration` and contains a nested generator function, or a generator function contains a nested non-generator function that raises `StopIteration`. [Example](https://play.ruff.rs/[redacted revision]-d01f-422b-a5a3-[redacted revision]):\n```console\n$ cat >plr1708.py <<'# EOF'\ndef f():\n    def g():\n        yield 1\n    raise StopIteration\n\ndef g():\n    def f():\n        raise StopIteration\n    yield 1\n# EOF\n\n$ ruff --isolated check plr1708.py --select PLR1708 --preview --output-format concise -q\nplr1708.py:4:5: PLR1708 Explicit `raise StopIteration` in generator\nplr1708.py:8:9: PLR1708 Explicit `raise StopIteration` in generator\n```",
+  "subsystem": "linter",
+  "task_id": "ruff__ruff-21177",
+  "test_commands": [
+    "cargo test -p ruff_linter"
+  ],
+  "timeouts": {
+    "agent_seconds": 1800,
+    "test_seconds": 900
+  }
+}

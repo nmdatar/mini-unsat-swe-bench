@@ -1,0 +1,14 @@
+{
+  "base_commit": "ab37a052ae202160d01b34a4db449bebc51fa01a",
+  "environment_key": "ruff-rust-toolchain",
+  "prompt": "UP008 false negative in inner (nested) classes\n\n### Summary\n\nPlayground link: https://play.ruff.rs/[redacted revision]-c468-4f4f-a3b8-[redacted revision]\n\n```python\nclass Base:\n    def __init__(self, foo):\n        self.foo = foo\n\nclass Outer(Base):\n    def __init__(self, foo):\n        super(Outer, self).__init__(foo)  # UP008 issued as expected\n\n    class Inner(Base):\n        def __init__(self, foo):\n            super(Outer.Inner, self).__init__(foo)  # Bug: would also expect UP008, but it was not issued\n\no = Outer(5)\ni = Outer.Inner(5)\n```\n\n---\n\nBy the way, Pylint's [`super-with-arguments`](https://pylint.readthedocs.io/en/latest/user_guide/messages/refactor/super-with-arguments.html) also has a problem only with `super(Outer, self)`, but not with `super(Outer.Inner, self)`:\n\n```console\n$ pylint --version\npylint 4.0.4\nastroid 4.0.3\nPython 3.14.2 (tags/v3.14.2:[redacted revision], Dec  5 2025, 17:18:21) [MSC v.1944 64 bit (AMD64)]\n$ pylint --disable=all --enable=super-with-arguments test.py\n************* Module test\ntest.py:7:8: R1725: Consider using Python 3 style super() without arguments (super-with-arguments)\n\n-----------------------------------\nYour code has been rated at 9.09/10\n```\n\nHowever, https://github.com/asottile/pyupgrade correctly upgrades both `super()` calls:\n\n```console\n$ pip freeze | grep -F pyupgrade\npyupgrade==3.21.2\n$ cp test.py test-original.py\n$ pyupgrade test.py\nRewriting test.py\n$ git diff --no-index test-original.py test.py\ndiff --git 1/test-original.py 2/test.py\nindex [redacted revision]..[redacted revision] 100644\n--- 1/test-original.py\n+++ 2/test.py\n@@ -4,11 +4,11 @@ class Base:\n \n class Outer(Base):\n     def __init__(self, foo):\n-        super(Outer, self).__init__(foo)  # UP008 issued as expected\n+        super().__init__(foo)  # UP008 issued as expected\n \n     class Inner(Base):\n         def __init__(self, foo):\n-            super(Outer.Inner, self).__init__(foo)  # Bug: would also expect UP008, but it was not issued\n+            super().__init__(foo)  # Bug: would also expect UP008, but it was not issued\n \n o = Outer(5)\n i = Outer.Inner(5)\n```",
+  "subsystem": "linter",
+  "task_id": "ruff__ruff-22677",
+  "test_commands": [
+    "cargo test -p ruff_linter"
+  ],
+  "timeouts": {
+    "agent_seconds": 1800,
+    "test_seconds": 900
+  }
+}

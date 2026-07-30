@@ -1,0 +1,43 @@
+diff --git a/crates/ruff_linter/resources/test/fixtures/ruff/RUF020.py b/crates/ruff_linter/resources/test/fixtures/ruff/RUF020.py
+index e737216218e2074194278847180933361fe27217..773f21f6ba57912ada60a4dba17f5a619f7dce67 100644
+--- a/crates/ruff_linter/resources/test/fixtures/ruff/RUF020.py
++++ b/crates/ruff_linter/resources/test/fixtures/ruff/RUF020.py
+@@ -15,3 +15,10 @@ z: None | (Never | None)
+ 
+ a: int | Never | None
+ b: Never | Never | None
++
++
++def func() -> (
++        Never  # text
++        | # text
++        int
++): ...
+\ No newline at end of file
+diff --git a/crates/ruff_linter/src/rules/ruff/snapshots/ruff_linter__rules__ruff__tests__RUF020_RUF020.py.snap b/crates/ruff_linter/src/rules/ruff/snapshots/ruff_linter__rules__ruff__tests__RUF020_RUF020.py.snap
+index 2f048321b6fb80f795aa31635a4b34beff94745b..6b127e046207f18ad7486e34c9dad2d8808167ab 100644
+--- a/crates/ruff_linter/src/rules/ruff/snapshots/ruff_linter__rules__ruff__tests__RUF020_RUF020.py.snap
++++ b/crates/ruff_linter/src/rules/ruff/snapshots/ruff_linter__rules__ruff__tests__RUF020_RUF020.py.snap
+@@ -197,3 +197,22 @@ RUF020 `Never | T` is equivalent to `T`
+    |            ^^^^^
+    |
+ help: Remove `Never`
++
++RUF020 [*] `Never | T` is equivalent to `T`
++  --> RUF020.py:21:9
++   |
++20 | def func() -> (
++21 |         Never  # text
++   |         ^^^^^
++22 |         | # text
++23 |         int
++   |
++help: Remove `Never`
++18 | 
++19 | 
++20 | def func() -> (
++   -         Never  # text
++   -         | # text
++21 |         int
++22 | ): ...
++note: This is an unsafe fix and may change runtime behavior

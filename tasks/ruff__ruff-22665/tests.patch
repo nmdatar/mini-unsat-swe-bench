@@ -1,0 +1,50 @@
+diff --git a/crates/ruff_linter/resources/test/fixtures/refurb/FURB188.py b/crates/ruff_linter/resources/test/fixtures/refurb/FURB188.py
+index 8f58cb9d8f2b9177de1492e85bc5f6599b02773a..9556dfb36f2030700499e7e99890fc5ad02f26be 100644
+--- a/crates/ruff_linter/resources/test/fixtures/refurb/FURB188.py
++++ b/crates/ruff_linter/resources/test/fixtures/refurb/FURB188.py
+@@ -205,3 +205,12 @@ def func():
+     if a.endswith("foo"):
+         a = a[: -len("foo")]
+     print(a)
++
++
++def example(filename: str, text: str):
++    filename = (
++        filename[:-4]  # text
++        if filename.endswith(".txt")  # text
++        else filename
++    )
++
+diff --git a/crates/ruff_linter/src/rules/refurb/snapshots/ruff_linter__rules__refurb__tests__FURB188_FURB188.py.snap b/crates/ruff_linter/src/rules/refurb/snapshots/ruff_linter__rules__refurb__tests__FURB188_FURB188.py.snap
+index 21e50d313079b381762084ffea6242f162904999..4889b6e7fb591f70201bc42abb4b3e02d1e8429a 100644
+--- a/crates/ruff_linter/src/rules/refurb/snapshots/ruff_linter__rules__refurb__tests__FURB188_FURB188.py.snap
++++ b/crates/ruff_linter/src/rules/refurb/snapshots/ruff_linter__rules__refurb__tests__FURB188_FURB188.py.snap
+@@ -317,3 +317,28 @@ help: Use removesuffix instead of assignment conditional upon endswith.
+     -         a = a[: -len("foo")]
+ 205 +     a = a.removesuffix("foo")
+ 206 |     print(a)
++207 | 
++208 | 
++
++FURB188 [*] Prefer `str.removesuffix()` over conditionally replacing with slice.
++   --> FURB188.py:212:9
++    |
++210 |   def example(filename: str, text: str):
++211 |       filename = (
++212 | /         filename[:-4]  # text
++213 | |         if filename.endswith(".txt")  # text
++214 | |         else filename
++    | |_____________________^
++215 |       )
++    |
++help: Use removesuffix instead of ternary expression conditional upon endswith.
++209 | 
++210 | def example(filename: str, text: str):
++211 |     filename = (
++    -         filename[:-4]  # text
++    -         if filename.endswith(".txt")  # text
++    -         else filename
++212 +         filename.removesuffix(".txt")
++213 |     )
++214 | 
++note: This is an unsafe fix and may change runtime behavior

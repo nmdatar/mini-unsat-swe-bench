@@ -1,0 +1,83 @@
+diff --git a/crates/ruff_python_formatter/src/context.rs b/crates/ruff_python_formatter/src/context.rs
+index bc88b987aecf8f824894c7ec38fa4915ba341536..528afc6c7114964906b211e20f4eafc4ec5e45b4 100644
+--- a/crates/ruff_python_formatter/src/context.rs
++++ b/crates/ruff_python_formatter/src/context.rs
+@@ -144,6 +144,12 @@ pub(crate) enum InterpolatedStringState {
+     ///
+     /// The containing `FStringContext` is the surrounding f-string context.
+     InsideInterpolatedElement(InterpolatedStringContext),
++    /// The formatter is inside more than one nested f-string, such as in `nested` in:
++    ///
++    /// ```py
++    /// f"{f'''{'nested'} inner'''} outer"
++    /// ```
++    NestedInterpolatedElement(InterpolatedStringContext),
+     /// The formatter is outside an f-string.
+     #[default]
+     Outside,
+@@ -152,12 +158,18 @@ pub(crate) enum InterpolatedStringState {
+ impl InterpolatedStringState {
+     pub(crate) fn can_contain_line_breaks(self) -> Option<bool> {
+         match self {
+-            InterpolatedStringState::InsideInterpolatedElement(context) => {
++            InterpolatedStringState::InsideInterpolatedElement(context)
++            | InterpolatedStringState::NestedInterpolatedElement(context) => {
+                 Some(context.is_multiline())
+             }
+             InterpolatedStringState::Outside => None,
+         }
+     }
++
++    /// Returns `true` if the interpolated string state is [`NestedInterpolatedElement`].
++    pub(crate) fn is_nested(self) -> bool {
++        matches!(self, Self::NestedInterpolatedElement(..))
++    }
+ }
+ 
+ /// The position of a top-level statement in the module.
+diff --git a/crates/ruff_python_formatter/src/other/interpolated_string_element.rs b/crates/ruff_python_formatter/src/other/interpolated_string_element.rs
+index 13526c218f49328e9ce4867cd0b0b40f5c73cdce..49495aa6469994f8ced48102374a40fe20717b61 100644
+--- a/crates/ruff_python_formatter/src/other/interpolated_string_element.rs
++++ b/crates/ruff_python_formatter/src/other/interpolated_string_element.rs
+@@ -181,10 +181,16 @@ impl Format<PyFormatContext<'_>> for FormatInterpolatedElement<'_> {
+ 
+             let item = format_with(|f: &mut PyFormatter| {
+                 // Update the context to be inside the f-string expression element.
+-                let f = &mut WithInterpolatedStringState::new(
+-                    InterpolatedStringState::InsideInterpolatedElement(self.context),
+-                    f,
+-                );
++                let state = match f.context().interpolated_string_state() {
++                    InterpolatedStringState::InsideInterpolatedElement(_)
++                    | InterpolatedStringState::NestedInterpolatedElement(_) => {
++                        InterpolatedStringState::NestedInterpolatedElement(self.context)
++                    }
++                    InterpolatedStringState::Outside => {
++                        InterpolatedStringState::InsideInterpolatedElement(self.context)
++                    }
++                };
++                let f = &mut WithInterpolatedStringState::new(state, f);
+ 
+                 write!(f, [bracket_spacing, expression.format()])?;
+ 
+diff --git a/crates/ruff_python_formatter/src/string/normalize.rs b/crates/ruff_python_formatter/src/string/normalize.rs
+index fa60c4a13f926251dca290e24c94012335a73fc5..fabd10a029cdb45ac37d6a002fd1aa51eff6cac1 100644
+--- a/crates/ruff_python_formatter/src/string/normalize.rs
++++ b/crates/ruff_python_formatter/src/string/normalize.rs
+@@ -46,8 +46,15 @@ impl<'a, 'src> StringNormalizer<'a, 'src> {
+             .unwrap_or(self.context.options().quote_style());
+         let supports_pep_701 = self.context.options().target_version().supports_pep_701();
+ 
++        // Preserve the existing quote style for nested interpolations more than one layer deep, if
++        // PEP 701 isn't supported.
++        if !supports_pep_701 && self.context.interpolated_string_state().is_nested() {
++            return QuoteStyle::Preserve;
++        }
++
+         // For f-strings and t-strings prefer alternating the quotes unless The outer string is triple quoted and the inner isn't.
+-        if let InterpolatedStringState::InsideInterpolatedElement(parent_context) =
++        if let InterpolatedStringState::InsideInterpolatedElement(parent_context)
++        | InterpolatedStringState::NestedInterpolatedElement(parent_context) =
+             self.context.interpolated_string_state()
+         {
+             let parent_flags = parent_context.flags();

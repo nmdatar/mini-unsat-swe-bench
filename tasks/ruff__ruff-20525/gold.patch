@@ -1,0 +1,26 @@
+diff --git a/crates/ruff_linter/src/rules/ruff/rules/explicit_f_string_type_conversion.rs b/crates/ruff_linter/src/rules/ruff/rules/explicit_f_string_type_conversion.rs
+index 56dcdb69300a3b5decb6951764e03f2f4fa08a96..48a43900df9063574770ce180c64e385d0ecbe8d 100644
+--- a/crates/ruff_linter/src/rules/ruff/rules/explicit_f_string_type_conversion.rs
++++ b/crates/ruff_linter/src/rules/ruff/rules/explicit_f_string_type_conversion.rs
+@@ -110,10 +110,7 @@ pub(crate) fn explicit_f_string_type_conversion(checker: &Checker, f_string: &as
+             return;
+         }
+ 
+-        let mut diagnostic =
+-            checker.report_diagnostic(ExplicitFStringTypeConversion, expression.range());
+-
+-        // Don't support fixing f-string with debug text.
++        // Don't report diagnostic for f-string with debug text.
+         if element
+             .as_interpolation()
+             .is_some_and(|interpolation| interpolation.debug_text.is_some())
+@@ -121,6 +118,9 @@ pub(crate) fn explicit_f_string_type_conversion(checker: &Checker, f_string: &as
+             return;
+         }
+ 
++        let mut diagnostic =
++            checker.report_diagnostic(ExplicitFStringTypeConversion, expression.range());
++
+         diagnostic.try_set_fix(|| {
+             convert_call_to_conversion_flag(checker, conversion, f_string, index, arg)
+         });

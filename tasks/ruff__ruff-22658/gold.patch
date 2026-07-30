@@ -1,0 +1,56 @@
+diff --git a/crates/ruff_linter/src/rules/flake8_bugbear/rules/redundant_tuple_in_exception_handler.rs b/crates/ruff_linter/src/rules/flake8_bugbear/rules/redundant_tuple_in_exception_handler.rs
+index 2ace373d4eb5bc4d28d042189123a5fa31e58927..cd98dbc7a39a6d4d5f5d1cd0a4fb416c1bd938bd 100644
+--- a/crates/ruff_linter/src/rules/flake8_bugbear/rules/redundant_tuple_in_exception_handler.rs
++++ b/crates/ruff_linter/src/rules/flake8_bugbear/rules/redundant_tuple_in_exception_handler.rs
+@@ -1,3 +1,4 @@
++use ruff_diagnostics::Applicability;
+ use ruff_macros::{ViolationMetadata, derive_message_formats};
+ use ruff_python_ast::{self as ast, ExceptHandler, Expr};
+ use ruff_text_size::Ranged;
+@@ -33,6 +34,9 @@ use crate::{AlwaysFixableViolation, Edit, Fix};
+ ///     ...
+ /// ```
+ ///
++/// ## Fix safety
++/// This rule's fix is marked as safe, unless the exception handler contains comments.
++///
+ /// ## References
+ /// - [Python documentation: `except` clause](https://docs.python.org/3/reference/compound_stmts.html#except-clause)
+ #[derive(ViolationMetadata)]
+@@ -86,6 +90,13 @@ pub(crate) fn redundant_tuple_in_exception_handler(checker: &Checker, handlers:
+             },
+             type_.range(),
+         );
++
++        let applicability = if checker.comment_ranges().intersects(type_.range()) {
++            Applicability::Unsafe
++        } else {
++            Applicability::Safe
++        };
++
+         // If there's no space between the `except` and the tuple, we need to insert a space,
+         // as in:
+         // ```python
+@@ -93,13 +104,16 @@ pub(crate) fn redundant_tuple_in_exception_handler(checker: &Checker, handlers:
+         // ```
+         // Otherwise, the output will be invalid syntax, since we're removing a set of
+         // parentheses.
+-        diagnostic.set_fix(Fix::safe_edit(Edit::range_replacement(
+-            pad(
+-                checker.generator().expr(elt),
++        diagnostic.set_fix(Fix::applicable_edit(
++            Edit::range_replacement(
++                pad(
++                    checker.generator().expr(elt),
++                    type_.range(),
++                    checker.locator(),
++                ),
+                 type_.range(),
+-                checker.locator(),
+             ),
+-            type_.range(),
+-        )));
++            applicability,
++        ));
+     }
+ }

@@ -1,0 +1,14 @@
+{
+  "base_commit": "3608c620acf16258fac3dea7a803934e5846e78b",
+  "environment_key": "ruff-rust-toolchain",
+  "prompt": "[`airflow`] Second positional argument to `Asset`/`Dataset` should not be a dictionary (`AIR303`)\n\n## Summary\n\nThis PR is related to https://github.com/apache/airflow/issues/48389.\n\nIn Airflow 3, the function signature for `airflow.Dataset`, `airflow.datasets.Dataset`, and `airflow.sdk.Asset` has changed. Below is the function signature for `airflow.sdk.Asset`. The second positional argument is `uri` which is of type `str`. In the older version, the second positional argument can be a dictionary which is the `extra: 'dict | None' = None` argument. Therefore, we need to flag this in Airflow 3.\n\n```python\nAsset(name: 'str | None' = None, uri: 'str | None' = None, *, group: 'str | None' = None, extra: 'dict | None' = None, watchers: 'list[AssetWatcher | SerializedAssetWatcher] | None' = None) -> 'None'\n```\n\nAs this is a check on constructor call, we need to create a new method `check_constructor_arguments`, instead of on method call. The new rule check whether the index 1 (the second argument) is a dictionary (either a literal or a `dict()` call).",
+  "subsystem": "linter",
+  "task_id": "ruff__ruff-22453",
+  "test_commands": [
+    "cargo test -p ruff_linter"
+  ],
+  "timeouts": {
+    "agent_seconds": 1800,
+    "test_seconds": 900
+  }
+}

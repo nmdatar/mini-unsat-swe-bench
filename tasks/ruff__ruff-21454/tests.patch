@@ -1,0 +1,98 @@
+diff --git a/crates/ruff_linter/resources/test/fixtures/refurb/FURB103.py b/crates/ruff_linter/resources/test/fixtures/refurb/FURB103.py
+index 35d9600d4194c27af22f8661ae3e35ec5fcdc985..c6a4196fe339d47112c0ca30abde7e6c02929919 100644
+--- a/crates/ruff_linter/resources/test/fixtures/refurb/FURB103.py
++++ b/crates/ruff_linter/resources/test/fixtures/refurb/FURB103.py
+@@ -152,4 +152,13 @@ import json
+ data = {"price": 100}
+ 
+ with open("test.json", "wb") as f:
+-    f.write(json.dumps(data, indent=4).encode("utf-8"))
+\ No newline at end of file
++    f.write(json.dumps(data, indent=4).encode("utf-8"))
++
++# See: https://github.com/astral-sh/ruff/issues/21381
++with open("tmp_path/pyproject.toml", "w") as f:
++    f.write(dedent(
++        """
++        [project]
++        other = 1.234
++        """,
++    ))
+diff --git a/crates/ruff_linter/src/rules/refurb/snapshots/ruff_linter__rules__refurb__tests__FURB103_FURB103.py.snap b/crates/ruff_linter/src/rules/refurb/snapshots/ruff_linter__rules__refurb__tests__FURB103_FURB103.py.snap
+index 8148035435e79a833d314ed9be613c90ee173b4b..81c35384b9ee0944d5ebd78838d196655c8594ca 100644
+--- a/crates/ruff_linter/src/rules/refurb/snapshots/ruff_linter__rules__refurb__tests__FURB103_FURB103.py.snap
++++ b/crates/ruff_linter/src/rules/refurb/snapshots/ruff_linter__rules__refurb__tests__FURB103_FURB103.py.snap
+@@ -279,3 +279,34 @@ help: Replace with `Path("test.json")....`
+     - with open("test.json", "wb") as f:
+     -     f.write(json.dumps(data, indent=4).encode("utf-8"))
+ 155 + pathlib.Path("test.json").write_bytes(json.dumps(data, indent=4).encode("utf-8"))
++156 | 
++157 | # See: https://github.com/astral-sh/ruff/issues/21381
++158 | with open("tmp_path/pyproject.toml", "w") as f:
++
++FURB103 [*] `open` and `write` should be replaced by `Path("tmp_path/pyproject.toml")....`
++   --> FURB103.py:158:6
++    |
++157 | # See: https://github.com/astral-sh/ruff/issues/21381
++158 | with open("tmp_path/pyproject.toml", "w") as f:
++    |      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
++159 |     f.write(dedent(
++160 |         """
++    |
++help: Replace with `Path("tmp_path/pyproject.toml")....`
++148 | 
++149 | # See: https://github.com/astral-sh/ruff/issues/20785
++150 | import json
++151 + import pathlib
++152 | 
++153 | data = {"price": 100}
++154 | 
++--------------------------------------------------------------------------------
++156 |     f.write(json.dumps(data, indent=4).encode("utf-8"))
++157 | 
++158 | # See: https://github.com/astral-sh/ruff/issues/21381
++    - with open("tmp_path/pyproject.toml", "w") as f:
++    -     f.write(dedent(
++159 + pathlib.Path("tmp_path/pyproject.toml").write_text(dedent(
++160 |         """
++161 |         [project]
++162 |         other = 1.234
+diff --git a/crates/ruff_linter/src/rules/refurb/snapshots/ruff_linter__rules__refurb__tests__write_whole_file_python_39.snap b/crates/ruff_linter/src/rules/refurb/snapshots/ruff_linter__rules__refurb__tests__write_whole_file_python_39.snap
+index 3b68b110d5689423ebf855395a78772a2e2d65fc..7a5ae0c747f8beeba13865abb1aea9ec6d7eab11 100644
+--- a/crates/ruff_linter/src/rules/refurb/snapshots/ruff_linter__rules__refurb__tests__write_whole_file_python_39.snap
++++ b/crates/ruff_linter/src/rules/refurb/snapshots/ruff_linter__rules__refurb__tests__write_whole_file_python_39.snap
+@@ -209,3 +209,34 @@ help: Replace with `Path("test.json")....`
+     - with open("test.json", "wb") as f:
+     -     f.write(json.dumps(data, indent=4).encode("utf-8"))
+ 155 + pathlib.Path("test.json").write_bytes(json.dumps(data, indent=4).encode("utf-8"))
++156 | 
++157 | # See: https://github.com/astral-sh/ruff/issues/21381
++158 | with open("tmp_path/pyproject.toml", "w") as f:
++
++FURB103 [*] `open` and `write` should be replaced by `Path("tmp_path/pyproject.toml")....`
++   --> FURB103.py:158:6
++    |
++157 | # See: https://github.com/astral-sh/ruff/issues/21381
++158 | with open("tmp_path/pyproject.toml", "w") as f:
++    |      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
++159 |     f.write(dedent(
++160 |         """
++    |
++help: Replace with `Path("tmp_path/pyproject.toml")....`
++148 | 
++149 | # See: https://github.com/astral-sh/ruff/issues/20785
++150 | import json
++151 + import pathlib
++152 | 
++153 | data = {"price": 100}
++154 | 
++--------------------------------------------------------------------------------
++156 |     f.write(json.dumps(data, indent=4).encode("utf-8"))
++157 | 
++158 | # See: https://github.com/astral-sh/ruff/issues/21381
++    - with open("tmp_path/pyproject.toml", "w") as f:
++    -     f.write(dedent(
++159 + pathlib.Path("tmp_path/pyproject.toml").write_text(dedent(
++160 |         """
++161 |         [project]
++162 |         other = 1.234

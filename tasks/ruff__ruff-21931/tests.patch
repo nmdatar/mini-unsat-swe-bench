@@ -1,0 +1,83 @@
+diff --git a/crates/ruff_linter/resources/test/fixtures/flake8_bugbear/B901.py b/crates/ruff_linter/resources/test/fixtures/flake8_bugbear/B901.py
+index acb932f25fd89ee3d90c01ab66e03a83c0f904dc..c747d265b0cb153ab4cf52fedeedf001a133883f 100644
+--- a/crates/ruff_linter/resources/test/fixtures/flake8_bugbear/B901.py
++++ b/crates/ruff_linter/resources/test/fixtures/flake8_bugbear/B901.py
+@@ -86,3 +86,43 @@ async def broken6():
+ async def broken7():
+     yield 1
+     return [1, 2, 3]
++
++
++import pytest
++
++
++@pytest.hookimpl(wrapper=True)
++def pytest_runtest_makereport():
++    result = yield
++    return result
++
++
++@pytest.hookimpl(wrapper=True)
++def pytest_fixture_setup():
++    result = yield
++    result.some_attr = "modified"
++    return result
++
++
++@pytest.hookimpl(hookwrapper=True)
++def pytest_runtest_call():
++    result = yield
++    return result
++
++
++@pytest.hookimpl()
++def pytest_configure():
++    yield
++    return "should error"
++
++
++@pytest.hookimpl(wrapper=False)
++def pytest_unconfigure():
++    yield
++    return "should error"
++
++
++@pytest.fixture()
++def my_fixture():
++    yield
++    return "should error"
+diff --git a/crates/ruff_linter/src/rules/flake8_bugbear/snapshots/ruff_linter__rules__flake8_bugbear__tests__B901_B901.py.snap b/crates/ruff_linter/src/rules/flake8_bugbear/snapshots/ruff_linter__rules__flake8_bugbear__tests__B901_B901.py.snap
+index 21bf1b1645a97029fe19db0192492fe40922a6c6..666db24c08f756cb55ea2b70249838eac7b96dd9 100644
+--- a/crates/ruff_linter/src/rules/flake8_bugbear/snapshots/ruff_linter__rules__flake8_bugbear__tests__B901_B901.py.snap
++++ b/crates/ruff_linter/src/rules/flake8_bugbear/snapshots/ruff_linter__rules__flake8_bugbear__tests__B901_B901.py.snap
+@@ -64,3 +64,30 @@ B901 Using `yield` and `return {value}` in a generator function can lead to conf
+ 88 |     return [1, 2, 3]
+    |     ^^^^^^^^^^^^^^^^
+    |
++
++B901 Using `yield` and `return {value}` in a generator function can lead to confusing behavior
++   --> B901.py:116:5
++    |
++114 | def pytest_configure():
++115 |     yield
++116 |     return "should error"
++    |     ^^^^^^^^^^^^^^^^^^^^^
++    |
++
++B901 Using `yield` and `return {value}` in a generator function can lead to confusing behavior
++   --> B901.py:122:5
++    |
++120 | def pytest_unconfigure():
++121 |     yield
++122 |     return "should error"
++    |     ^^^^^^^^^^^^^^^^^^^^^
++    |
++
++B901 Using `yield` and `return {value}` in a generator function can lead to confusing behavior
++   --> B901.py:128:5
++    |
++126 | def my_fixture():
++127 |     yield
++128 |     return "should error"
++    |     ^^^^^^^^^^^^^^^^^^^^^
++    |

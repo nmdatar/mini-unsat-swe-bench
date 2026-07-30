@@ -1,0 +1,34 @@
+diff --git a/crates/ruff_linter/resources/test/fixtures/ruff/RUF057.py b/crates/ruff_linter/resources/test/fixtures/ruff/RUF057.py
+index 2db91ac3226ad83149da8e5c6100448078b02276..bb43b6d1d4b5eb244699a986a34a100c61b5a3d5 100644
+--- a/crates/ruff_linter/resources/test/fixtures/ruff/RUF057.py
++++ b/crates/ruff_linter/resources/test/fixtures/ruff/RUF057.py
+@@ -81,3 +81,7 @@ round(# a comment
+ round(
+     17 # a comment
+ )
++
++# See: https://github.com/astral-sh/ruff/issues/21209
++print(round(125, **{"ndigits": -2}))
++print(round(125, *[-2]))
+\ No newline at end of file
+diff --git a/crates/ruff_linter/src/rules/ruff/snapshots/ruff_linter__rules__ruff__tests__RUF057_RUF057.py.snap b/crates/ruff_linter/src/rules/ruff/snapshots/ruff_linter__rules__ruff__tests__RUF057_RUF057.py.snap
+index abace6c8b42d5cd49c595c41e1b7f3bb202bb7b8..8c536b67a8d47a95d56cf5e2e8a2e6d213e35d99 100644
+--- a/crates/ruff_linter/src/rules/ruff/snapshots/ruff_linter__rules__ruff__tests__RUF057_RUF057.py.snap
++++ b/crates/ruff_linter/src/rules/ruff/snapshots/ruff_linter__rules__ruff__tests__RUF057_RUF057.py.snap
+@@ -253,6 +253,8 @@ RUF057 [*] Value being rounded is already an integer
+ 82 | |     17 # a comment
+ 83 | | )
+    | |_^
++84 |
++85 |   # See: https://github.com/astral-sh/ruff/issues/21209
+    |
+ help: Remove unnecessary `round` call
+ 78 | round(# a comment
+@@ -262,4 +264,7 @@ help: Remove unnecessary `round` call
+    -     17 # a comment
+    - )
+ 81 + 17
++82 | 
++83 | # See: https://github.com/astral-sh/ruff/issues/21209
++84 | print(round(125, **{"ndigits": -2}))
+ note: This is an unsafe fix and may change runtime behavior

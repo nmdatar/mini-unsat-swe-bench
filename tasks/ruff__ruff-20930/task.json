@@ -1,0 +1,14 @@
+{
+  "base_commit": "96b156303b81c5114e8375a6ffd467fb638c3963",
+  "environment_key": "ruff-rust-toolchain",
+  "prompt": "Formatter can reuse nested quotes before 3.12\n\n### Summary\n\nWhile updating our black compatibility tests for [redacted source link] I ran into a failure related to this test case:\n\n```py\nf\"{f'''{'nested'} inner'''} outer\"\n```\n\nThis is valid on Python versions before 3.12 (when quote reuse became allowed in f-strings), but the formatted result converts the innermost quotes to double quotes, making it invalid:\n\n```py\nf\"{f'''{\"nested\"} inner'''} outer\"\n```\n\nI was hoping to put up a quick PR fixing this, but I'm still working on it and figured I might as well open an issue. I bisected the issue to a related issue, but that's not too helpful because this PR is when we first introduced f-string formatting, as Micha pointed out on Discord.\n\nSomething interesting I've found besides the bug itself is that our main `format` test doesn't really catch this. `fstring.py` actually has more unsupported syntax errors before formatting than after, which I think prevents our error fingerprinting from working as intended. Our test runner produces a snapshot with the invalid quotes above, without panicking from the new unsupported syntax error, like the black test did.\n\nI've played a bit with more information we could add to the fingerprint, but unfortunately I haven't found a good solution there yet either.",
+  "subsystem": "formatter",
+  "task_id": "ruff__ruff-20930",
+  "test_commands": [
+    "cargo test -p ruff_formatter"
+  ],
+  "timeouts": {
+    "agent_seconds": 1800,
+    "test_seconds": 900
+  }
+}

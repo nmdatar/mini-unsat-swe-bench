@@ -1,0 +1,21 @@
+diff --git a/crates/ruff_linter/src/rules/airflow/rules/suggested_to_update_3_0.rs b/crates/ruff_linter/src/rules/airflow/rules/suggested_to_update_3_0.rs
+index c4f29f4b5acfe58ad5fea6d546363d1607710f3c..bbe7ca56b59ffef791d8b0f4a6802e8776f43303 100644
+--- a/crates/ruff_linter/src/rules/airflow/rules/suggested_to_update_3_0.rs
++++ b/crates/ruff_linter/src/rules/airflow/rules/suggested_to_update_3_0.rs
+@@ -261,9 +261,14 @@ fn check_name(checker: &Checker, expr: &Expr, range: TextRange) {
+                 name: (*rest).to_string(),
+             }
+         }
+-        ["airflow", "models", "Param"] => Replacement::Rename {
++        [
++            "airflow",
++            "models",
++            ..,
++            rest @ ("Param" | "ParamsDict" | "DagParam"),
++        ] => Replacement::SourceModuleMoved {
+             module: "airflow.sdk.definitions.param",
+-            name: "Param",
++            name: (*rest).to_string(),
+         },
+ 
+         // airflow.models.baseoperator

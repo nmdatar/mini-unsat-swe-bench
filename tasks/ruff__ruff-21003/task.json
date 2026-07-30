@@ -1,0 +1,14 @@
+{
+  "base_commit": "0f21567405969078664a4c4bf1cb280fcb1ad7f1",
+  "environment_key": "ruff-rust-toolchain",
+  "prompt": "ruff suggests invalid code when fixing UP032\n\n### Summary\n\nConsider the following code:\n```python\nif __name__ == \"__main__\":\n    number = 0\n    string = \"{}\".format(number := number + 1)\n    print(string)\n```\n\nIt executes successfully and prints `1`. \n\nWhen I run ruff, it returns\n```\nbad_ruff.py:3:14: UP032 [*] Use f-string instead of `format` call\n  |\n1 | if __name__ == \"__main__\":\n2 |     number = 0\n3 |     string = \"{}\".format(number := number + 1)\n  |              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ UP032\n4 |     print(string)\n  |\n  = help: Convert to f-string\n```\n\nWhen I run `ruff check --fix bad_ruff.py`, the resulting code is invalid and results in `ValueError`:\n\n```python\nif __name__ == \"__main__\":\n    number = 0\n    string = f\"{number := number + 1}\"\n    print(string)\n\n```",
+  "subsystem": "linter",
+  "task_id": "ruff__ruff-21003",
+  "test_commands": [
+    "cargo test -p ruff_linter"
+  ],
+  "timeouts": {
+    "agent_seconds": 1800,
+    "test_seconds": 900
+  }
+}

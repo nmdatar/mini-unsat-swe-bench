@@ -1,0 +1,14 @@
+{
+  "base_commit": "bae8ddfb8a682d3bceb1daf6967d61b3a62d4ffd",
+  "environment_key": "ruff-rust-toolchain",
+  "prompt": "B004 false positives for invalid or obfuscated `hasattr` and `getattr` calls\n\n### Summary\n\n[`unreliable-callable-check` (B004)](https://docs.astral.sh/ruff/rules/unreliable-callable-check/) doesn\u2019t validate the arguments of `hasattr` or `getattr`.\n\nIt should be suppressed when `hasattr` is called with anything another than two positional non-starred arguments, lest it suppress or introduce an exception. [Example](https://play.ruff.rs/[redacted revision]-11f5-4800-a5ab-[redacted revision]):\n```console\n$ cat >b004.py <<'# EOF'\ntry: print(hasattr(0, \"__call__\", 0, x=0))\nexcept TypeError as e: print(e)\n\ntry: print(hasattr(*(), \"__call__\", \"split\"))\nexcept TypeError as e: print(e)\n# EOF\n\n$ python b004.py\nhasattr() takes no keyword arguments\nTrue\n\n$ ruff --isolated check b004.py --select B004 --fix\nFound 2 errors (2 fixed, 0 remaining).\n\n$ cat b004.py\ntry: print(callable(0))\nexcept TypeError as e: print(e)\n\ntry: print(callable(*()))\nexcept TypeError as e: print(e)\n\n$ python b004.py\nFalse\ncallable() takes exactly one argument (0 given)\n```\n\nSimilarly, B004 should only apply when `getattr` is called with two or three positional non-starred arguments.",
+  "subsystem": "linter",
+  "task_id": "ruff__ruff-20486",
+  "test_commands": [
+    "cargo test -p ruff_linter"
+  ],
+  "timeouts": {
+    "agent_seconds": 1800,
+    "test_seconds": 900
+  }
+}

@@ -1,0 +1,44 @@
+diff --git a/crates/ruff_linter/resources/test/fixtures/pyupgrade/UP041.py b/crates/ruff_linter/resources/test/fixtures/pyupgrade/UP041.py
+index 2c30094f59a08f0fc1e1ee9ff9d1d7063594471c..c8753c889a535160074814f9e61034952f43c24f 100644
+--- a/crates/ruff_linter/resources/test/fixtures/pyupgrade/UP041.py
++++ b/crates/ruff_linter/resources/test/fixtures/pyupgrade/UP041.py
+@@ -66,3 +66,10 @@ try:
+     pass
+ except (TimeoutError, KeyError):
+     pass
++
++
++raise (
++    asyncio.
++    # text
++       TimeoutError
++)
+diff --git a/crates/ruff_linter/src/rules/pyupgrade/snapshots/ruff_linter__rules__pyupgrade__tests__UP041.py.snap b/crates/ruff_linter/src/rules/pyupgrade/snapshots/ruff_linter__rules__pyupgrade__tests__UP041.py.snap
+index b737ce4b6d5bdce4db70a46e5f0dc8b22eaa920d..92332eed634a275c7cfda1a450b9dda1b8a0ef00 100644
+--- a/crates/ruff_linter/src/rules/pyupgrade/snapshots/ruff_linter__rules__pyupgrade__tests__UP041.py.snap
++++ b/crates/ruff_linter/src/rules/pyupgrade/snapshots/ruff_linter__rules__pyupgrade__tests__UP041.py.snap
+@@ -133,3 +133,24 @@ help: Replace with builtin `TimeoutError`
+ 43 |     pass
+ 44 | 
+ 45 | # These should not change
++
++UP041 [*] Replace aliased errors with `TimeoutError`
++  --> UP041.py:72:5
++   |
++71 |   raise (
++72 | /     asyncio.
++73 | |     # text
++74 | |        TimeoutError
++   | |___________________^
++75 |   )
++   |
++help: Replace `asyncio.TimeoutError` with builtin `TimeoutError`
++69 | 
++70 | 
++71 | raise (
++   -     asyncio.
++   -     # text
++   -        TimeoutError
++72 +     TimeoutError
++73 | )
++note: This is an unsafe fix and may change runtime behavior

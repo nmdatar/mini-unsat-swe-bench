@@ -1,0 +1,29 @@
+diff --git a/crates/ruff_linter/resources/test/fixtures/ruff/RUF060.py b/crates/ruff_linter/resources/test/fixtures/ruff/RUF060.py
+index c3b96c6b7be52f60e22c0dd34c9f0d59917cbe78..78b5888207607e5e7b2c3cff14bd9ca9fcc160d3 100644
+--- a/crates/ruff_linter/resources/test/fixtures/ruff/RUF060.py
++++ b/crates/ruff_linter/resources/test/fixtures/ruff/RUF060.py
+@@ -42,3 +42,7 @@ b"a" in bytes("a", "utf-8")
+ 1 in set(set([1]))
+ '' in {""}
+ frozenset() in {frozenset()}
++
++# https://github.com/astral-sh/ruff/issues/20238
++"b" in f"" "" # Error
++"b" in f"" "x" # OK
+diff --git a/crates/ruff_linter/src/rules/ruff/snapshots/ruff_linter__rules__ruff__tests__RUF060_RUF060.py.snap b/crates/ruff_linter/src/rules/ruff/snapshots/ruff_linter__rules__ruff__tests__RUF060_RUF060.py.snap
+index 20e8cf9f42cacd1b9efefeee83785468c9961085..cd8375a506e7d1b8c671eb0941483ba86ea98354 100644
+--- a/crates/ruff_linter/src/rules/ruff/snapshots/ruff_linter__rules__ruff__tests__RUF060_RUF060.py.snap
++++ b/crates/ruff_linter/src/rules/ruff/snapshots/ruff_linter__rules__ruff__tests__RUF060_RUF060.py.snap
+@@ -251,3 +251,12 @@ RUF060 Unnecessary membership test on empty collection
+ 25 |
+ 26 | # OK
+    |
++
++RUF060 Unnecessary membership test on empty collection
++  --> RUF060.py:47:1
++   |
++46 | # https://github.com/astral-sh/ruff/issues/20238
++47 | "b" in f"" "" # Error
++   | ^^^^^^^^^^^^^
++48 | "b" in f"" "x" # OK
++   |

@@ -1,0 +1,71 @@
+diff --git a/crates/ruff_linter/resources/test/fixtures/flake8_bugbear/B033.py b/crates/ruff_linter/resources/test/fixtures/flake8_bugbear/B033.py
+index c0e0ec6faf8203d75ab72f6a2403da1b68c1c1fb..4aa8e8d4b22aa8562c08751da6af52dc84b24e40 100644
+--- a/crates/ruff_linter/resources/test/fixtures/flake8_bugbear/B033.py
++++ b/crates/ruff_linter/resources/test/fixtures/flake8_bugbear/B033.py
+@@ -20,6 +20,12 @@ incorrect_set = {
+     1,
+ }
+ incorrect_set = {False, 1, 0}
++incorrect_set_multiline_with_comment = {
++    "value1",
++    23,
++    # B033
++    "value1",
++}
+ 
+ ###
+ # Non-errors.
+diff --git a/crates/ruff_linter/src/rules/flake8_bugbear/snapshots/ruff_linter__rules__flake8_bugbear__tests__B033_B033.py.snap b/crates/ruff_linter/src/rules/flake8_bugbear/snapshots/ruff_linter__rules__flake8_bugbear__tests__B033_B033.py.snap
+index 817a97b1b374337bed87e0ca3da22028c84e2dcb..339b89232ed2ae8f49ad89074a97de1e0a7395a6 100644
+--- a/crates/ruff_linter/src/rules/flake8_bugbear/snapshots/ruff_linter__rules__flake8_bugbear__tests__B033_B033.py.snap
++++ b/crates/ruff_linter/src/rules/flake8_bugbear/snapshots/ruff_linter__rules__flake8_bugbear__tests__B033_B033.py.snap
+@@ -157,7 +157,7 @@ help: Remove duplicate item
+    -     1,
+ 20 | }
+ 21 | incorrect_set = {False, 1, 0}
+-22 | 
++22 | incorrect_set_multiline_with_comment = {
+ 
+ B033 [*] Sets should not contain duplicate items, but `False` and `0` has the same value
+   --> B033.py:22:28
+@@ -166,8 +166,8 @@ B033 [*] Sets should not contain duplicate items, but `False` and `0` has the sa
+ 21 | }
+ 22 | incorrect_set = {False, 1, 0}
+    |                            ^
+-23 |
+-24 | ###
++23 | incorrect_set_multiline_with_comment = {
++24 |     "value1",
+    |
+ help: Remove duplicate item
+ 19 |     1,
+@@ -175,6 +175,26 @@ help: Remove duplicate item
+ 21 | }
+    - incorrect_set = {False, 1, 0}
+ 22 + incorrect_set = {False, 1}
+-23 | 
+-24 | ###
+-25 | # Non-errors.
++23 | incorrect_set_multiline_with_comment = {
++24 |     "value1",
++25 |     23,
++
++B033 [*] Sets should not contain duplicate item `"value1"`
++  --> B033.py:27:5
++   |
++25 |     23,
++26 |     # B033
++27 |     "value1",
++   |     ^^^^^^^^
++28 | }
++   |
++help: Remove duplicate item
++23 | incorrect_set_multiline_with_comment = {
++24 |     "value1",
++25 |     23,
++   -     # B033
++   -     "value1",
++26 | }
++27 | 
++28 | ###
++note: This is an unsafe fix and may change runtime behavior

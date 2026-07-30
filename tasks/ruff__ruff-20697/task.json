@@ -1,0 +1,14 @@
+{
+  "base_commit": "2ce3aba458d0ee6760639485a9857c4c89af63ac",
+  "environment_key": "ruff-rust-toolchain",
+  "prompt": "[flake8-simplify] SIM911 false positive when methods have args\n\n### Summary\n\n`SIM911` has a false positive if you give the methods args, since they are removed when it is transformed into `.items()`, which changes the behavior of the code to no longer raise a `TypeError`. If there is a situation in where the code thinks the variable is a `dict`, but it's actually the `dict` class, that could actually show up in non-constructed code. I was unable to find such a situation though. [playground](https://play.ruff.rs/[redacted revision]-53a1-401b-88ea-[redacted revision])\n```\nPS ~\\Desktop\\New_folder>Get-Content issue.py\n```\n```py\nd = {}\nfor country, stars in zip(d.keys(*x), d.values(\"hello\")):...\n```\n```\nPS ~\\Desktop\\New_folder>uvx ruff check issue.py --isolated --select SIM --fix --diff\n```\n```diff\n--- issue.py\n+++ issue.py\n@@ -1,2 +1,2 @@\n d = {}\n-for country, stars in zip(d.keys(*x), d.values(\"hello\")):...\n+for country, stars in d.items():...\n\nWould fix 1 error.\n```",
+  "subsystem": "linter",
+  "task_id": "ruff__ruff-20697",
+  "test_commands": [
+    "cargo test -p ruff_linter"
+  ],
+  "timeouts": {
+    "agent_seconds": 1800,
+    "test_seconds": 900
+  }
+}

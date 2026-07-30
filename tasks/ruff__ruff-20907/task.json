@@ -1,0 +1,14 @@
+{
+  "base_commit": "73520e4acd9cb259f41a60b0b6396c66ea32950a",
+  "environment_key": "ruff-rust-toolchain",
+  "prompt": "DJ001 not raised when field has type annotation\n\n### Summary\n\n```python\nfrom django.db import models\n\nclass TestModel(models.Model):\n    charfield1 = models.CharField(null=True) # Raises DJ001\n    charfield2: models.CharField[str, str] = models.CharField(null=True) # No error\n```\n\n```\n$\u00a0ruff check --select=DJ001 test.py\nDJ001 Avoid using `null=True` on string-based fields such as `CharField`\n --> test.py:5:18\n  |\n4 | class TestModel(models.Model):\n5 |     charfield1 = models.CharField(null=True)\n  |                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^\n6 |     charfield2: models.CharField[str, str] = models.CharField(null=True)\n  |\n\nFound 1 error.\n```\n\nI discovered this when using https://github.com/typeddjango/django-stubs with pyright, which doesn't detect the types correctly without explicit annotations.",
+  "subsystem": "linter",
+  "task_id": "ruff__ruff-20907",
+  "test_commands": [
+    "cargo test -p ruff_linter"
+  ],
+  "timeouts": {
+    "agent_seconds": 1800,
+    "test_seconds": 900
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "base_commit": "b6bd32d9dc086e81b766019b5b99e8c343de7220",
+  "environment_key": "ruff-rust-toolchain",
+  "prompt": "`invalid-index-type` (RUF016) has false negatives and false positives\n\n### Summary\n\n[`invalid-index-type` (RUF016)](https://docs.astral.sh/ruff/rules/invalid-index-type/) has false negatives and false positives.\n\n`bool` is a valid index type. RUF016 should allow it. [Example](https://play.ruff.rs/[redacted revision]-f48b-41b8-9935-[redacted revision]):\n```console\n$ cat >ruf016_1.py <<'# EOF'\nprint([1, 2, 3][False])\nprint([1, 2, 3][False:True:True])\n# EOF\n\n$ python ruf016_1.py\n1\n[1]\n\n$ ruff --isolated check ruf016_1.py --select RUF016 --output-format concise -q\nruf016_1.py:1:17: RUF016 Indexed access to type `list` uses type `bool` instead of an integer or slice\nruf016_1.py:2:17: RUF016 Slice in indexed access to type `list` uses type `bool` instead of an integer\nruf016_1.py:2:23: RUF016 Slice in indexed access to type `list` uses type `bool` instead of an integer\nruf016_1.py:2:28: RUF016 Slice in indexed access to type `list` uses type `bool` instead of an integer\n```\n\nLambda expressions, generator expressions, and t-strings are invalid. RUF016 should not allow them. [Example](https://play.ruff.rs/[redacted revision]-e710-4f40-a988-[redacted revision]):\n```console\n$ cat >ruf016_2.py <<'# EOF'\ntry: [1, 2, 3][lambda: 0]\nexcept TypeError as e: print(e)\ntry: [1, 2, 3][(x for x in ())]\nexcept TypeError as e: print(e)\ntry: [1, 2, 3][t\"x\"]\nexcept TypeError as e: print(e)\n# EOF\n\n$ python3.14 ruf016_2.py\nruf016_2.py:1: SyntaxWarning: list indices must be integers or slices, not function; perhaps you missed a comma?\n  try: [1, 2, 3][lambda: 0]\nruf016_2.py:3: SyntaxWarning: list indices must be integers or slices, not generator; perhaps you missed a comma?\n  try: [1, 2, 3][(x for x in ())]\nruf016_2.py:5: SyntaxWarning: list indices must be integers or slices, not str; perhaps you missed a comma?\n  try: [1, 2, 3][t\"x\"]\nlist indices must be integers or slices, not function\nlist indices must be integers or slices, not generator\nlist indices must be integers or slices, not string.templatelib.Template\n\n$ ruff --isolated check ruf016_2.py --select RUF016 --preview --target-version py314\nAll checks passed!\n```",
+  "subsystem": "linter",
+  "task_id": "ruff__ruff-20213",
+  "test_commands": [
+    "cargo test -p ruff_linter"
+  ],
+  "timeouts": {
+    "agent_seconds": 1800,
+    "test_seconds": 900
+  }
+}

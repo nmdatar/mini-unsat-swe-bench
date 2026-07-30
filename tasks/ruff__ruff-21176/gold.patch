@@ -1,0 +1,68 @@
+diff --git a/crates/ruff_python_formatter/src/pattern/mod.rs b/crates/ruff_python_formatter/src/pattern/mod.rs
+index 557337ddc5fe43a6c86776572276729f77188b9c..a379aeb849879f5f4ece6e6f17d0a9ad28044663 100644
+--- a/crates/ruff_python_formatter/src/pattern/mod.rs
++++ b/crates/ruff_python_formatter/src/pattern/mod.rs
+@@ -1,5 +1,5 @@
+ use ruff_formatter::{FormatOwnedWithRule, FormatRefWithRule, FormatRule, FormatRuleWithOptions};
+-use ruff_python_ast::{AnyNodeRef, Expr};
++use ruff_python_ast::{AnyNodeRef, Expr, PatternMatchAs};
+ use ruff_python_ast::{MatchCase, Pattern};
+ use ruff_python_trivia::CommentRanges;
+ use ruff_python_trivia::{
+@@ -14,6 +14,7 @@ use crate::expression::parentheses::{
+     NeedsParentheses, OptionalParentheses, Parentheses, optional_parentheses, parenthesized,
+ };
+ use crate::prelude::*;
++use crate::preview::is_avoid_parens_for_long_as_captures_enabled;
+ 
+ pub(crate) mod pattern_arguments;
+ pub(crate) mod pattern_keyword;
+@@ -242,8 +243,14 @@ pub(crate) fn can_pattern_omit_optional_parentheses(
+                 Pattern::MatchValue(_)
+                 | Pattern::MatchSingleton(_)
+                 | Pattern::MatchStar(_)
+-                | Pattern::MatchAs(_)
+                 | Pattern::MatchOr(_) => false,
++                Pattern::MatchAs(PatternMatchAs { pattern, .. }) => match pattern {
++                    Some(pattern) => {
++                        is_avoid_parens_for_long_as_captures_enabled(context)
++                            && has_parentheses_and_is_non_empty(pattern, context)
++                    }
++                    None => false,
++                },
+                 Pattern::MatchSequence(sequence) => {
+                     !sequence.patterns.is_empty() || context.comments().has_dangling(pattern)
+                 }
+@@ -318,7 +325,14 @@ impl<'a> CanOmitOptionalParenthesesVisitor<'a> {
+                 // The pattern doesn't start with a parentheses pattern, but with the class's identifier.
+                 self.first.set_if_none(First::Token);
+             }
+-            Pattern::MatchStar(_) | Pattern::MatchSingleton(_) | Pattern::MatchAs(_) => {}
++            Pattern::MatchAs(PatternMatchAs { pattern, .. }) => {
++                if let Some(pattern) = pattern
++                    && is_avoid_parens_for_long_as_captures_enabled(context)
++                {
++                    self.visit_sub_pattern(pattern, context);
++                }
++            }
++            Pattern::MatchStar(_) | Pattern::MatchSingleton(_) => {}
+             Pattern::MatchOr(or_pattern) => {
+                 self.update_max_precedence(
+                     OperatorPrecedence::Or,
+diff --git a/crates/ruff_python_formatter/src/preview.rs b/crates/ruff_python_formatter/src/preview.rs
+index 5455fa9a12e5634c1fe85193d14d1c3f8c1e01cf..9d307390d6509f3871b6acb44ad148296f39600d 100644
+--- a/crates/ruff_python_formatter/src/preview.rs
++++ b/crates/ruff_python_formatter/src/preview.rs
+@@ -43,3 +43,12 @@ pub(crate) const fn is_remove_parens_around_except_types_enabled(
+ pub(crate) const fn is_allow_newline_after_block_open_enabled(context: &PyFormatContext) -> bool {
+     context.is_preview()
+ }
++
++/// Returns `true` if the
++/// [`avoid_parens_for_long_as_captures`](https://github.com/astral-sh/ruff/pull/21176) preview
++/// style is enabled.
++pub(crate) const fn is_avoid_parens_for_long_as_captures_enabled(
++    context: &PyFormatContext,
++) -> bool {
++    context.is_preview()
++}

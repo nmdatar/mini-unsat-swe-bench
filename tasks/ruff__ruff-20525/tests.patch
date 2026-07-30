@@ -1,0 +1,63 @@
+diff --git a/crates/ruff_linter/resources/test/fixtures/ruff/RUF010.py b/crates/ruff_linter/resources/test/fixtures/ruff/RUF010.py
+index 38502ef224b51026945fb33baf3c7f9a271bf66d..765bb412a48266cffa30a3cf187cc80effb23285 100644
+--- a/crates/ruff_linter/resources/test/fixtures/ruff/RUF010.py
++++ b/crates/ruff_linter/resources/test/fixtures/ruff/RUF010.py
+@@ -56,3 +56,11 @@ f"{str(object=3)}"
+ f"{str(x for x in [])}"
+ 
+ f"{str((x for x in []))}"
++
++# Debug text cases - should not trigger RUF010
++f"{str(1)=}"
++f"{ascii(1)=}"
++f"{repr(1)=}"
++f"{str('hello')=}"
++f"{ascii('hello')=}"
++f"{repr('hello')=}"
+diff --git a/crates/ruff_linter/src/rules/ruff/snapshots/ruff_linter__rules__ruff__tests__RUF010_RUF010.py.snap b/crates/ruff_linter/src/rules/ruff/snapshots/ruff_linter__rules__ruff__tests__RUF010_RUF010.py.snap
+index 578c619aa0b6b11a78fb91909e79c5855aabedc7..8ef03b90fc7b3e8c66ffadd65128c5d369fcd36d 100644
+--- a/crates/ruff_linter/src/rules/ruff/snapshots/ruff_linter__rules__ruff__tests__RUF010_RUF010.py.snap
++++ b/crates/ruff_linter/src/rules/ruff/snapshots/ruff_linter__rules__ruff__tests__RUF010_RUF010.py.snap
+@@ -293,18 +293,6 @@ help: Replace with conversion flag
+ 48 | f"{repr(1)=}"
+ 49 | 
+ 
+-RUF010 Use explicit conversion flag
+-  --> RUF010.py:48:4
+-   |
+-46 | f"{builtins.repr(1)}"
+-47 |
+-48 | f"{repr(1)=}"
+-   |    ^^^^^^^
+-49 |
+-50 | f"{repr(lambda: 1)}"
+-   |
+-help: Replace with conversion flag
+-
+ RUF010 [*] Use explicit conversion flag
+   --> RUF010.py:50:4
+    |
+@@ -383,6 +371,7 @@ help: Replace with conversion flag
+ 56 + f"{(x for x in [])!s}"
+ 57 | 
+ 58 | f"{str((x for x in []))}"
++59 | 
+ 
+ RUF010 [*] Use explicit conversion flag
+   --> RUF010.py:58:4
+@@ -391,6 +380,8 @@ RUF010 [*] Use explicit conversion flag
+ 57 |
+ 58 | f"{str((x for x in []))}"
+    |    ^^^^^^^^^^^^^^^^^^^^
++59 |
++60 | # Debug text cases - should not trigger RUF010
+    |
+ help: Replace with conversion flag
+ 55 | 
+@@ -398,3 +389,6 @@ help: Replace with conversion flag
+ 57 | 
+    - f"{str((x for x in []))}"
+ 58 + f"{(x for x in [])!s}"
++59 | 
++60 | # Debug text cases - should not trigger RUF010
++61 | f"{str(1)=}"

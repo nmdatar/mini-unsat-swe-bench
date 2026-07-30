@@ -1,0 +1,61 @@
+diff --git a/crates/ruff_linter/resources/test/fixtures/pylint/stop_iteration_return.py b/crates/ruff_linter/resources/test/fixtures/pylint/stop_iteration_return.py
+index a35e31a21e2921a89aaa0fbe5da9bdd8e64d094e..639cd96845dda7d4461ba8651051b7577ccf4833 100644
+--- a/crates/ruff_linter/resources/test/fixtures/pylint/stop_iteration_return.py
++++ b/crates/ruff_linter/resources/test/fixtures/pylint/stop_iteration_return.py
+@@ -129,3 +129,26 @@ def generator_with_lambda():
+     yield 1
+     func = lambda x: x  # Just a regular lambda
+     yield 2
++
++# See: https://github.com/astral-sh/ruff/issues/21162
++def foo():
++    def g():
++        yield 1
++    raise StopIteration  # Should not trigger
++
++
++def foo():
++    def g():
++        raise StopIteration  # Should not trigger
++    yield 1
++
++# https://github.com/astral-sh/ruff/pull/21177#pullrequestreview-3430209718
++def foo():
++    yield 1
++    class C:
++        raise StopIteration  # Should trigger
++    yield C
++
++# https://github.com/astral-sh/ruff/pull/21177#discussion_r2539702728
++def foo():
++    raise StopIteration((yield 1))  # Should trigger
+\ No newline at end of file
+diff --git a/crates/ruff_linter/src/rules/pylint/snapshots/ruff_linter__rules__pylint__tests__PLR1708_stop_iteration_return.py.snap b/crates/ruff_linter/src/rules/pylint/snapshots/ruff_linter__rules__pylint__tests__PLR1708_stop_iteration_return.py.snap
+index 5773ff81ea0196677f23c9a32caa9df199610381..a6775f05d7832ef224383edd53bf8b0efa59b107 100644
+--- a/crates/ruff_linter/src/rules/pylint/snapshots/ruff_linter__rules__pylint__tests__PLR1708_stop_iteration_return.py.snap
++++ b/crates/ruff_linter/src/rules/pylint/snapshots/ruff_linter__rules__pylint__tests__PLR1708_stop_iteration_return.py.snap
+@@ -107,3 +107,24 @@ PLR1708 Explicit `raise StopIteration` in generator
+     |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+ help: Use `return` instead
++
++PLR1708 Explicit `raise StopIteration` in generator
++   --> stop_iteration_return.py:149:9
++    |
++147 |     yield 1
++148 |     class C:
++149 |         raise StopIteration  # Should trigger
++    |         ^^^^^^^^^^^^^^^^^^^
++150 |     yield C
++    |
++help: Use `return` instead
++
++PLR1708 Explicit `raise StopIteration` in generator
++   --> stop_iteration_return.py:154:5
++    |
++152 | # https://github.com/astral-sh/ruff/pull/21177#discussion_r2539702728
++153 | def foo():
++154 |     raise StopIteration((yield 1))  # Should trigger
++    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
++    |
++help: Use `return` instead

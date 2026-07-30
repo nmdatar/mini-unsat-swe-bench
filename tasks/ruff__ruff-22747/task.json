@@ -1,0 +1,14 @@
+{
+  "base_commit": "d4a01501c713b88d4059f90652f44f2daa35a76c",
+  "environment_key": "ruff-rust-toolchain",
+  "prompt": "Preserve required parentheses in lambda bodies\n\nSummary\n--\n\nThis PR fixes the issues revealed in a related issue by adding an additional branch to\nthe lambda body formatting that checks if the body `needs_parentheses` before\nfalling back on the `Parentheses::Never` case. I also updated the\n`ExprNamed::needs_parentheses` implementation to match the one from a related issue.\n\nTest Plan\n--\n\nNew test based on the failing cases in a related issue. I also checked out a related issue and\nchecked that the tests pass after applying the changes from this PR.",
+  "subsystem": "formatter",
+  "task_id": "ruff__ruff-22747",
+  "test_commands": [
+    "cargo test -p ruff_formatter"
+  ],
+  "timeouts": {
+    "agent_seconds": 1800,
+    "test_seconds": 900
+  }
+}

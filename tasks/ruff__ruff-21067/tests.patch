@@ -1,0 +1,55 @@
+diff --git a/crates/ruff_python_formatter/resources/test/fixtures/ruff/range_formatting/clause_header.py b/crates/ruff_python_formatter/resources/test/fixtures/ruff/range_formatting/clause_header.py
+index d30c32f11df71988c3e77b99f1638a68b77d4133..7217b91ea7f32303f68a52752e8acbaec87cd963 100644
+--- a/crates/ruff_python_formatter/resources/test/fixtures/ruff/range_formatting/clause_header.py
++++ b/crates/ruff_python_formatter/resources/test/fixtures/ruff/range_formatting/clause_header.py
+@@ -42,3 +42,11 @@ def  test4(<RANGE_START>   a):
+ 
+ <RANGE_START>if b   + c :<RANGE_END>              # trailing clause header comment
+     print("Not formatted"  )
++
++def test5():
++    x    =     1
++    <RANGE_START>try:
++        a;
++    finally:
++        b
++    <RANGE_END>
+diff --git a/crates/ruff_python_formatter/tests/snapshots/format@range_formatting__clause_header.py.snap b/crates/ruff_python_formatter/tests/snapshots/format@range_formatting__clause_header.py.snap
+index 8f16a68d08d6a681065d11f28b5305dc2abf958f..07e89d0649165ee283d6143eb9e0cfe62bf18e98 100644
+--- a/crates/ruff_python_formatter/tests/snapshots/format@range_formatting__clause_header.py.snap
++++ b/crates/ruff_python_formatter/tests/snapshots/format@range_formatting__clause_header.py.snap
+@@ -1,7 +1,6 @@
+ ---
+ source: crates/ruff_python_formatter/tests/fixtures.rs
+ input_file: crates/ruff_python_formatter/resources/test/fixtures/ruff/range_formatting/clause_header.py
+-snapshot_kind: text
+ ---
+ ## Input
+ ```python
+@@ -49,6 +48,14 @@ def  test4(<RANGE_START>   a):
+ 
+ <RANGE_START>if b   + c :<RANGE_END>              # trailing clause header comment
+     print("Not formatted"  )
++
++def test5():
++    x    =     1
++    <RANGE_START>try:
++        a;
++    finally:
++        b
++    <RANGE_END>
+ ```
+ 
+ ## Output
+@@ -96,4 +103,11 @@ if a + b:  # trailing clause header comment
+ 
+ if b + c:              # trailing clause header comment
+     print("Not formatted"  )
++
++def test5():
++    x    =     1
++    try:
++        a
++    finally:
++        b
+ ```

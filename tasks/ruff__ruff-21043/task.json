@@ -1,0 +1,14 @@
+{
+  "base_commit": "01695513ce33f1f1615309323ba145c42f4720c1",
+  "environment_key": "ruff-rust-toolchain",
+  "prompt": "[`airflow`] Extend `airflow.models..Param` check (`AIR311`)\n\n## Summary\n\n* Extend `airflow.models.Param` to include `airflow.models.param.Param` case and include both `airflow.models.param.ParamDict` and `airflow.models.param.DagParam` and their `airflow.models.` counter part",
+  "subsystem": "linter",
+  "task_id": "ruff__ruff-21043",
+  "test_commands": [
+    "cargo test -p ruff_linter"
+  ],
+  "timeouts": {
+    "agent_seconds": 1800,
+    "test_seconds": 900
+  }
+}

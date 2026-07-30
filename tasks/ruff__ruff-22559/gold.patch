@@ -1,0 +1,58 @@
+diff --git a/crates/ruff_linter/src/rules/ruff/helpers.rs b/crates/ruff_linter/src/rules/ruff/helpers.rs
+index 535492816bb4adb5edde0113f8255c8788bc1bce..7ddf4a9f42998ffe3cc7c9f6895c022f077ee574 100644
+--- a/crates/ruff_linter/src/rules/ruff/helpers.rs
++++ b/crates/ruff_linter/src/rules/ruff/helpers.rs
+@@ -242,3 +242,23 @@ pub(super) fn is_descriptor_class(func: &Expr, semantic: &SemanticModel) -> bool
+         })
+     })
+ }
++
++/// Returns `true` if the class has `ctypes.Structure` as a base
++/// and the first target is the `_fields_` attribute.
++pub(super) fn is_ctypes_structure_fields(
++    class_def: &ast::StmtClassDef,
++    semantic: &SemanticModel,
++    targets: &[Expr],
++) -> bool {
++    let is_ctypes_structure =
++        analyze::class::any_qualified_base_class(class_def, semantic, &|qualified_name| {
++            matches!(qualified_name.segments(), ["ctypes", "Structure"])
++        });
++
++    let is_fields = matches!(
++        targets.first(),
++        Some(Expr::Name(ast::ExprName { id, .. })) if id == "_fields_"
++    );
++
++    is_ctypes_structure && is_fields
++}
+diff --git a/crates/ruff_linter/src/rules/ruff/rules/mutable_class_default.rs b/crates/ruff_linter/src/rules/ruff/rules/mutable_class_default.rs
+index 991008f662e18315d200a438ef6402dd70ee7e7a..94145df2040da4248dca0f2844de9ef4e26dd957 100644
+--- a/crates/ruff_linter/src/rules/ruff/rules/mutable_class_default.rs
++++ b/crates/ruff_linter/src/rules/ruff/rules/mutable_class_default.rs
+@@ -8,8 +8,8 @@ use ruff_text_size::Ranged;
+ use crate::Violation;
+ use crate::checkers::ast::Checker;
+ use crate::rules::ruff::helpers::{
+-    dataclass_kind, has_default_copy_semantics, is_class_var_annotation, is_final_annotation,
+-    is_special_attribute,
++    dataclass_kind, has_default_copy_semantics, is_class_var_annotation,
++    is_ctypes_structure_fields, is_final_annotation, is_special_attribute,
+ };
+ 
+ /// ## What it does
+@@ -140,6 +140,14 @@ pub(crate) fn mutable_class_default(checker: &Checker, class_def: &ast::StmtClas
+                             .is_some_and(|name| class_var_targets.contains(&name.id))
+                 }) && is_mutable_expr(value, checker.semantic())
+                 {
++                    // The `_fields_` property of a `ctypes.Structure` base class has its
++                    // immutability enforced  by the base class itself which will throw an error if
++                    // it's set a second time
++                    // See: https://docs.python.org/3/library/ctypes.html#ctypes.Structure._fields_
++                    if is_ctypes_structure_fields(class_def, checker.semantic(), targets) {
++                        return;
++                    }
++
+                     // Avoid, e.g., Pydantic and msgspec models, which end up copying defaults on instance creation.
+                     if has_default_copy_semantics(class_def, checker.semantic()) {
+                         return;

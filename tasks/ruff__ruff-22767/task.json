@@ -1,0 +1,14 @@
+{
+  "base_commit": "a6752942ad0d083bf2df0c2992499090257cfe7f",
+  "environment_key": "ruff-rust-toolchain",
+  "prompt": "[`refurb`] Make fix unsafe if it deletes comments (`FURB105`)\n\n## Summary",
+  "subsystem": "linter",
+  "task_id": "ruff__ruff-22767",
+  "test_commands": [
+    "cargo test -p ruff_linter"
+  ],
+  "timeouts": {
+    "agent_seconds": 1800,
+    "test_seconds": 900
+  }
+}

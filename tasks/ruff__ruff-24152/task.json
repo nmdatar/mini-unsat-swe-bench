@@ -1,0 +1,14 @@
+{
+  "base_commit": "9d2b16029a6a141b2d15e966a69faa4c2ec41572",
+  "environment_key": "ruff-rust-toolchain",
+  "prompt": "Fix `%foo?` parsing in IPython assignment expressions\n\n## Summary\n\nWe now distinguish between IPython escape commands lexed after an `=` sign from those at the start of a logical line, which allows `x = %foo?` to be interpreted as \"assign the result of running a line magic named `foo?`\", matching the IPython assignment-magic transform.\n\nSee: https://github.com/astral-sh/ruff/issues/21705#issuecomment-[redacted revision].",
+  "subsystem": "parser",
+  "task_id": "ruff__ruff-24152",
+  "test_commands": [
+    "cargo test -p ruff_python_parser"
+  ],
+  "timeouts": {
+    "agent_seconds": 1800,
+    "test_seconds": 900
+  }
+}

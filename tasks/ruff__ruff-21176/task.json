@@ -1,0 +1,14 @@
+{
+  "base_commit": "78ee7ae9254a08e49c9c6443512235f74a027584",
+  "environment_key": "ruff-rust-toolchain",
+  "prompt": "Formatting adds unnecessary parentheses to long patterns with `as` captures\n\n### Summary\n\nSee this playground link, where I've put the expected formatting going in, and you can see the unexpected formatting coming out:\n\nhttps://play.ruff.rs/[redacted revision]-6858-43eb-8a9b-[redacted revision]?secondary=Format\n\nIt appears that \"grouping\" characters in patterns like `()`, `[]`, and `{}` aren't being used correctly when they are followed by a capture (`as name`). Instead of breaking on these, the entire pattern (including the capture) is wrapped in parentheses and indented.\n\nFirst encountered in https://github.com/python/cpython/pull/133123/files#r2071981099.",
+  "subsystem": "formatter",
+  "task_id": "ruff__ruff-21176",
+  "test_commands": [
+    "cargo test -p ruff_formatter"
+  ],
+  "timeouts": {
+    "agent_seconds": 1800,
+    "test_seconds": 900
+  }
+}

@@ -1,0 +1,93 @@
+diff --git a/crates/ruff_linter/resources/test/fixtures/flake8_comprehensions/C409.py b/crates/ruff_linter/resources/test/fixtures/flake8_comprehensions/C409.py
+index c2c093b253c288d97a61e305eb1d85e2d8fbb5c1..b8c72773d6b6747dfddd860e16c6cf18240e5d7d 100644
+--- a/crates/ruff_linter/resources/test/fixtures/flake8_comprehensions/C409.py
++++ b/crates/ruff_linter/resources/test/fixtures/flake8_comprehensions/C409.py
+@@ -42,3 +42,6 @@ tuple(
+         x for x in [1,2,3]
+     }
+ )
++
++t9 = tuple([1],)
++t10 = tuple([1, 2],)
+diff --git a/crates/ruff_linter/src/rules/flake8_comprehensions/snapshots/ruff_linter__rules__flake8_comprehensions__tests__C409_C409.py.snap b/crates/ruff_linter/src/rules/flake8_comprehensions/snapshots/ruff_linter__rules__flake8_comprehensions__tests__C409_C409.py.snap
+index f05149dffd0253995aca6d0036bdab7289e2bcee..f8c753452529ee7bfd20d411830837c8db7ff6a9 100644
+--- a/crates/ruff_linter/src/rules/flake8_comprehensions/snapshots/ruff_linter__rules__flake8_comprehensions__tests__C409_C409.py.snap
++++ b/crates/ruff_linter/src/rules/flake8_comprehensions/snapshots/ruff_linter__rules__flake8_comprehensions__tests__C409_C409.py.snap
+@@ -247,3 +247,36 @@ help: Rewrite as a tuple literal
+ 28 | tuple([x for x in range(5)])
+ 29 | tuple({x for x in range(10)})
+ note: This is an unsafe fix and may change runtime behavior
++
++C409 [*] Unnecessary list literal passed to `tuple()` (rewrite as a tuple literal)
++  --> C409.py:46:6
++   |
++44 | )
++45 |
++46 | t9 = tuple([1],)
++   |      ^^^^^^^^^^^
++47 | t10 = tuple([1, 2],)
++   |
++help: Rewrite as a tuple literal
++43 |     }
++44 | )
++45 | 
++   - t9 = tuple([1],)
++46 + t9 = (1,)
++47 | t10 = tuple([1, 2],)
++note: This is an unsafe fix and may change runtime behavior
++
++C409 [*] Unnecessary list literal passed to `tuple()` (rewrite as a tuple literal)
++  --> C409.py:47:7
++   |
++46 | t9 = tuple([1],)
++47 | t10 = tuple([1, 2],)
++   |       ^^^^^^^^^^^^^^
++   |
++help: Rewrite as a tuple literal
++44 | )
++45 | 
++46 | t9 = tuple([1],)
++   - t10 = tuple([1, 2],)
++47 + t10 = (1, 2)
++note: This is an unsafe fix and may change runtime behavior
+diff --git a/crates/ruff_linter/src/rules/flake8_comprehensions/snapshots/ruff_linter__rules__flake8_comprehensions__tests__preview__C409_C409.py.snap b/crates/ruff_linter/src/rules/flake8_comprehensions/snapshots/ruff_linter__rules__flake8_comprehensions__tests__preview__C409_C409.py.snap
+index fbf5aa8fcd691530014d617014939f08dcad5d78..23657a1310f7fd894967f700e7ad3169db8fce83 100644
+--- a/crates/ruff_linter/src/rules/flake8_comprehensions/snapshots/ruff_linter__rules__flake8_comprehensions__tests__preview__C409_C409.py.snap
++++ b/crates/ruff_linter/src/rules/flake8_comprehensions/snapshots/ruff_linter__rules__flake8_comprehensions__tests__preview__C409_C409.py.snap
+@@ -344,3 +344,36 @@ help: Rewrite as a generator
+ 42 |         x for x in [1,2,3]
+ 43 |     }
+ note: This is an unsafe fix and may change runtime behavior
++
++C409 [*] Unnecessary list literal passed to `tuple()` (rewrite as a tuple literal)
++  --> C409.py:46:6
++   |
++44 | )
++45 |
++46 | t9 = tuple([1],)
++   |      ^^^^^^^^^^^
++47 | t10 = tuple([1, 2],)
++   |
++help: Rewrite as a tuple literal
++43 |     }
++44 | )
++45 | 
++   - t9 = tuple([1],)
++46 + t9 = (1,)
++47 | t10 = tuple([1, 2],)
++note: This is an unsafe fix and may change runtime behavior
++
++C409 [*] Unnecessary list literal passed to `tuple()` (rewrite as a tuple literal)
++  --> C409.py:47:7
++   |
++46 | t9 = tuple([1],)
++47 | t10 = tuple([1, 2],)
++   |       ^^^^^^^^^^^^^^
++   |
++help: Rewrite as a tuple literal
++44 | )
++45 | 
++46 | t9 = tuple([1],)
++   - t10 = tuple([1, 2],)
++47 + t10 = (1, 2)
++note: This is an unsafe fix and may change runtime behavior

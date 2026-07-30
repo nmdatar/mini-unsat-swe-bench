@@ -1,0 +1,14 @@
+{
+  "base_commit": "39c21d7c6cc8682fa791d93ac23aeac0b32fbca6",
+  "environment_key": "ruff-rust-toolchain",
+  "prompt": "Ability to add a reason along with `--add-noqa`\n\nHi!\n\n[Ruff can automatically add `noqa` directives](https://docs.astral.sh/ruff/linter/#inserting-necessary-suppression-comments), but they don't have any info about how they were added:\n```\n  # noqa: S308\n```\nand it may be difficult to distinguish intentionally/manually added `noqa` and those automatically added.\n\nI think, main use case is migration to ruff for existing codebase without fixing everything at once, but it should be clear that those `noqa` added automatically and should be handled at some point, something like that:\n```\n  # noqa: S308 FIXME when you are here\n```\nDownside of it - adding longer comment will produce more formatting changes, so, perhaps\n```\n  # noqa: S308 auto\n```\nor even ruff may have some argument for provide the text of comment.",
+  "subsystem": "linter",
+  "task_id": "ruff__ruff-21294",
+  "test_commands": [
+    "cargo test -p ruff_linter"
+  ],
+  "timeouts": {
+    "agent_seconds": 1800,
+    "test_seconds": 900
+  }
+}

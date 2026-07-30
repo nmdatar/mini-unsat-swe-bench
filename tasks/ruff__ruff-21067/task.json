@@ -1,0 +1,14 @@
+{
+  "base_commit": "db0e921db1466f8d23e28c27eaba19983a4367f0",
+  "environment_key": "ruff-rust-toolchain",
+  "prompt": "Formatter panic when range formatting certain clause headers with semicolons\n\n### Summary\n\nGiven `ex.py` with content:\n\n```python\nx =7\ntry:\n    a;\nfinally:\n    b\n```\n\nWe get:\n\n```console\n\u276f ruff format --range=2 --diff ex.py\nerror: Failed to format tarmin.py: syntax error: Expected the keyword token but found another token instead.\n```\n\nThis only happens with range formatting, since it comes from this call of `self.range`:\n\nhttps://github.com/astral-sh/ruff/blob/[redacted revision]/crates/ruff_python_formatter/src/statement/clause.rs#L368-L373\n\nThe `SimpleTokenizer` finding the keyword range is expecting to find `Finally` but instead it finds the (unnecessary) semi-colon.",
+  "subsystem": "formatter",
+  "task_id": "ruff__ruff-21067",
+  "test_commands": [
+    "cargo test -p ruff_formatter"
+  ],
+  "timeouts": {
+    "agent_seconds": 1800,
+    "test_seconds": 900
+  }
+}

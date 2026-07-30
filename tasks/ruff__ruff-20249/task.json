@@ -1,0 +1,14 @@
+{
+  "base_commit": "de63f408b9073eecc07f94ae5d485f4c11ef0453",
+  "environment_key": "ruff-rust-toolchain",
+  "prompt": "RUF060 analyzes `f\"\" \"1\"` as empty\n\n### Summary\n\n[`in-empty-collection` (RUF060)](https://docs.astral.sh/ruff/rules/in-empty-collection/) analyzes a non-empty f-string as empty when it is implicitly concatenated and all the pieces with the `f` prefix are empty but one of the pieces without the `f` prefix is not empty. [Example](https://play.ruff.rs/[redacted revision]-6c29-47e8-bf54-[redacted revision]):\n```console\n$ cat >ruf060.py <<'# EOF'\n\"1\" in f\"\" \"1\"\n# EOF\n\n$ ruff --isolated check ruf060.py --select RUF060 --preview --output-format concise -q\nruf060.py:1:1: RUF060 Unnecessary membership test on empty collection\n```\n\nThe helper function [`is_empty_f_string`](https://github.com/astral-sh/ruff/blob/0.12.11/crates/ruff_python_ast/src/helpers.rs#L1409) could be useful.",
+  "subsystem": "linter",
+  "task_id": "ruff__ruff-20249",
+  "test_commands": [
+    "cargo test -p ruff_linter"
+  ],
+  "timeouts": {
+    "agent_seconds": 1800,
+    "test_seconds": 900
+  }
+}

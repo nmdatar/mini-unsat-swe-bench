@@ -1,0 +1,14 @@
+{
+  "base_commit": "1d188476b608c94cea5cb2a97ae248d70a0e2154",
+  "environment_key": "ruff-rust-toolchain",
+  "prompt": "FURB105 should detect empty f-strings\n\n### Summary\n\nIt would be helpful for [`print-empty-string` (FURB105)](https://docs.astral.sh/ruff/rules/print-empty-string/) to detect empty f-strings via [`is_empty_f_string`](https://github.com/astral-sh/ruff/blob/0.14.4/crates/ruff_python_ast/src/helpers.rs#L1414). [Example](https://play.ruff.rs/[redacted revision]-8fb6-43d3-a39c-[redacted revision]):\n```console\n$ cat >furb105.py <<'# EOF'\nprint(f\"\")\n# EOF\n\n$ ruff --isolated check furb105.py --select FURB105\nAll checks passed!\n```",
+  "subsystem": "linter",
+  "task_id": "ruff__ruff-21348",
+  "test_commands": [
+    "cargo test -p ruff_linter"
+  ],
+  "timeouts": {
+    "agent_seconds": 1800,
+    "test_seconds": 900
+  }
+}

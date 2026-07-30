@@ -1,0 +1,64 @@
+diff --git a/crates/ruff_db/src/diagnostic/mod.rs b/crates/ruff_db/src/diagnostic/mod.rs
+index 20ff72f14ea99b22a3a7e272924c7ee4fe4f6c7d..230cda7a84c11ad389b0d0e758e326a39b9c8621 100644
+--- a/crates/ruff_db/src/diagnostic/mod.rs
++++ b/crates/ruff_db/src/diagnostic/mod.rs
+@@ -7,7 +7,8 @@ use ruff_annotate_snippets::Level as AnnotateLevel;
+ use ruff_text_size::{Ranged, TextRange, TextSize};
+ 
+ pub use self::render::{
+-    DisplayDiagnostic, DisplayDiagnostics, FileResolver, Input, ceil_char_boundary,
++    DisplayDiagnostic, DisplayDiagnostics, DummyFileResolver, FileResolver, Input,
++    ceil_char_boundary,
+     github::{DisplayGithubDiagnostics, GithubRenderer},
+ };
+ use crate::{Db, files::File};
+diff --git a/crates/ruff_db/src/diagnostic/render.rs b/crates/ruff_db/src/diagnostic/render.rs
+index 96fbb565b4cc7e0cfa1ac4ebc27dfe60029f4bec..f7c618ae4146428cb11bc0736f755e75c48b4d7d 100644
+--- a/crates/ruff_db/src/diagnostic/render.rs
++++ b/crates/ruff_db/src/diagnostic/render.rs
+@@ -1170,6 +1170,31 @@ pub fn ceil_char_boundary(text: &str, offset: TextSize) -> TextSize {
+         .unwrap_or_else(|| TextSize::from(upper_bound))
+ }
+ 
++/// A stub implementation of [`FileResolver`] intended for testing.
++pub struct DummyFileResolver;
++
++impl FileResolver for DummyFileResolver {
++    fn path(&self, _file: File) -> &str {
++        unimplemented!()
++    }
++
++    fn input(&self, _file: File) -> Input {
++        unimplemented!()
++    }
++
++    fn notebook_index(&self, _file: &UnifiedFile) -> Option<NotebookIndex> {
++        None
++    }
++
++    fn is_notebook(&self, _file: &UnifiedFile) -> bool {
++        false
++    }
++
++    fn current_directory(&self) -> &Path {
++        Path::new(".")
++    }
++}
++
+ #[cfg(test)]
+ mod tests {
+ 
+diff --git a/crates/ruff_linter/src/fs.rs b/crates/ruff_linter/src/fs.rs
+index ce1a1abe87ceb529b6dd84b7b7cce9f69fb56a38..5543d9a569c6985c390cda1bbdae0e46044c6b48 100644
+--- a/crates/ruff_linter/src/fs.rs
++++ b/crates/ruff_linter/src/fs.rs
+@@ -11,8 +11,7 @@ use crate::settings::types::CompiledPerFileIgnoreList;
+ pub fn get_cwd() -> &'static Path {
+     #[cfg(target_arch = "wasm32")]
+     {
+-        static CWD: std::sync::LazyLock<PathBuf> = std::sync::LazyLock::new(|| PathBuf::from("."));
+-        &CWD
++        Path::new(".")
+     }
+     #[cfg(not(target_arch = "wasm32"))]
+     path_absolutize::path_dedot::CWD.as_path()

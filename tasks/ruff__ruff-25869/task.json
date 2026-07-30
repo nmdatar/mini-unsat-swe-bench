@@ -1,0 +1,14 @@
+{
+  "base_commit": "be4777c8766a38d405a69948989cdfa2674adaae",
+  "environment_key": "ruff-rust-toolchain",
+  "prompt": "Prioritize human-readable names in CLI output\n\nSummary\n--\n\nThis PR swaps the rule name and code in our `--show-fixes` output, which previously looked like\nthis:\n\n<img width=\"324\" height=\"107\" alt=\"image\" src=\"https://github.com/user-attachments/assets/[redacted revision]-421c-4e7a-adbd-[redacted revision]\" />\n\nand now looks like this in preview:\n\n<img width=\"314\" height=\"103\" alt=\"image\" src=\"https://github.com/user-attachments/assets/[redacted revision]-d5a5-4622-b9a2-[redacted revision]\" />\n\nThe actual code change is just for this one flag, but I also examined the other CLI flags (besides\ndiagnostic output formats, which I'll update separately) and think that nothing else needs to be\nupdated. The other two main candidates were `--statistics` and `--show-settings`, but these already\nshow both codes and names prominently. `--show-settings` even prioritizes them over codes:\n\n```console\n\u276f ruff check --no-cache --ignore-noqa --statistics\n1       F401    [*] unused-import\nFound 1 error.\n[*] 1 fixable with the `--fix` option.\n\n\u276f ruff check --no-cache --show-settings\n...\nlinter.rules.enabled = [\n        multiple-imports-on-one-line (E401),\n        module-import-not-at-top-of-file (E402),\n\t...\n]\n...\n```\n\nTest Plan\n--\n\nNew CLI test and the screenshots above",
+  "subsystem": "linter",
+  "task_id": "ruff__ruff-25869",
+  "test_commands": [
+    "cargo test -p ruff_linter"
+  ],
+  "timeouts": {
+    "agent_seconds": 1800,
+    "test_seconds": 900
+  }
+}

@@ -1,0 +1,57 @@
+diff --git a/crates/ruff_linter/resources/test/fixtures/pylint/repeated_equality_comparison.py b/crates/ruff_linter/resources/test/fixtures/pylint/repeated_equality_comparison.py
+index 328f38666c87de59046745c3cd3996bec219a570..d38d372863eda2e959b5b6f77d5f83df83464e17 100644
+--- a/crates/ruff_linter/resources/test/fixtures/pylint/repeated_equality_comparison.py
++++ b/crates/ruff_linter/resources/test/fixtures/pylint/repeated_equality_comparison.py
+@@ -73,3 +73,7 @@ foo == 1 or foo == 1.0 # Different types, same hashed value
+ foo == False or foo == 0 # Different types, same hashed value
+ 
+ foo == 0.0 or foo == 0j # Different types, same hashed value
++
++foo == "bar" or foo == "bar" # All members identical
++
++foo == "bar" or foo == "bar" or foo == "buzz" # All but one members identical
+diff --git a/crates/ruff_linter/src/rules/pylint/snapshots/ruff_linter__rules__pylint__tests__PLR1714_repeated_equality_comparison.py.snap b/crates/ruff_linter/src/rules/pylint/snapshots/ruff_linter__rules__pylint__tests__PLR1714_repeated_equality_comparison.py.snap
+index 59b3f5b3ea81f1ce09f48d5765b4fb03d508f339..19b95b170b79fc6a29f4d51480819aba4e1212c2 100644
+--- a/crates/ruff_linter/src/rules/pylint/snapshots/ruff_linter__rules__pylint__tests__PLR1714_repeated_equality_comparison.py.snap
++++ b/crates/ruff_linter/src/rules/pylint/snapshots/ruff_linter__rules__pylint__tests__PLR1714_repeated_equality_comparison.py.snap
+@@ -436,6 +436,7 @@ help: Merge multiple comparisons
+ 73 + foo in {False, 0} # Different types, same hashed value
+ 74 | 
+ 75 | foo == 0.0 or foo == 0j # Different types, same hashed value
++76 | 
+ note: This is an unsafe fix and may change runtime behavior
+ 
+ PLR1714 [*] Consider merging multiple comparisons: `foo in {0.0, 0j}`.
+@@ -445,6 +446,8 @@ PLR1714 [*] Consider merging multiple comparisons: `foo in {0.0, 0j}`.
+ 74 |
+ 75 | foo == 0.0 or foo == 0j # Different types, same hashed value
+    | ^^^^^^^^^^^^^^^^^^^^^^^
++76 |
++77 | foo == "bar" or foo == "bar" # All members identical
+    |
+ help: Merge multiple comparisons
+ 72 | 
+@@ -452,4 +455,23 @@ help: Merge multiple comparisons
+ 74 | 
+    - foo == 0.0 or foo == 0j # Different types, same hashed value
+ 75 + foo in {0.0, 0j} # Different types, same hashed value
++76 | 
++77 | foo == "bar" or foo == "bar" # All members identical
++78 | 
++note: This is an unsafe fix and may change runtime behavior
++
++PLR1714 [*] Consider merging multiple comparisons: `foo in {"bar", "bar", "buzz"}`.
++  --> repeated_equality_comparison.py:79:1
++   |
++77 | foo == "bar" or foo == "bar" # All members identical
++78 |
++79 | foo == "bar" or foo == "bar" or foo == "buzz" # All but one members identical
++   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
++   |
++help: Merge multiple comparisons
++76 | 
++77 | foo == "bar" or foo == "bar" # All members identical
++78 | 
++   - foo == "bar" or foo == "bar" or foo == "buzz" # All but one members identical
++79 + foo in {"bar", "bar", "buzz"} # All but one members identical
+ note: This is an unsafe fix and may change runtime behavior

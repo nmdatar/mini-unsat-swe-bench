@@ -1,0 +1,14 @@
+{
+  "base_commit": "bf6617895902c69d54fa2fa1373bc2f25664fb34",
+  "environment_key": "ruff-rust-toolchain",
+  "prompt": "E301 is inconsistent with `flake8`\n\n### Summary\n\n[Playground link](https://play.ruff.rs/[redacted revision]-53b8-4c6d-9856-[redacted revision])\n\nIn this snippet:\n\n```py\nclass foo:\n    async def recv(self, *, length=65536):\n        loop = asyncio.get_event_loop()\n        def callback():\n            loop.remove_reader(self._fd)\n        loop.add_reader(self._fd, callback)\n```\n\nIt appears that ruff applies E301 `blank-line-between-methods` to `foo.recv.callback` because it is \"within\" a `class` node, but flake8 (correctly) does not apply E301 to it because it is not \"immediately within\" a `class` node and is not actually a method.\n\n(I do weird things within methods but not outside of them.)",
+  "subsystem": "linter",
+  "task_id": "ruff__ruff-19768",
+  "test_commands": [
+    "cargo test -p ruff_linter"
+  ],
+  "timeouts": {
+    "agent_seconds": 1800,
+    "test_seconds": 900
+  }
+}

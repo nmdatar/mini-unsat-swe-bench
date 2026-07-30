@@ -1,0 +1,14 @@
+{
+  "base_commit": "ac9c83e581fd212c81ad7405c0345f80dd312f37",
+  "environment_key": "ruff-rust-toolchain",
+  "prompt": "Autofix for ISC003 produces malformed code\n\n### Summary\n\nAutofix fix for ISC003 (Explicitly concatenated string should be implicitly concatenated) produces `TypeError: 'str' object is not callable` in the following situation.\n```python\nresult = \"Line1\\n\" + (\n    \"Line2\\n\"\n    \"Line3\"\n)\n```\n`ruff check --fix` produces:\n```python\nresult = \"Line1\\n\" (\n    \"Line2\\n\"\n    \"Line3\"\n)\n```\nWhich gives a `TypeError: 'str' object is not callable` error obiously.\n\nLink to playground: https://play.ruff.rs/[redacted revision]-ef00-4ddf-a3a6-[redacted revision]",
+  "subsystem": "linter",
+  "task_id": "ruff__ruff-21517",
+  "test_commands": [
+    "cargo test -p ruff_linter"
+  ],
+  "timeouts": {
+    "agent_seconds": 1800,
+    "test_seconds": 900
+  }
+}

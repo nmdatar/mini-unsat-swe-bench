@@ -1,0 +1,73 @@
+diff --git a/crates/ruff_python_formatter/resources/test/fixtures/ruff/expression/lambda.py b/crates/ruff_python_formatter/resources/test/fixtures/ruff/expression/lambda.py
+index 036ef2c3c815dd98e53b5129a92c412553f146ef..500b14f0ead87f489cc170977ced5ff20fe9f715 100644
+--- a/crates/ruff_python_formatter/resources/test/fixtures/ruff/expression/lambda.py
++++ b/crates/ruff_python_formatter/resources/test/fixtures/ruff/expression/lambda.py
+@@ -804,3 +804,12 @@ transform = lambda left, right: ibis.timestamp("2017-04-01").cast(dt.date).betwe
+         x
+     )
+ )
++
++lambda x: (
++    x := 1
++)
++
++(
++    lambda  # dangling header comment
++    : (x := 1)
++)
+diff --git a/crates/ruff_python_formatter/tests/snapshots/format@expression__lambda.py.snap b/crates/ruff_python_formatter/tests/snapshots/format@expression__lambda.py.snap
+index 393995f523c486af0709cb9c7a8adc030dfca011..fb7452ee873e4ecac309e26212d1410b1d132f40 100644
+--- a/crates/ruff_python_formatter/tests/snapshots/format@expression__lambda.py.snap
++++ b/crates/ruff_python_formatter/tests/snapshots/format@expression__lambda.py.snap
+@@ -1,6 +1,5 @@
+ ---
+ source: crates/ruff_python_formatter/tests/fixtures.rs
+-input_file: crates/ruff_python_formatter/resources/test/fixtures/ruff/expression/lambda.py
+ ---
+ ## Input
+ ```python
+@@ -810,6 +809,15 @@ transform = lambda left, right: ibis.timestamp("2017-04-01").cast(dt.date).betwe
+         x
+     )
+ )
++
++lambda x: (
++    x := 1
++)
++
++(
++    lambda  # dangling header comment
++    : (x := 1)
++)
+ ```
+ 
+ ## Output
+@@ -1649,6 +1657,13 @@ transform = (
+         x
+     )
+ )
++
++lambda x: (x := 1)
++
++(
++    lambda:  # dangling header comment
++    (x := 1)
++)
+ ```
+ 
+ 
+@@ -2567,4 +2582,14 @@ transform = (
+          x
+      )
+  )
++@@ -837,6 +854,7 @@
++ lambda x: (x := 1)
++ 
++ (
++-    lambda:  # dangling header comment
++-    (x := 1)
+++    lambda: (  # dangling header comment
+++        x := 1
+++    )
++ )
+ ```

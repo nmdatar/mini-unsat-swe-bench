@@ -1,0 +1,296 @@
+diff --git a/crates/ruff_linter/resources/test/fixtures/flake8_pyi/PYI061.py b/crates/ruff_linter/resources/test/fixtures/flake8_pyi/PYI061.py
+index 4bdc3d98799b9062af0c9cc55106dc4673f0bf28..f3f23663d9cdf4e4502015453db5e01373959c58 100644
+--- a/crates/ruff_linter/resources/test/fixtures/flake8_pyi/PYI061.py
++++ b/crates/ruff_linter/resources/test/fixtures/flake8_pyi/PYI061.py
+@@ -78,3 +78,11 @@ b: None | Literal[None] | None
+ c: (None | Literal[None]) | None
+ d: None | (Literal[None] | None)
+ e: None | ((None | Literal[None]) | None) | None
++
++# Test cases for operator precedence issue (https://github.com/astral-sh/ruff/issues/20265)
++print(Literal[1, None].__dict__)  # Should become (Literal[1] | None).__dict__
++print(Literal[1, None].method())  # Should become (Literal[1] | None).method()
++print(Literal[1, None][0])  # Should become (Literal[1] | None)[0]
++print(Literal[1, None] + 1)  # Should become (Literal[1] | None) + 1
++print(Literal[1, None] * 2)  # Should become (Literal[1] | None) * 2
++print((Literal[1, None]).__dict__)  # Should become ((Literal[1] | None)).__dict__
+diff --git a/crates/ruff_linter/src/rules/flake8_pyi/snapshots/ruff_linter__rules__flake8_pyi__tests__PYI061_PYI061.py.snap b/crates/ruff_linter/src/rules/flake8_pyi/snapshots/ruff_linter__rules__flake8_pyi__tests__PYI061_PYI061.py.snap
+index db21e9765697e45cdf87ed33d8ffd027520e7852..42a4d5de5d698e77e1f20cbe5c83566d974e1155 100644
+--- a/crates/ruff_linter/src/rules/flake8_pyi/snapshots/ruff_linter__rules__flake8_pyi__tests__PYI061_PYI061.py.snap
++++ b/crates/ruff_linter/src/rules/flake8_pyi/snapshots/ruff_linter__rules__flake8_pyi__tests__PYI061_PYI061.py.snap
+@@ -423,5 +423,117 @@ PYI061 Use `None` rather than `Literal[None]`
+ 79 | d: None | (Literal[None] | None)
+ 80 | e: None | ((None | Literal[None]) | None) | None
+    |                            ^^^^
++81 |
++82 | # Test cases for operator precedence issue (https://github.com/astral-sh/ruff/issues/20265)
+    |
+ help: Replace with `None`
++
++PYI061 [*] Use `Literal[...] | None` rather than `Literal[None, ...]` 
++  --> PYI061.py:83:18
++   |
++82 | # Test cases for operator precedence issue (https://github.com/astral-sh/ruff/issues/20265)
++83 | print(Literal[1, None].__dict__)  # Should become (Literal[1] | None).__dict__
++   |                  ^^^^
++84 | print(Literal[1, None].method())  # Should become (Literal[1] | None).method()
++85 | print(Literal[1, None][0])  # Should become (Literal[1] | None)[0]
++   |
++help: Replace with `Literal[...] | None`
++80 | e: None | ((None | Literal[None]) | None) | None
++81 | 
++82 | # Test cases for operator precedence issue (https://github.com/astral-sh/ruff/issues/20265)
++   - print(Literal[1, None].__dict__)  # Should become (Literal[1] | None).__dict__
++83 + print((Literal[1] | None).__dict__)  # Should become (Literal[1] | None).__dict__
++84 | print(Literal[1, None].method())  # Should become (Literal[1] | None).method()
++85 | print(Literal[1, None][0])  # Should become (Literal[1] | None)[0]
++86 | print(Literal[1, None] + 1)  # Should become (Literal[1] | None) + 1
++
++PYI061 [*] Use `Literal[...] | None` rather than `Literal[None, ...]` 
++  --> PYI061.py:84:18
++   |
++82 | # Test cases for operator precedence issue (https://github.com/astral-sh/ruff/issues/20265)
++83 | print(Literal[1, None].__dict__)  # Should become (Literal[1] | None).__dict__
++84 | print(Literal[1, None].method())  # Should become (Literal[1] | None).method()
++   |                  ^^^^
++85 | print(Literal[1, None][0])  # Should become (Literal[1] | None)[0]
++86 | print(Literal[1, None] + 1)  # Should become (Literal[1] | None) + 1
++   |
++help: Replace with `Literal[...] | None`
++81 | 
++82 | # Test cases for operator precedence issue (https://github.com/astral-sh/ruff/issues/20265)
++83 | print(Literal[1, None].__dict__)  # Should become (Literal[1] | None).__dict__
++   - print(Literal[1, None].method())  # Should become (Literal[1] | None).method()
++84 + print((Literal[1] | None).method())  # Should become (Literal[1] | None).method()
++85 | print(Literal[1, None][0])  # Should become (Literal[1] | None)[0]
++86 | print(Literal[1, None] + 1)  # Should become (Literal[1] | None) + 1
++87 | print(Literal[1, None] * 2)  # Should become (Literal[1] | None) * 2
++
++PYI061 [*] Use `Literal[...] | None` rather than `Literal[None, ...]` 
++  --> PYI061.py:85:18
++   |
++83 | print(Literal[1, None].__dict__)  # Should become (Literal[1] | None).__dict__
++84 | print(Literal[1, None].method())  # Should become (Literal[1] | None).method()
++85 | print(Literal[1, None][0])  # Should become (Literal[1] | None)[0]
++   |                  ^^^^
++86 | print(Literal[1, None] + 1)  # Should become (Literal[1] | None) + 1
++87 | print(Literal[1, None] * 2)  # Should become (Literal[1] | None) * 2
++   |
++help: Replace with `Literal[...] | None`
++82 | # Test cases for operator precedence issue (https://github.com/astral-sh/ruff/issues/20265)
++83 | print(Literal[1, None].__dict__)  # Should become (Literal[1] | None).__dict__
++84 | print(Literal[1, None].method())  # Should become (Literal[1] | None).method()
++   - print(Literal[1, None][0])  # Should become (Literal[1] | None)[0]
++85 + print((Literal[1] | None)[0])  # Should become (Literal[1] | None)[0]
++86 | print(Literal[1, None] + 1)  # Should become (Literal[1] | None) + 1
++87 | print(Literal[1, None] * 2)  # Should become (Literal[1] | None) * 2
++88 | print((Literal[1, None]).__dict__)  # Should become ((Literal[1] | None)).__dict__
++
++PYI061 [*] Use `Literal[...] | None` rather than `Literal[None, ...]` 
++  --> PYI061.py:86:18
++   |
++84 | print(Literal[1, None].method())  # Should become (Literal[1] | None).method()
++85 | print(Literal[1, None][0])  # Should become (Literal[1] | None)[0]
++86 | print(Literal[1, None] + 1)  # Should become (Literal[1] | None) + 1
++   |                  ^^^^
++87 | print(Literal[1, None] * 2)  # Should become (Literal[1] | None) * 2
++88 | print((Literal[1, None]).__dict__)  # Should become ((Literal[1] | None)).__dict__
++   |
++help: Replace with `Literal[...] | None`
++83 | print(Literal[1, None].__dict__)  # Should become (Literal[1] | None).__dict__
++84 | print(Literal[1, None].method())  # Should become (Literal[1] | None).method()
++85 | print(Literal[1, None][0])  # Should become (Literal[1] | None)[0]
++   - print(Literal[1, None] + 1)  # Should become (Literal[1] | None) + 1
++86 + print((Literal[1] | None) + 1)  # Should become (Literal[1] | None) + 1
++87 | print(Literal[1, None] * 2)  # Should become (Literal[1] | None) * 2
++88 | print((Literal[1, None]).__dict__)  # Should become ((Literal[1] | None)).__dict__
++
++PYI061 [*] Use `Literal[...] | None` rather than `Literal[None, ...]` 
++  --> PYI061.py:87:18
++   |
++85 | print(Literal[1, None][0])  # Should become (Literal[1] | None)[0]
++86 | print(Literal[1, None] + 1)  # Should become (Literal[1] | None) + 1
++87 | print(Literal[1, None] * 2)  # Should become (Literal[1] | None) * 2
++   |                  ^^^^
++88 | print((Literal[1, None]).__dict__)  # Should become ((Literal[1] | None)).__dict__
++   |
++help: Replace with `Literal[...] | None`
++84 | print(Literal[1, None].method())  # Should become (Literal[1] | None).method()
++85 | print(Literal[1, None][0])  # Should become (Literal[1] | None)[0]
++86 | print(Literal[1, None] + 1)  # Should become (Literal[1] | None) + 1
++   - print(Literal[1, None] * 2)  # Should become (Literal[1] | None) * 2
++87 + print((Literal[1] | None) * 2)  # Should become (Literal[1] | None) * 2
++88 | print((Literal[1, None]).__dict__)  # Should become ((Literal[1] | None)).__dict__
++
++PYI061 [*] Use `Literal[...] | None` rather than `Literal[None, ...]` 
++  --> PYI061.py:88:19
++   |
++86 | print(Literal[1, None] + 1)  # Should become (Literal[1] | None) + 1
++87 | print(Literal[1, None] * 2)  # Should become (Literal[1] | None) * 2
++88 | print((Literal[1, None]).__dict__)  # Should become ((Literal[1] | None)).__dict__
++   |                   ^^^^
++   |
++help: Replace with `Literal[...] | None`
++85 | print(Literal[1, None][0])  # Should become (Literal[1] | None)[0]
++86 | print(Literal[1, None] + 1)  # Should become (Literal[1] | None) + 1
++87 | print(Literal[1, None] * 2)  # Should become (Literal[1] | None) * 2
++   - print((Literal[1, None]).__dict__)  # Should become ((Literal[1] | None)).__dict__
++88 + print((Literal[1] | None).__dict__)  # Should become ((Literal[1] | None)).__dict__
+diff --git a/crates/ruff_linter/src/rules/flake8_pyi/snapshots/ruff_linter__rules__flake8_pyi__tests__py38_PYI061_PYI061.py.snap b/crates/ruff_linter/src/rules/flake8_pyi/snapshots/ruff_linter__rules__flake8_pyi__tests__py38_PYI061_PYI061.py.snap
+index 2236235dfb8d355c3b346fc2074f880c332fcdaf..7419d8db9b148b49cb1eee9c088a8ed568fdcdcb 100644
+--- a/crates/ruff_linter/src/rules/flake8_pyi/snapshots/ruff_linter__rules__flake8_pyi__tests__py38_PYI061_PYI061.py.snap
++++ b/crates/ruff_linter/src/rules/flake8_pyi/snapshots/ruff_linter__rules__flake8_pyi__tests__py38_PYI061_PYI061.py.snap
+@@ -465,5 +465,153 @@ PYI061 Use `None` rather than `Literal[None]`
+ 79 | d: None | (Literal[None] | None)
+ 80 | e: None | ((None | Literal[None]) | None) | None
+    |                            ^^^^
++81 |
++82 | # Test cases for operator precedence issue (https://github.com/astral-sh/ruff/issues/20265)
+    |
+ help: Replace with `None`
++
++PYI061 [*] Use `Optional[Literal[...]]` rather than `Literal[None, ...]` 
++  --> PYI061.py:83:18
++   |
++82 | # Test cases for operator precedence issue (https://github.com/astral-sh/ruff/issues/20265)
++83 | print(Literal[1, None].__dict__)  # Should become (Literal[1] | None).__dict__
++   |                  ^^^^
++84 | print(Literal[1, None].method())  # Should become (Literal[1] | None).method()
++85 | print(Literal[1, None][0])  # Should become (Literal[1] | None)[0]
++   |
++help: Replace with `Optional[Literal[...]]`
++   - from typing import Literal, Union
++1  + from typing import Literal, Union, Optional
++2  | 
++3  | 
++4  | def func1(arg1: Literal[None]):
++--------------------------------------------------------------------------------
++80 | e: None | ((None | Literal[None]) | None) | None
++81 | 
++82 | # Test cases for operator precedence issue (https://github.com/astral-sh/ruff/issues/20265)
++   - print(Literal[1, None].__dict__)  # Should become (Literal[1] | None).__dict__
++83 + print(Optional[Literal[1]].__dict__)  # Should become (Literal[1] | None).__dict__
++84 | print(Literal[1, None].method())  # Should become (Literal[1] | None).method()
++85 | print(Literal[1, None][0])  # Should become (Literal[1] | None)[0]
++86 | print(Literal[1, None] + 1)  # Should become (Literal[1] | None) + 1
++
++PYI061 [*] Use `Optional[Literal[...]]` rather than `Literal[None, ...]` 
++  --> PYI061.py:84:18
++   |
++82 | # Test cases for operator precedence issue (https://github.com/astral-sh/ruff/issues/20265)
++83 | print(Literal[1, None].__dict__)  # Should become (Literal[1] | None).__dict__
++84 | print(Literal[1, None].method())  # Should become (Literal[1] | None).method()
++   |                  ^^^^
++85 | print(Literal[1, None][0])  # Should become (Literal[1] | None)[0]
++86 | print(Literal[1, None] + 1)  # Should become (Literal[1] | None) + 1
++   |
++help: Replace with `Optional[Literal[...]]`
++   - from typing import Literal, Union
++1  + from typing import Literal, Union, Optional
++2  | 
++3  | 
++4  | def func1(arg1: Literal[None]):
++--------------------------------------------------------------------------------
++81 | 
++82 | # Test cases for operator precedence issue (https://github.com/astral-sh/ruff/issues/20265)
++83 | print(Literal[1, None].__dict__)  # Should become (Literal[1] | None).__dict__
++   - print(Literal[1, None].method())  # Should become (Literal[1] | None).method()
++84 + print(Optional[Literal[1]].method())  # Should become (Literal[1] | None).method()
++85 | print(Literal[1, None][0])  # Should become (Literal[1] | None)[0]
++86 | print(Literal[1, None] + 1)  # Should become (Literal[1] | None) + 1
++87 | print(Literal[1, None] * 2)  # Should become (Literal[1] | None) * 2
++
++PYI061 [*] Use `Optional[Literal[...]]` rather than `Literal[None, ...]` 
++  --> PYI061.py:85:18
++   |
++83 | print(Literal[1, None].__dict__)  # Should become (Literal[1] | None).__dict__
++84 | print(Literal[1, None].method())  # Should become (Literal[1] | None).method()
++85 | print(Literal[1, None][0])  # Should become (Literal[1] | None)[0]
++   |                  ^^^^
++86 | print(Literal[1, None] + 1)  # Should become (Literal[1] | None) + 1
++87 | print(Literal[1, None] * 2)  # Should become (Literal[1] | None) * 2
++   |
++help: Replace with `Optional[Literal[...]]`
++   - from typing import Literal, Union
++1  + from typing import Literal, Union, Optional
++2  | 
++3  | 
++4  | def func1(arg1: Literal[None]):
++--------------------------------------------------------------------------------
++82 | # Test cases for operator precedence issue (https://github.com/astral-sh/ruff/issues/20265)
++83 | print(Literal[1, None].__dict__)  # Should become (Literal[1] | None).__dict__
++84 | print(Literal[1, None].method())  # Should become (Literal[1] | None).method()
++   - print(Literal[1, None][0])  # Should become (Literal[1] | None)[0]
++85 + print(Optional[Literal[1]][0])  # Should become (Literal[1] | None)[0]
++86 | print(Literal[1, None] + 1)  # Should become (Literal[1] | None) + 1
++87 | print(Literal[1, None] * 2)  # Should become (Literal[1] | None) * 2
++88 | print((Literal[1, None]).__dict__)  # Should become ((Literal[1] | None)).__dict__
++
++PYI061 [*] Use `Optional[Literal[...]]` rather than `Literal[None, ...]` 
++  --> PYI061.py:86:18
++   |
++84 | print(Literal[1, None].method())  # Should become (Literal[1] | None).method()
++85 | print(Literal[1, None][0])  # Should become (Literal[1] | None)[0]
++86 | print(Literal[1, None] + 1)  # Should become (Literal[1] | None) + 1
++   |                  ^^^^
++87 | print(Literal[1, None] * 2)  # Should become (Literal[1] | None) * 2
++88 | print((Literal[1, None]).__dict__)  # Should become ((Literal[1] | None)).__dict__
++   |
++help: Replace with `Optional[Literal[...]]`
++   - from typing import Literal, Union
++1  + from typing import Literal, Union, Optional
++2  | 
++3  | 
++4  | def func1(arg1: Literal[None]):
++--------------------------------------------------------------------------------
++83 | print(Literal[1, None].__dict__)  # Should become (Literal[1] | None).__dict__
++84 | print(Literal[1, None].method())  # Should become (Literal[1] | None).method()
++85 | print(Literal[1, None][0])  # Should become (Literal[1] | None)[0]
++   - print(Literal[1, None] + 1)  # Should become (Literal[1] | None) + 1
++86 + print(Optional[Literal[1]] + 1)  # Should become (Literal[1] | None) + 1
++87 | print(Literal[1, None] * 2)  # Should become (Literal[1] | None) * 2
++88 | print((Literal[1, None]).__dict__)  # Should become ((Literal[1] | None)).__dict__
++
++PYI061 [*] Use `Optional[Literal[...]]` rather than `Literal[None, ...]` 
++  --> PYI061.py:87:18
++   |
++85 | print(Literal[1, None][0])  # Should become (Literal[1] | None)[0]
++86 | print(Literal[1, None] + 1)  # Should become (Literal[1] | None) + 1
++87 | print(Literal[1, None] * 2)  # Should become (Literal[1] | None) * 2
++   |                  ^^^^
++88 | print((Literal[1, None]).__dict__)  # Should become ((Literal[1] | None)).__dict__
++   |
++help: Replace with `Optional[Literal[...]]`
++   - from typing import Literal, Union
++1  + from typing import Literal, Union, Optional
++2  | 
++3  | 
++4  | def func1(arg1: Literal[None]):
++--------------------------------------------------------------------------------
++84 | print(Literal[1, None].method())  # Should become (Literal[1] | None).method()
++85 | print(Literal[1, None][0])  # Should become (Literal[1] | None)[0]
++86 | print(Literal[1, None] + 1)  # Should become (Literal[1] | None) + 1
++   - print(Literal[1, None] * 2)  # Should become (Literal[1] | None) * 2
++87 + print(Optional[Literal[1]] * 2)  # Should become (Literal[1] | None) * 2
++88 | print((Literal[1, None]).__dict__)  # Should become ((Literal[1] | None)).__dict__
++
++PYI061 [*] Use `Optional[Literal[...]]` rather than `Literal[None, ...]` 
++  --> PYI061.py:88:19
++   |
++86 | print(Literal[1, None] + 1)  # Should become (Literal[1] | None) + 1
++87 | print(Literal[1, None] * 2)  # Should become (Literal[1] | None) * 2
++88 | print((Literal[1, None]).__dict__)  # Should become ((Literal[1] | None)).__dict__
++   |                   ^^^^
++   |
++help: Replace with `Optional[Literal[...]]`
++   - from typing import Literal, Union
++1  + from typing import Literal, Union, Optional
++2  | 
++3  | 
++4  | def func1(arg1: Literal[None]):
++--------------------------------------------------------------------------------
++85 | print(Literal[1, None][0])  # Should become (Literal[1] | None)[0]
++86 | print(Literal[1, None] + 1)  # Should become (Literal[1] | None) + 1
++87 | print(Literal[1, None] * 2)  # Should become (Literal[1] | None) * 2
++   - print((Literal[1, None]).__dict__)  # Should become ((Literal[1] | None)).__dict__
++88 + print((Optional[Literal[1]]).__dict__)  # Should become ((Literal[1] | None)).__dict__

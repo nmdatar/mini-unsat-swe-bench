@@ -1,0 +1,47 @@
+diff --git a/crates/ruff_linter/resources/test/fixtures/refurb/FURB154.py b/crates/ruff_linter/resources/test/fixtures/refurb/FURB154.py
+index a9d99deded90eefb35bc1d7131afbdebd565ab21..5878f4ec00b5353f9845b94e8e0e34a01d815945 100644
+--- a/crates/ruff_linter/resources/test/fixtures/refurb/FURB154.py
++++ b/crates/ruff_linter/resources/test/fixtures/refurb/FURB154.py
+@@ -84,3 +84,11 @@ def fy():
+ def fz():
+     pass
+     global x
++
++
++def func():
++    global x
++    # text
++    global y
++
++    print(x, y)
+diff --git a/crates/ruff_linter/src/rules/refurb/snapshots/ruff_linter__rules__refurb__tests__FURB154_FURB154.py.snap b/crates/ruff_linter/src/rules/refurb/snapshots/ruff_linter__rules__refurb__tests__FURB154_FURB154.py.snap
+index 28f6c6a842ca517f975f78fe4236a36800279970..6539abf6a08cdef18fddc9c397d7160559e38567 100644
+--- a/crates/ruff_linter/src/rules/refurb/snapshots/ruff_linter__rules__refurb__tests__FURB154_FURB154.py.snap
++++ b/crates/ruff_linter/src/rules/refurb/snapshots/ruff_linter__rules__refurb__tests__FURB154_FURB154.py.snap
+@@ -250,3 +250,26 @@ help: Merge `global` statements
+ 59 | 
+ 60 | 
+ 61 | # Ok
++
++FURB154 [*] Use of repeated consecutive `global`
++  --> FURB154.py:90:5
++   |
++89 |   def func():
++90 | /     global x
++91 | |     # text
++92 | |     global y
++   | |____________^
++93 |
++94 |       print(x, y)
++   |
++help: Merge `global` statements
++87 | 
++88 | 
++89 | def func():
++   -     global x
++   -     # text
++   -     global y
++90 +     global x, y
++91 | 
++92 |     print(x, y)
++note: This is an unsafe fix and may change runtime behavior

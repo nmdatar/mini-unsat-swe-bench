@@ -1,0 +1,31 @@
+diff --git a/crates/ruff_linter/resources/test/fixtures/flake8_comprehensions/C417.py b/crates/ruff_linter/resources/test/fixtures/flake8_comprehensions/C417.py
+index dd7b93f89054aa269fb5380d9883c6e887bfacd7..7c2cdfbd78da06456165abfd927c05977acf89e9 100644
+--- a/crates/ruff_linter/resources/test/fixtures/flake8_comprehensions/C417.py
++++ b/crates/ruff_linter/resources/test/fixtures/flake8_comprehensions/C417.py
+@@ -75,3 +75,7 @@ list(map(lambda x, y: x, [(1, 2), (3, 4)]))
+ _ = t"{set(map(lambda x: x % 2 == 0, nums))}"
+ _ = t"{dict(map(lambda v: (v, v**2), nums))}"
+ 
++
++# See https://github.com/astral-sh/ruff/issues/20198
++# No error: lambda contains `yield`, so map() should not be rewritten
++map(lambda x: (yield x), [1, 2, 3])
+diff --git a/crates/ruff_linter/src/rules/flake8_comprehensions/snapshots/ruff_linter__rules__flake8_comprehensions__tests__C417_C417.py.snap b/crates/ruff_linter/src/rules/flake8_comprehensions/snapshots/ruff_linter__rules__flake8_comprehensions__tests__C417_C417.py.snap
+index 253c8586118c7aa4c452349798c81099247a5a49..31d06477261a26677e33b0e70a9607a997ae7c07 100644
+--- a/crates/ruff_linter/src/rules/flake8_comprehensions/snapshots/ruff_linter__rules__flake8_comprehensions__tests__C417_C417.py.snap
++++ b/crates/ruff_linter/src/rules/flake8_comprehensions/snapshots/ruff_linter__rules__flake8_comprehensions__tests__C417_C417.py.snap
+@@ -342,6 +342,7 @@ help: Replace `map()` with a set comprehension
+ 75 + _ = t"{ {x % 2 == 0 for x in nums} }"
+ 76 | _ = t"{dict(map(lambda v: (v, v**2), nums))}"
+ 77 | 
++78 | 
+ note: This is an unsafe fix and may change runtime behavior
+ 
+ C417 [*] Unnecessary `map()` usage (rewrite using a dict comprehension)
+@@ -359,4 +360,6 @@ help: Replace `map()` with a dict comprehension
+    - _ = t"{dict(map(lambda v: (v, v**2), nums))}"
+ 76 + _ = t"{ {v: v**2 for v in nums} }"
+ 77 | 
++78 | 
++79 | # See https://github.com/astral-sh/ruff/issues/20198
+ note: This is an unsafe fix and may change runtime behavior
