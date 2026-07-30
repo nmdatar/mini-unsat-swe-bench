@@ -1,0 +1,11 @@
+.cache/
+.venv/
+.env.local
+__pycache__/
+*.pyc
+
+# Generated benchmark artifacts. Keep the directory placeholders and exclusions.
+tasks/*
+!tasks/.gitkeep
+!tasks/exclusions.jsonl
+results/

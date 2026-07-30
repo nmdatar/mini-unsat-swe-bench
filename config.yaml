@@ -1,0 +1,135 @@
+repository:
+  owner: astral-sh
+  name: ruff
+  clone_url: https://github.com/astral-sh/ruff.git
+
+github:
+  api_url: https://api.github.com
+  # Start narrowly and move this boundary backward if fewer than 300 candidates
+  # survive static filtering.
+  merged_from: "2025-08-01"
+  merged_to: "2026-07-29"
+  max_prs: 3000
+  search_window_days: 31
+  search_excluded_labels: [ty]
+  per_page: 100
+  workers: 6
+  request_timeout_seconds: 60
+  token_env: GITHUB_TOKEN
+
+public_benchmarks:
+  # Records referring to astral-sh/ruff are normalized into
+  # tasks/exclusions.jsonl. Add other public datasets here as needed.
+  sources:
+    - type: huggingface
+      dataset: swe-bench/SWE-Bench_Multilingual
+      splits: [test]
+
+candidate_filter:
+  target_candidates: 300
+  random_seed: 42
+  max_prompt_characters: 12000
+  min_changed_lines: 2
+  max_changed_lines: 1500
+  max_changed_files: 30
+  max_production_files: 20
+
+  production_extensions: [.rs]
+  auxiliary_production_files:
+    - Cargo.toml
+    - Cargo.lock
+    - pyproject.toml
+
+  # These are matched against complete path components or path prefixes.
+  test_path_markers:
+    - test
+    - tests
+    - fixture
+    - fixtures
+    - snapshot
+    - snapshots
+  test_extensions: [.snap]
+
+  # A PR touching these subprojects is outside the initial Ruff-core scope.
+  hard_excluded_prefixes:
+    - playground/
+    - ty/
+    - crates/ty_
+    - crates/red_knot
+
+  # These files are not included in either patch, but their presence does not
+  # disqualify a PR that also has separable production code and tests.
+  ignored_prefixes:
+    - .github/
+    - assets/
+    - docs/
+    - scripts/
+  ignored_exact_paths:
+    - CHANGELOG.md
+    - README.md
+
+  excluded_labels:
+    - dependencies
+    - release
+
+  excluded_title_patterns:
+    - "\\brelease\\b"
+    - "\\bupgrade dependencies\\b"
+    - "\\bbump\\b"
+
+scoring:
+  default_weights:
+    core: 0.60
+    edge: 0.20
+    regression: 0.15
+    quality: 0.05
+  core_failure_cap: 0.20
+  weight_tolerance: 0.000001
+
+validation:
+  output_dir: .cache/validation
+  image_prefix: mini-unsat-ruff-validation
+  # One fail-to-pass run is the fast assessment mode. Increase this only when
+  # measuring flakiness after the benchmark has been completed.
+  repeats: 1
+  workers: 1
+  build_timeout_seconds: 3600
+  command_timeout_seconds: 900
+  container_start_timeout_seconds: 60
+  cpus: 4
+  memory: 8g
+  precompile: false
+  rebuild_images: false
+  # Candidate images are reproducible and large (~2.5 GB each). Remove each
+  # after validation so long runs do not exhaust Docker Desktop's disk.
+  keep_images: false
+  output_tail_characters: 12000
+
+triage:
+  output_dir: .cache/triage
+  dynamic_pool_file: .cache/triage/dynamic_pool.jsonl
+  target_tasks: 100
+  reserve_tasks: 0
+
+benchmark:
+  output_dir: results/runs
+  # Each task worker can use 4 CPUs and 8 GB while compiling Ruff. Two workers
+  # match the resized 8-CPU/16-GB Docker host without memory overcommit.
+  workers: 2
+  task_limit: 100
+  step_limit: 40
+  cost_limit: 0.75
+  wall_time_limit_seconds: 1200
+
+paths:
+  cache_dir: .cache
+  github_cache_dir: .cache/github
+  repository_cache: .cache/repositories/ruff.git
+  fetched_prs: .cache/github/merged_prs.jsonl
+  tasks_dir: tasks
+  candidates_file: tasks/candidates.jsonl
+  validation_queue_file: tasks/validation_queue.jsonl
+  benchmark_index_file: tasks/index.jsonl
+  reserve_index_file: tasks/reserves.jsonl
+  rejections_file: tasks/rejections.jsonl
+  exclusions_file: tasks/exclusions.jsonl
