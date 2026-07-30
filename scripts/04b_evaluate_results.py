@@ -19,6 +19,7 @@ from experiment import (
     cleanup_errors,
     ensure_task_image,
     remove_image,
+    remove_image_containers,
     remove_volume,
     utc_now,
 )
@@ -180,27 +181,26 @@ def evaluate_one(
         return {**run, **score}
 
     container = f"mini-unsat-eval-{uuid.uuid4().hex[:12]}"
-    volume = run.get("cargo_target_volume") or (
-        f"mini-unsat-eval-{run['model_id']}-{task_id}"
-        .lower()
-        .replace("_", "-")
-        .replace(".", "-")
-    )
-    start = subprocess.run(
+    volume = run.get("cargo_target_volume")
+    docker_command = [
+        "docker",
+        "run",
+        "--detach",
+        "--name",
+        container,
+        "--network",
+        "none",
+        "--cpus",
+        "4",
+        "--memory",
+        "8g",
+    ]
+    if isinstance(volume, str) and volume:
+        docker_command.extend(
+            ["--mount", f"type=volume,src={volume},dst=/testbed/target"]
+        )
+    docker_command.extend(
         [
-            "docker",
-            "run",
-            "--detach",
-            "--name",
-            container,
-            "--network",
-            "none",
-            "--cpus",
-            "4",
-            "--memory",
-            "8g",
-            "--mount",
-            f"type=volume,src={volume},dst=/testbed/target",
             "--mount",
             f"type=bind,src={destination.resolve()},dst=/results,readonly",
             "--mount",
@@ -208,7 +208,10 @@ def evaluate_one(
             str(run["image"]),
             "sleep",
             "infinity",
-        ],
+        ]
+    )
+    start = subprocess.run(
+        docker_command,
         text=True,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
@@ -322,7 +325,7 @@ def evaluate_task_runs(
                 dockerfile=dockerfile,
                 context=context,
                 build_timeout_seconds=build_timeout_seconds,
-                precompile=False,
+                precompile=bool(first_run.get("image_precompiled", False)),
             )
         except ExperimentInfrastructureError as exc:
             preparation_error = str(exc)
@@ -371,13 +374,48 @@ def evaluate_task_runs(
                 )
     finally:
         if not keep_resources:
-            cleanup = cleanup_errors(remove_volume(volume) for volume in set(volumes))
+            cleanup = cleanup_errors(
+                [remove_image_containers(image)]
+                + [remove_volume(volume) for volume in set(volumes)]
+            )
             image_error = remove_image(image)
             if image_error:
                 cleanup.append(image_error)
-            if cleanup:
-                for result in results:
-                    result.setdefault("cleanup_errors", []).extend(cleanup)
+            cleaned_at = utc_now()
+            for path, result in zip(run_paths, results, strict=False):
+                cleanup_record = {
+                    "cleanup_attempted": True,
+                    "resources_cleaned": not cleanup,
+                    "resources_retained": False,
+                    "cleanup_errors": cleanup,
+                    "cleaned_at": cleaned_at,
+                }
+                result.update(cleanup_record)
+                run = json.loads(path.read_text(encoding="utf-8"))
+                run.update(cleanup_record)
+                write_json(path, run)
+                score_path = path.parent / "score.json"
+                if score_path.exists():
+                    score = json.loads(score_path.read_text(encoding="utf-8"))
+                    score.update(cleanup_record)
+                    write_json(score_path, score)
+        else:
+            for path, result in zip(run_paths, results, strict=False):
+                retention_record = {
+                    "cleanup_attempted": False,
+                    "resources_cleaned": False,
+                    "resources_retained": True,
+                    "cleanup_errors": [],
+                }
+                result.update(retention_record)
+                run = json.loads(path.read_text(encoding="utf-8"))
+                run.update(retention_record)
+                write_json(path, run)
+                score_path = path.parent / "score.json"
+                if score_path.exists():
+                    score = json.loads(score_path.read_text(encoding="utf-8"))
+                    score.update(retention_record)
+                    write_json(score_path, score)
     return results
 
 

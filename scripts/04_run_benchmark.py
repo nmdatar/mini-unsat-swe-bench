@@ -22,6 +22,7 @@ from experiment import (
     cleanup_errors,
     ensure_task_image,
     remove_image,
+    remove_image_containers,
     remove_volume,
     sha256_file,
     trajectory_metrics,
@@ -191,6 +192,7 @@ def run_one(
     image_metadata: dict[str, Any],
     limits: dict[str, Any],
     reproducibility: dict[str, Any],
+    use_cargo_volume: bool,
 ) -> dict[str, Any]:
     import yaml
 
@@ -209,6 +211,12 @@ def run_one(
         .replace("_", "-")
         .replace(".", "-")
     )
+    effective_run_args = list(docker_run_args)
+    if use_cargo_volume:
+        effective_run_args += [
+            "--mount",
+            f"type=volume,src={volume},dst=/testbed/target",
+        ]
     overlay = {
         "agent": {
             "step_limit": limits["step_limit"],
@@ -217,8 +225,7 @@ def run_one(
         },
         "environment": {
             "image": image,
-            "run_args": docker_run_args
-            + ["--mount", f"type=volume,src={volume},dst=/testbed/target"],
+            "run_args": effective_run_args,
         }
     }
     overlay_path.write_text(
@@ -251,7 +258,7 @@ def run_one(
             text=True,
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
-            timeout=int(limits["wall_time_limit_seconds"]) + 300,
+            timeout=int(limits["wall_time_limit_seconds"]) + 90,
             check=False,
         )
         output = completed.stdout
@@ -318,7 +325,8 @@ def run_one(
         "image_id": image_metadata.get("image_id"),
         "image_reused": image_metadata.get("image_reused"),
         "image_prepare_seconds": image_metadata.get("image_prepare_seconds"),
-        "cargo_target_volume": volume,
+        "cargo_target_volume": volume if use_cargo_volume else None,
+        "image_precompiled": bool(image_metadata.get("precompile")),
         "return_code": return_code,
         "started_at": started_at,
         "finished_at": utc_now(),
@@ -336,7 +344,13 @@ def run_one(
             >= 0.98 * float(limits["wall_time_limit_seconds"])
         ),
         "timed_out": info.get("exit_status")
-        in {"Timeout", "WallTimeExceeded", "RunnerTimeout"},
+        in {
+            "Timeout",
+            "TimeExceeded",
+            "AutoSubmittedTimeExceeded",
+            "WallTimeExceeded",
+            "RunnerTimeout",
+        },
         "has_submission": bool(submission.strip()),
         "infrastructure_error": infrastructure_error,
         "trajectory": str(trajectory.relative_to(root)),
@@ -360,6 +374,13 @@ def main() -> int:
 
     environment = dict(os.environ)
     load_dotenv(root / ".env.local", environment)
+    scripts_path = str(root / "scripts")
+    current_pythonpath = environment.get("PYTHONPATH")
+    environment["PYTHONPATH"] = (
+        f"{scripts_path}{os.pathsep}{current_pythonpath}"
+        if current_pythonpath
+        else scripts_path
+    )
     environment["MSWEA_GLOBAL_CONFIG_DIR"] = str(root / ".cache" / "mini-swe-agent")
     environment["MSWEA_SILENT_STARTUP"] = "1"
     environment["MSWEA_CONFIGURED"] = "1"
@@ -446,6 +467,7 @@ def main() -> int:
             )
         ),
     }
+    benchmark_precompile = bool(benchmark_config.get("precompile", True))
     if (
         limits["step_limit"] <= 0
         or limits["cost_limit"] <= 0
@@ -506,6 +528,7 @@ def main() -> int:
         "pending_job_count": len(pending_pairs),
         "mini_version": "2.4.5",
         "integrated_evaluation": not args.skip_evaluation,
+        "image_precompiled": benchmark_precompile,
         "limits": limits,
         "reproducibility": reproducibility_base,
         "model_configs": {
@@ -522,6 +545,56 @@ def main() -> int:
     output_root.mkdir(parents=True, exist_ok=True)
     write_json(manifest_path, manifest)
     if not pending_pairs:
+        persisted_results = [
+            json.loads(path.read_text(encoding="utf-8"))
+            for path in sorted(output_root.glob("*/*/run.json"))
+        ]
+        write_json(
+            output_root / "runs.json",
+            sorted(
+                persisted_results,
+                key=lambda item: (item["model_id"], item["task_id"]),
+            ),
+        )
+        if not args.skip_evaluation:
+            score_records = []
+            for path in sorted(output_root.glob("*/*/score.json")):
+                score = json.loads(path.read_text(encoding="utf-8"))
+                run = json.loads(
+                    (path.parent / "run.json").read_text(encoding="utf-8")
+                )
+                score_records.append({**run, **score})
+            write_json(
+                output_root / "scores.json",
+                sorted(
+                    score_records,
+                    key=lambda item: (item["model_id"], item["task_id"]),
+                ),
+            )
+        completed_jobs = 0
+        scorable_jobs = 0
+        for model_id in manifest_models:
+            for task_id in manifest_tasks:
+                run_path = output_root / model_id / task_id / "run.json"
+                score_path = output_root / model_id / task_id / "score.json"
+                if completed_job(run_path) and (
+                    args.skip_evaluation or completed_score(score_path)
+                ):
+                    completed_jobs += 1
+                if completed_score(score_path):
+                    scorable_jobs += 1
+        manifest.update(
+            {
+                "updated_at": utc_now(),
+                "finished_at": utc_now(),
+                "completed_job_count": completed_jobs,
+                "scorable_job_count": scorable_jobs,
+                "pending_job_count": max(
+                    0, manifest["job_count"] - completed_jobs
+                ),
+            }
+        )
+        write_json(manifest_path, manifest)
         print("All selected model/task jobs already exist")
         return 0
 
@@ -582,12 +655,13 @@ def main() -> int:
             "image_id": None,
             "image_reused": False,
             "image_prepare_seconds": None,
-            "cargo_target_volume": (
+            "cargo_target_volume": None if benchmark_precompile else (
                 f"mini-unsat-run-{run_id}-{model_id}-{task_id}"
                 .lower()
                 .replace("_", "-")
                 .replace(".", "-")
             ),
+            "image_precompiled": benchmark_precompile,
             "return_code": None,
             "started_at": utc_now(),
             "finished_at": utc_now(),
@@ -648,7 +722,7 @@ def main() -> int:
                 build_timeout_seconds=int(
                     validation_config.get("build_timeout_seconds", 3600)
                 ),
-                precompile=False,
+                precompile=benchmark_precompile,
             )
         except ExperimentInfrastructureError as exc:
             task_results = [
@@ -677,6 +751,7 @@ def main() -> int:
                             Path(model["config_path"])
                         ),
                     },
+                    use_cargo_volume=not benchmark_precompile,
                 )
                 task_results.append(result)
                 print(
@@ -720,7 +795,10 @@ def main() -> int:
                 for result in task_results
                 if result.get("cargo_target_volume")
             ]
-            cleanup = cleanup_errors(remove_volume(volume) for volume in volumes)
+            cleanup = cleanup_errors(
+                [remove_image_containers(image)]
+                + [remove_volume(volume) for volume in volumes]
+            )
             image_error = remove_image(image)
             if image_error:
                 cleanup.append(image_error)
@@ -739,9 +817,13 @@ def main() -> int:
         }
         for future in concurrent.futures.as_completed(future_tasks):
             results.extend(future.result())
+    persisted_results = [
+        json.loads(path.read_text(encoding="utf-8"))
+        for path in sorted(output_root.glob("*/*/run.json"))
+    ]
     merged_results = {
         (str(item["model_id"]), str(item["task_id"])): item
-        for item in existing_results + results
+        for item in existing_results + persisted_results
     }
     write_json(
         runs_path,
@@ -763,6 +845,27 @@ def main() -> int:
                 key=lambda item: (item["model_id"], item["task_id"]),
             ),
         )
+    completed_jobs = 0
+    scorable_jobs = 0
+    for model_id in manifest_models:
+        for task_id in manifest_tasks:
+            run_path = output_root / model_id / task_id / "run.json"
+            score_path = output_root / model_id / task_id / "score.json"
+            if completed_job(run_path):
+                if args.skip_evaluation or completed_score(score_path):
+                    completed_jobs += 1
+            if completed_score(score_path):
+                scorable_jobs += 1
+    manifest.update(
+        {
+            "updated_at": utc_now(),
+            "finished_at": utc_now(),
+            "completed_job_count": completed_jobs,
+            "scorable_job_count": scorable_jobs,
+            "pending_job_count": max(0, manifest["job_count"] - completed_jobs),
+        }
+    )
+    write_json(manifest_path, manifest)
     return 0 if all(result["infrastructure_error"] is None for result in results) else 2
 
 

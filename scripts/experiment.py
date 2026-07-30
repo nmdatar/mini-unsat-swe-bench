@@ -138,18 +138,55 @@ def ensure_task_image(
     }
 
 
+def _remove_docker_resource(
+    command: list[str],
+    *,
+    absent_message: str,
+    attempts: int = 4,
+) -> str | None:
+    """Remove a Docker resource, tolerating short container-teardown races."""
+
+    last_output = ""
+    for attempt in range(attempts):
+        result = _run(command, 120)
+        last_output = result.stdout
+        if result.returncode == 0 or absent_message in result.stdout.lower():
+            return None
+        if attempt + 1 < attempts:
+            time.sleep(0.5 * (attempt + 1))
+    return last_output[-12000:]
+
+
 def remove_image(image: str) -> str | None:
-    result = _run(["docker", "image", "rm", image], 120)
-    if result.returncode == 0 or "No such image" in result.stdout:
+    return _remove_docker_resource(
+        ["docker", "image", "rm", image],
+        absent_message="no such image",
+    )
+
+
+def remove_image_containers(image: str) -> str | None:
+    """Remove stopped or running benchmark containers derived from one task image."""
+
+    listed = _run(
+        ["docker", "ps", "--all", "--quiet", "--filter", f"ancestor={image}"],
+        30,
+    )
+    if listed.returncode != 0:
+        return listed.stdout[-12000:]
+    container_ids = listed.stdout.split()
+    if not container_ids:
         return None
-    return result.stdout[-12000:]
+    removed = _run(["docker", "rm", "--force", *container_ids], 120)
+    if removed.returncode == 0:
+        return None
+    return removed.stdout[-12000:]
 
 
 def remove_volume(volume: str) -> str | None:
-    result = _run(["docker", "volume", "rm", volume], 120)
-    if result.returncode == 0 or "no such volume" in result.stdout.lower():
-        return None
-    return result.stdout[-12000:]
+    return _remove_docker_resource(
+        ["docker", "volume", "rm", volume],
+        absent_message="no such volume",
+    )
 
 
 def trajectory_metrics(trajectory_data: dict[str, Any]) -> dict[str, Any]:

@@ -1,20 +1,77 @@
 from __future__ import annotations
 
 import json
+import os
 import sys
 import tempfile
 import unittest
 from importlib import import_module
 from pathlib import Path
+from unittest.mock import patch
 
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
+os.environ.setdefault(
+    "MSWEA_GLOBAL_CONFIG_DIR",
+    str(Path(__file__).resolve().parents[1] / ".cache" / "test-mini-swe-agent"),
+)
 
 from experiment import trajectory_metrics  # noqa: E402
+from benchmark_agent import AutoSubmitInteractiveAgent  # noqa: E402
+from minisweagent.agents.interactive import InteractiveAgent  # noqa: E402
+from minisweagent.exceptions import LimitsExceeded, Submitted  # noqa: E402
 
 
 evaluator = import_module("04b_evaluate_results")
 summarizer = import_module("06_summarize_results")
+
+
+class AutoSubmitAgentTests(unittest.TestCase):
+    def test_nonempty_diff_is_submitted_at_limit(self) -> None:
+        class Environment:
+            def execute(self, action: dict) -> dict:
+                self.action = action
+                return {"returncode": 0, "output": "diff --git a/a b/a\n"}
+
+        agent = AutoSubmitInteractiveAgent.__new__(AutoSubmitInteractiveAgent)
+        agent.env = Environment()
+        limit = LimitsExceeded(
+            {
+                "role": "exit",
+                "content": "limit",
+                "extra": {"exit_status": "LimitsExceeded", "submission": ""},
+            }
+        )
+        with (
+            patch.object(InteractiveAgent, "query", side_effect=limit),
+            self.assertRaises(Submitted) as raised,
+        ):
+            agent.query()
+        self.assertEqual(
+            raised.exception.messages[0]["extra"]["exit_status"],
+            "AutoSubmittedLimitsExceeded",
+        )
+        self.assertIn("diff --git", raised.exception.messages[0]["extra"]["submission"])
+
+    def test_empty_diff_preserves_original_limit(self) -> None:
+        class Environment:
+            def execute(self, action: dict) -> dict:
+                return {"returncode": 0, "output": ""}
+
+        agent = AutoSubmitInteractiveAgent.__new__(AutoSubmitInteractiveAgent)
+        agent.env = Environment()
+        limit = LimitsExceeded(
+            {
+                "role": "exit",
+                "content": "limit",
+                "extra": {"exit_status": "LimitsExceeded", "submission": ""},
+            }
+        )
+        with (
+            patch.object(InteractiveAgent, "query", side_effect=limit),
+            self.assertRaises(LimitsExceeded),
+        ):
+            agent.query()
 
 
 class TrajectoryMetricsTests(unittest.TestCase):
@@ -130,6 +187,73 @@ class EvaluatorPropagationTests(unittest.TestCase):
                 (destination / "checks.json").read_text(encoding="utf-8")
             )
             self.assertTrue(checks["infrastructure_failure"])
+
+    def test_task_evaluation_retries_cleanup_and_persists_outcome(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            task_id = "ruff__ruff-cleanup"
+            task_dir = root / "tasks" / task_id
+            task_dir.mkdir(parents=True)
+            (task_dir / "task.json").write_text(
+                json.dumps(
+                    {
+                        "task_id": task_id,
+                        "base_commit": "a" * 40,
+                        "test_commands": ["cargo test -p ruff_linter"],
+                    }
+                ),
+                encoding="utf-8",
+            )
+            (task_dir / "tests.patch").write_text("", encoding="utf-8")
+            destination = root / "results" / "model" / task_id
+            destination.mkdir(parents=True)
+            patch_path = destination / "patch.diff"
+            patch_path.write_text("", encoding="utf-8")
+            run_path = destination / "run.json"
+            run_path.write_text(
+                json.dumps(
+                    {
+                        "task_id": task_id,
+                        "model_id": "model",
+                        "image": "benchmark:test",
+                        "cargo_target_volume": "benchmark-volume",
+                        "patch": str(patch_path.relative_to(root)),
+                        "infrastructure_error": "provider unavailable",
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            with (
+                patch.object(evaluator, "remove_volume", return_value=None) as volume,
+                patch.object(
+                    evaluator, "remove_image_containers", return_value=None
+                ) as containers,
+                patch.object(evaluator, "remove_image", return_value=None) as image,
+            ):
+                results = evaluator.evaluate_task_runs(
+                    root=root,
+                    run_paths=[run_path],
+                    tasks_dir=root / "tasks",
+                    commands_by_id={task_id: ["cargo test -p ruff_linter"]},
+                    timeout=1,
+                    dockerfile=root / "Dockerfile",
+                    context=root,
+                    build_timeout_seconds=1,
+                    keep_resources=False,
+                )
+
+            volume.assert_called_once_with("benchmark-volume")
+            containers.assert_called_once_with("benchmark:test")
+            image.assert_called_once_with("benchmark:test")
+            self.assertTrue(results[0]["resources_cleaned"])
+            persisted_run = json.loads(run_path.read_text(encoding="utf-8"))
+            persisted_score = json.loads(
+                (destination / "score.json").read_text(encoding="utf-8")
+            )
+            self.assertTrue(persisted_run["cleanup_attempted"])
+            self.assertTrue(persisted_run["resources_cleaned"])
+            self.assertTrue(persisted_score["resources_cleaned"])
 
 
 class SummaryTests(unittest.TestCase):

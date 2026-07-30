@@ -155,6 +155,8 @@ def main() -> int:
             ]
             for task_id in selected:
                 command.extend(["--task-id", task_id])
+            if args.skip_evaluation:
+                command.append("--skip-evaluation")
             agent = subprocess.Popen(command, cwd=root)
 
         elapsed_hours = (time.monotonic() - pipeline_started) / 3600
@@ -203,21 +205,6 @@ def main() -> int:
     )
     if freeze.returncode != 0 or args.skip_evaluation:
         return freeze.returncode
-    evaluation = subprocess.run(
-        [
-            sys.executable,
-            str(scripts / "04b_evaluate_results.py"),
-            str(run_root),
-            "--config",
-            args.config,
-            "--workers",
-            str(args.validation_workers),
-        ],
-        cwd=root,
-        check=False,
-    )
-    if evaluation.returncode != 0:
-        return evaluation.returncode
     return subprocess.run(
         [
             sys.executable,
