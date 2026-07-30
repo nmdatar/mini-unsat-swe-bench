@@ -4,6 +4,11 @@ A reproducible benchmark mined from recent merged pull requests in
 [`astral-sh/ruff`](https://github.com/astral-sh/ruff). The complete design is
 in [PLAN.md](PLAN.md).
 
+The final report is available as [Markdown](report/report.md) and
+[PDF](report/report.pdf). The exact primary experiment procedure is documented
+in [EXPERIMENT_RUNBOOK.md](EXPERIMENT_RUNBOOK.md), and AI assistance is
+disclosed in [AI_USE.md](AI_USE.md).
+
 ## Current implementation
 
 The repository implements the complete sourcing, validation, execution,
@@ -37,8 +42,9 @@ python scripts/03_validate_tasks.py \
   --repeats 1
 ```
 
-Run the configured three-repeat validation only after the commands and
-environment are working:
+Run the configured one-repeat validation pass after the commands and
+environment are working. Repeated phases can be enabled later to measure
+flakiness:
 
 ```bash
 python scripts/03_validate_tasks.py --limit 10
@@ -49,15 +55,16 @@ Detailed results and staged artifacts are written under
 
 ## Scoring contract
 
-Each validated task will add an evaluator-only `eval.json`. It assigns named
-semantic checks to `core`, `edge`, `regression`, and `quality` groups and
-declares at least one compilation gate. The evaluator runner records the status
-of those checks in a separate JSON file. Score one completed run with:
+Each evaluated task receives an evaluator-only `eval.json` generated in its run
+output directory. It assigns named semantic checks to `core`, `edge`,
+`regression`, and `quality` groups and declares at least one compilation gate.
+The evaluator runner records the status of those checks in a separate JSON
+file. Score one completed run with:
 
 ```bash
 python scripts/05_score_results.py \
-  --eval-spec tasks/<task-id>/eval.json \
-  --check-results results/runs/<run-id>/checks.json
+  --eval-spec results/runs/<run-id>/<model-id>/<task-id>/eval.json \
+  --check-results results/runs/<run-id>/<model-id>/<task-id>/checks.json
 ```
 
 The scorer does not execute untrusted code. Docker execution and hidden-test
@@ -123,7 +130,9 @@ to make development and cache debugging faster.
 ## Sourcing outputs
 
 Large and reproducible downloads live under the ignored `.cache/` directory.
-Generated candidates live under the ignored `tasks/` directory:
+The frozen benchmark tasks are tracked under `tasks/`; development candidates
+and intermediate artifacts may be kept under ignored paths when generated
+locally:
 
 ```text
 tasks/
@@ -149,6 +158,11 @@ commands.
 contains the deterministic subset prioritized for expensive Docker validation.
 Selection uses the configured random seed and round-robins across subsystem and
 small/medium/large change-size strata; it never uses model results.
+
+The frozen index contains 100 validated tasks. The completed model comparison
+reported in `report/report.md` uses the predeclared 20-task `core20` subset and
+three models (60 model-task runs); the remaining frozen tasks are available for
+the full benchmark run described in the runbook.
 
 ## Fast assessment workflow
 
