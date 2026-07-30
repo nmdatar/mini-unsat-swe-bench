@@ -10,8 +10,11 @@ the relevant tests to pass at the base commit, evaluator-owned regression tests
 to fail before the fix, and those tests to pass after applying the original
 developer patch. Three models are evaluated using the mini-swe-agent harness in
 isolated environments, and their submitted patches are assessed by an automated
-scoring pipeline. **[Add the final model results and main conclusion after the
-evaluation is complete.]**
+scoring pipeline. On the completed 20-task sample, DeepSeek V4 Flash achieved
+the highest mean score (0.355), while GPT-5.4 mini produced the most patches
+and Qwen3 Coder Next had the lowest mean score (0.098). The results are
+promising for rapid benchmark construction but remain limited by the sampled
+task count and tight agent budgets.
 
 ## 1. Introduction
 
@@ -120,6 +123,15 @@ deduplication, quality filters, and token-length filtering. Panel 3 lists
 representative exclusion and inclusion criteria applied during filtering.
 Panel 4 shows how the final, balanced task set is assembled and evaluated
 (model input, agent work, and evaluation).
+
+![Figure 2. Example transformation of a merged Ruff pull request into a benchmark task.](figures/pr-to-task-example.png)
+
+**Figure 2.** Concrete example of the PR-to-task transformation. The selected
+PR supplies the natural-language problem, base commit, and production diff;
+candidate filtering and three-phase validation then establish that the change
+is self-contained, testable, and solvable. The final task exposes the problem
+and base repository to the model while retaining the gold patch and regression
+tests for evaluation.
 
 ### 3.1 Task Formulation
 
@@ -477,55 +489,124 @@ A task is `fully_resolved` only at a score of exactly `1.0`.
 
 ### 7.1 Model Performance
 
+The completed experiment contains 20 tasks for each of three models (60
+model-task runs). Scores are the weighted evaluator scores defined in Section
+6.3; `fully resolved` means an exact score of 1.0.
+
+| Model | Tasks | Mean score | Score sum | Fully resolved | Partial/non-resolved | Patch produced |
+|---|---:|---:|---:|---:|---:|---:|
+| DeepSeek V4 Flash | 20 | 0.355 | 7.10 | 3 (15%) | 17 (85%) | 11 (55%) |
+| GPT-5.4 mini | 20 | 0.295 | 5.90 | 3 (15%) | 17 (85%) | 18 (90%) |
+| Qwen3 Coder Next | 20 | 0.098 | 1.95 | 1 (5%) | 19 (95%) | 3 (15%) |
+| **Overall** | **60** | **0.249** | **14.95** | **7 (11.7%)** | **53 (88.3%)** | **32 (53.3%)** |
+
+| Model | 0.00 | 0.05 | 0.15 | 0.20 | 0.95 | 1.00 |
+|---|---:|---:|---:|---:|---:|---:|
+| DeepSeek V4 Flash | 11 | 0 | 2 | 0 | 4 | 3 |
+| GPT-5.4 mini | 5 | 1 | 2 | 8 | 1 | 3 |
+| Qwen3 Coder Next | 18 | 0 | 0 | 0 | 1 | 1 |
+
 ### 7.2 Runtime, Cost, and Token Usage
 
+| Model | Mean runtime (s) | Mean steps | Step-limit hits | Wall-time hits | API cost |
+|---|---:|---:|---:|---:|---:|
+| DeepSeek V4 Flash | 178.9 | 22.1 | 3/20 (15%) | 16/20 (80%) | $0.173 |
+| GPT-5.4 mini | 50.5 | 15.8 | 1/20 (5%) | 0/20 (0%) | $0.547 |
+| Qwen3 Coder Next | 103.5 | 28.7 | 15/20 (75%) | 4/20 (20%) | $0.847 |
+| **Overall** | **111.0** | **22.2** | **19/60 (31.7%)** | **20/60 (33.3%)** | **$1.567** |
+
+Runtime and cost are inference-run measurements and exclude one-time Docker
+image preparation. Token counts are retained in each `run.json`; the
+experiment summary reports cost and steps because token accounting differs by
+provider.
+
 ### 7.3 Infrastructure Failures and Retries
+
+| Outcome category | Runs | Share | Interpretation |
+|---|---:|---:|---|
+| Submitted normally | 22 | 36.7% | Agent submitted before a hard limit. |
+| Auto-submitted at a limit | 11 | 18.3% | A patch was preserved when the step or wall-time limit was reached. |
+| Limit reached without a patch | 27 | 45.0% | No usable diff was available at termination. |
+| Infrastructure errors | 0 | 0% | No run failed because of Docker or evaluator infrastructure. |
+
+The limit categories are operational outcomes, not quality labels: a run can
+produce a patch and still receive a low score. No retries were required for
+infrastructure failures in this batch.
 
 ## 8. Analysis
 
 ### 8.1 Performance by Subsystem and Task Size
 
+DeepSeek V4 Flash achieved the highest mean score in this run (0.355), ahead
+of GPT-5.4 mini (0.295) and Qwen3 Coder Next (0.098). This ranking should be
+read as an observation about this 20-task sample rather than a general model
+ranking: all three models saw the same tasks, but the sample is small and each
+model was run only once per task. The task mix was dominated by linter changes
+(15 of 20 tasks), with only one parser, one configuration, two formatter, and
+one other-core task, so the result primarily measures performance on Ruff's
+linter-oriented fixes.
+
+The strongest model by mean score was also the slowest. DeepSeek averaged
+178.9 seconds per task and reached the 180-second wall-time limit on 16 of 20
+runs. GPT-5.4 mini averaged 50.5 seconds, while Qwen averaged 103.5 seconds.
+Thus, the higher DeepSeek score came with substantially longer trajectories;
+the result is not simply a speed-adjusted advantage.
+
 ### 8.2 Agent Failure Modes
+
+The 30-step ceiling appears to be an important part of the observed result.
+Qwen used 28.7 steps on average and hit the step limit on 15 of 20 tasks;
+DeepSeek and GPT hit it on 3 and 1 tasks, respectively. Across all runs,
+19/60 hit the step limit and 20/60 hit the wall-time limit. This concentration
+near the maximum means that some failures may reflect insufficient interaction
+budget rather than an inability to identify or implement the fix. A necessary
+follow-up is an ablation at larger limits (for example 60 and 120 steps, with
+correspondingly longer wall-time limits), while keeping the task set and
+scorer fixed. It would show whether additional turns convert partial patches
+into passing patches or merely produce longer unsuccessful trajectories.
+
+The canary provides evidence that simply raising the limit may not solve the
+problem. In the precompiled three-model canary, Qwen3 Coder Next still reached
+the 75-step maximum without submitting a patch. This suggests a second
+hypothesis: some models spend too many turns exploring, repeating commands,
+or postponing the final edit. The benchmark should therefore report both
+budget ablations and a trajectory-efficiency metric (score per step or score
+per dollar). It may be more effective to evaluate models with stronger
+reasoning and planning that reach a correct patch in fewer turns than to keep
+increasing the maximum tool-call budget.
 
 ### 8.3 Evidence of Benchmark Unsaturation
 
+The cost and score results show a useful trade-off. DeepSeek was both the
+highest-scoring model and the least expensive in aggregate ($0.173 for 20
+runs), compared with $0.547 for GPT-5.4 mini and $0.847 for Qwen3 Coder Next.
+However, DeepSeek's low cost is partly a consequence of the provider's token
+pricing and should not be interpreted as lower computational effort: its
+trajectories were the longest and frequently hit wall time. GPT produced the
+most patches (18/20) but many were incomplete, while Qwen produced only 3/20,
+which separates willingness to submit a diff from actually fixing the hidden
+tests.
+
+The benchmark is not saturated by these results: no model resolved more than
+15% of the sampled tasks, and 53/60 runs received a non-perfect score. That
+pattern is consistent with a challenging task set, but it is confounded by the
+tight interaction budgets and the small-model roster. Higher-step reruns,
+multiple independent samples, and at least one stronger reasoning model are
+needed before concluding that the remaining failures represent intrinsic task
+difficulty rather than trajectory inefficiency.
+
 ## 9. Limitations
 
-**Agent evaluation scale.** Of the 100 frozen tasks, only a 20-task subset was
-run to completion across the three models (60 model×task jobs). Even with precompiled images
-(Section 5.3), each job still spends real wall-clock time on Cargo's
-incremental rebuild and on the test command itself, and multiplying that by
-100 tasks × 3 models was not feasible in the time available. The results in
-Section 7 should be read as a partial sample, not a resolution rate over the
-full benchmark.
-
-**Step-limit bias toward small tasks.** Runs were capped at 30 steps and 180
-seconds of wall time (Section 5.4), kept tight largely to make the 20-task
-subset in the previous point tractable. A low step ceiling likely biases
-completed, non-auto-submitted runs toward tasks that
-need little exploration, i.e., smaller patches, and can make a model look
-less capable on larger tasks simply because it ran out of turns rather than
-because it couldn't solve the task. The auto-submit fallback (Section 5.5)
-was added directly because of this constraint — agents were repeatedly
-hitting the limit mid-edit — but it only recovers a partial patch already in
-progress; it doesn't remove the bias toward tasks solvable in a short budget.
-
-**Limited model roster.** All three evaluated models are relatively small and
-fast; no larger frontier model was included, so the results say more about
-how budget-constrained, low-cost models perform than about the benchmark's
-ceiling.
-
-**Limited dynamic validation.** Each candidate's base/tests-only/gold phases
-(Section 4.1) ran once (`repeats: 1`) rather than several times, so a hidden
-test that is flaky rather than deterministic could be misclassified as
-validated or wrongly rejected. Repeated-phase flakiness checking exists in
-the validator but was not run at the scale needed to catch this.
-
-**Shallow issue linking.** Task prompts use only the first linked issue found
-for a pull request (Section 3.3); a PR referencing multiple issues, or an
-issue only reachable through discussion rather than a structured "Closes #N"
-reference, is not considered. Some prompts may therefore omit context a human
-maintainer actually had.
+| Limitation | Consequence for interpretation | Mitigation / next step |
+|---|---|---|
+| Only 20 of 100 frozen tasks were evaluated | Results are a partial sample, not a full-benchmark resolution rate. | Run all 100 tasks, or report task-level confidence intervals for the sampled subset. |
+| One run per model-task pair | Scores include stochastic variation and do not estimate pass@k. | Repeat selected tasks and report mean score and pass@k. |
+| 30-step and 180-second caps | Larger tasks may fail because the budget expired; this favors short fixes. | Run step/wall-time ablations, such as 30/60/120 steps. |
+| Auto-submit at limits | Preserves work in progress but can evaluate incomplete patches and creates heterogeneous exit modes. | Report normal versus auto-submitted outcomes separately and compare with a higher-budget run. |
+| Three relatively small/fast models | The experiment does not establish the capability ceiling of the benchmark. | Add a stronger frontier model under a separately reported cost budget. |
+| Candidate validation used `repeats: 1` | A flaky test could be accepted or rejected incorrectly. | Repeat base, tests-only, and gold validation phases. |
+| Prompts use only the first structured linked issue | Some maintainer context may be absent from the task prompt. | Resolve all linked issues and include a curated issue summary. |
+| Small, PR-derived Ruff task sample | Results may not generalize to other repositories, task types, or languages. | Expand across repositories and add issue, documentation, configuration, and test-writing tasks. |
 
 ## 10. Future Work
 
@@ -771,3 +852,35 @@ the aggregate summary, so every reported score can be traced back to its model
 trajectory, patch, environment, and individual evaluator checks.
 
 ## 12. Conclusion
+
+This project was motivated by the need for recent, reproducible coding-agent
+tasks that remain useful as models improve and established benchmarks become
+less diagnostic. It investigated whether the artifacts already produced by
+open-source development—issue descriptions, pull requests, tests, and
+developer patches—could be converted into realistic tasks with automatic,
+objective scoring.
+
+Ruff provided a large and actively maintained repository with substantial Rust
+code and a strong test suite. The construction pipeline collected recent
+merged pull requests, removed unsuitable changes and known public-benchmark
+overlaps, scrubbed implementation details from task prompts, and separated
+each developer solution from its associated tests. Candidates were then
+executed in isolated Docker environments. A task was accepted only when its
+tests passed at the base commit, the evaluator-owned tests failed without the
+fix, and those tests passed after applying the original developer patch. This
+process produced a frozen set of 100 validated tasks and three additional
+validated candidates. Further verification should repeat these validation
+phases to test for flakiness, and future benchmark runs should evaluate the
+remaining frozen tasks that were not included in the initial model experiment.
+
+The initial evaluation demonstrates that the complete prompt-to-patch-to-score
+pipeline works and that the sampled tasks are not saturated by the tested
+models. Across the 20-task subset, DeepSeek V4 Flash achieved the highest mean
+score (0.355), GPT-5.4 mini produced the most patches, and Qwen3 Coder Next had
+the lowest mean score (0.098). No model fully resolved more than 15% of the
+sample, although many runs reached the step or wall-time limits, so these
+results should be treated as preliminary rather than as a definitive model
+ranking. Running all 100 tasks, repeating model-task trials, testing larger
+step and time budgets, and adding a stronger model would reduce sampling and
+budget uncertainty and provide a firmer measure of both model capability and
+benchmark difficulty.
