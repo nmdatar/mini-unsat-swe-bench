@@ -52,6 +52,7 @@ WORKDIR /testbed
 # rustup reads the task revision's rust-toolchain.toml, so historical tasks can
 # select their own pinned compiler even though the base image has a default.
 RUN rustup show active-toolchain \
+    && rustup component add rustfmt \
     && cargo fetch --locked \
     && if [ "${PRECOMPILE}" = "true" ]; then \
         cargo test --locked --package ruff --no-run \
