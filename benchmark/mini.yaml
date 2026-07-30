@@ -1,4 +1,5 @@
 agent:
+  agent_class: benchmark_agent.AutoSubmitInteractiveAgent
   system_template: |
     You are a software engineer using a Linux shell to solve a coding task in the Ruff repository.
     Work autonomously within the repository, make the smallest general fix that satisfies the task,
@@ -13,11 +14,16 @@ agent:
     Work in `/testbed`, which contains Ruff at the task's starting commit.
 
     - Inspect the repository and relevant history-free source files before editing.
+    - Once you locate the likely defect, make the smallest plausible production edit before running
+      expensive builds. Do not compile the full workspace merely to inspect existing behavior.
     - Modify only files needed to implement the requested production behavior.
     - Do not modify existing tests, fixtures, snapshots, or benchmark/evaluator files.
     - You may create temporary reproduction files under `/tmp`, but do not include them in the patch.
     - Do not use the network. Required dependencies are already cached.
-    - Run focused checks or tests for the affected Ruff crate whenever possible.
+    - After editing, run the narrowest relevant check or test. The image contains precompiled
+      targets, but avoid broad builds and full-workspace test commands.
+    - Never use `--release` builds. If a validation command times out or cannot finish quickly,
+      preserve the edit and proceed to submission rather than starting another broad build.
     - Do not commit your changes.
 
     Every response must include reasoning and at least one bash tool call.
@@ -30,7 +36,7 @@ agent:
     2. For any intentional new source file, run `git add -N <path>` so it appears in `git diff`.
     3. Run `git diff -- . > /tmp/model.patch`.
     4. Inspect `/tmp/model.patch` and confirm it contains only the intended solution.
-    5. Submit with this exact command, by itself:
+    5. Submit with this exact command, by itself, with no `cd`, pipe, or preceding command:
 
        `echo COMPLETE_TASK_AND_SUBMIT_FINAL_OUTPUT && cat /tmp/model.patch`
 
@@ -47,7 +53,9 @@ environment:
   # The benchmark runner must override this with the task-specific image tag or digest.
   image: mini-unsat-ruff:latest
   cwd: /testbed
-  timeout: 180
+  # Prevent a single unnecessary Cargo command from consuming the complete
+  # agent budget after a valid edit has already been made.
+  timeout: 60
   pull_timeout: 300
   container_timeout: 45m
   interpreter: [bash, -c]
@@ -93,6 +101,23 @@ model:
     <output_tail>
     {{ output.output[-6000:] }}
     </output_tail>
+    {%- endif %}
+    {% if step_limit > 0 and step_limit - n_model_calls <= 15 -%}
+
+    <IMPORTANT>
+    Only {{ step_limit - n_model_calls }} model steps remain. Stop exploring and testing.
+    If `git diff -- .` is non-empty, inspect it and submit immediately using the exact standalone
+    submission command. The runner will auto-submit a non-empty tracked-file diff at the hard limit.
+    </IMPORTANT>
+    {%- endif %}
+    {% if wall_time_limit_seconds > 0 and wall_time_limit_seconds - elapsed_seconds <= 120 -%}
+
+    <IMPORTANT>
+    At most {{ wall_time_limit_seconds - elapsed_seconds }} seconds remain. Do not start another
+    build or test. Inspect `git diff -- .` and submit the current solution immediately using the
+    exact standalone submission command. The runner will auto-submit a non-empty tracked-file diff
+    at the hard limit.
+    </IMPORTANT>
     {%- endif %}
 
   format_error_template: |

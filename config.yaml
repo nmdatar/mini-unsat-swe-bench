@@ -116,6 +116,10 @@ benchmark:
   # Each task worker can use 4 CPUs and 8 GB while compiling Ruff. Two workers
   # match the resized 8-CPU/16-GB Docker host without memory overcommit.
   workers: 2
+  # Reportable agent images include compiled Ruff targets. Agent and evaluator
+  # containers use the image's target directory directly instead of masking it
+  # with an empty volume.
+  precompile: true
   task_limit: 100
   step_limit: 40
   cost_limit: 0.75
